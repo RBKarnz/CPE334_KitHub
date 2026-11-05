@@ -8,15 +8,15 @@
 | Course | CPE 334, Project Deliverable 1, Part A |
 | Version | 1.1 |
 | Date | 2026-11-06 |
-| Authors | `<Student 1 name>` (`<Student 1 ID>`), `<Student 2 name>` (`<Student 2 ID>`) |
+| Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Theme | 2. Inventory and Borrowing System |
 
 ### Revision history
 
 | Version | Date | Author | Change |
 | --- | --- | --- | --- |
-| 1.0 | 2026-11-06 | `<author>` | First baseline for the whole product (Sprints 1 to 3) |
-| 1.1 | 2026-11-06 | `<author>` | Review of PR #10: added FR-30, BR-17, NFR-12, permissions table and Q-09; history covers edits and system actions; clarified availability before Sprint 3; fixed rule links and examples |
+| 1.0 | 2026-11-06 | Teerakarn Noiruksa | First baseline for the whole product (Sprints 1 to 3) |
+| 1.1 | 2026-11-06 | Teerakarn Noiruksa | Review of PR #10: added FR-30, BR-17, NFR-12, permissions table and Q-09; history covers edits and system actions; clarified availability before Sprint 3; fixed rule links and examples |
 
 ## 2. Introduction
 
