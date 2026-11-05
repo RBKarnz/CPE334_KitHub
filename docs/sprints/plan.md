@@ -9,7 +9,7 @@
 | Version | 1.0 |
 | Date | 2026-11-06 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
-| Baseline | [SRS v1.2](../srs.md), [System-Level SDS v1.0](../system-sds.md) |
+| Baseline | [SRS v1.2](../srs.md), [System-Level SDS v1.1](../system-sds.md) |
 
 ### Revision history
 

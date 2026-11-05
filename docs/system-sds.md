@@ -6,7 +6,7 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part C |
-| Version | 1.0 |
+| Version | 1.1 |
 | Date | 2026-11-06 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Baseline | [SRS v1.2](srs.md) |
@@ -17,6 +17,7 @@
 | Version | Date | Author | Change |
 | --- | --- | --- | --- |
 | 1.0 | 2026-11-06 | Methipat Mansap | First baseline for the whole product (Sprints 1 to 3) |
+| 1.1 | 2026-11-06 | Methipat Mansap | Review of PR #25: a wrong sign-in no longer shows "session has ended" (5.3); checkout checks that each `lineId` belongs to the request (4.7, 6.4); sign-in deletes every expired session (8.2, 8.3); note on the CI trigger for `staging` (9.6) |
 
 ## 2. Introduction
 
@@ -434,6 +435,11 @@ sequenceDiagram
   UI->>API: POST /api/requests/12/checkout
   API->>API: authenticate, requireRole(CUSTODIAN), validate body
   API->>DB: BEGIN
+  API->>DB: SELECT request 12 with its lines
+  alt no such request, or a lineId is not a line of request 12
+    API->>DB: ROLLBACK
+    API-->>UI: 404 NOT_FOUND or 400 VALIDATION_FAILED
+  end
   API->>DB: UPDATE borrow_requests SET status = CHECKED_OUT WHERE id = 12 AND status = PENDING
   alt 0 rows changed
     API->>DB: ROLLBACK
@@ -451,10 +457,11 @@ sequenceDiagram
   API-->>UI: 201 request with its loan
 ```
 
-1. The request is moved first, so two checkouts of the same request with different units cannot both succeed.
-2. The unit is moved next, so two checkouts of the same unit for different requests cannot both succeed (BR-02, BR-03). When the update changes 0 rows, the service reads the unit inside the transaction to choose the error code: wrong item type or not `AVAILABLE`.
-3. The loan insert is protected by the partial unique index. If a defect ever skipped step 2, the insert fails with a unique violation, which is also mapped to `409 UNIT_NOT_AVAILABLE`.
-4. Any failure rolls back every step, so the request stays `PENDING` and the unit keeps its state (D-17).
+1. The request and its lines are read first. A missing request gives `404 NOT_FOUND`. Every `lineId` in the body must be a line of this request; otherwise the checkout is rejected with `400 VALIDATION_FAILED` naming the entry, so a unit can never be attached to another request's line. The item type used in step 3 comes from that line in the database, never from the client. In Sprint 1 the body has exactly one entry, for the request's only line. From Sprint 2, each line must receive exactly its `quantity` of entries and no unit may appear twice (FR-17). Lines cannot change once a request can be checked out (Sprint 1 has no edit; from Sprint 2 only `PENDING` requests can be edited and checkout needs `APPROVED`), so reading them before step 2 is safe.
+2. The request is moved next, so two checkouts of the same request with different units cannot both succeed.
+3. The unit is moved next, so two checkouts of the same unit for different requests cannot both succeed (BR-02, BR-03). When the update changes 0 rows, the service reads the unit inside the transaction to choose the error code: wrong item type or not `AVAILABLE`.
+4. The loan insert is protected by the partial unique index. If a defect ever skipped step 3, the insert fails with a unique violation, which is also mapped to `409 UNIT_NOT_AVAILABLE`.
+5. Any failure rolls back every step, so the request stays `PENDING` and the unit keeps its state (D-17).
 
 Lock order is always request first, then units in ascending ID order (Sprint 2 checks out several units at once). The same order in every transaction prevents deadlocks.
 
@@ -571,13 +578,14 @@ Search and filter (FR-06) are added to the Catalog screen in Sprint 3.
 | Rule rejection | A `409` from the API is shown as an alert at the top of the form or dialog with the API `message`, for example "Arduino Uno R3 has no available units." Nothing is changed in the UI's data until a successful response |
 | Submitting | The submit button is disabled and shows a spinner while the call runs, so a double click sends one call |
 | Success | A short confirmation, for example "Request #12 submitted", and the list is refreshed from the API |
-| Session ended | Any `401` clears the current user and goes to `/login` with "Your session has ended. Please sign in again." |
+| Session ended | A `401` with code `UNAUTHENTICATED` from any call clears the current user and goes to `/login` with "Your session has ended. Please sign in again." |
+| Wrong sign-in | `401 INVALID_CREDENTIALS` from `POST /api/auth/login` does not end a session and does not redirect. The sign-in form stays open, keeps the username, clears the password and shows the API message "Username or password is incorrect." (FR-01) |
 | Forbidden | A `403` shows "You do not have permission to do this." |
 | Confirmation | Checkout, cancel, reject and retire ask for confirmation in a dialog that names the request or unit |
 | States and times | States are shown as a badge with the state's text, never by color alone. Times use the format "6 Nov 2026, 14:30" in Asia/Bangkok time |
 | Accessibility | Every input has a label; dialogs can be used and closed with the keyboard |
 
-One shared `AsyncState` component renders the loading, empty and error states, so every list behaves the same way.
+One shared `AsyncState` component renders the loading, empty and error states, so every list behaves the same way. The UI's API client decides what to do from `error.code`, not from the HTTP status alone (DD-10).
 
 ## 6. API conventions
 
@@ -623,6 +631,7 @@ Feature contracts define each endpoint's exact body and errors. This section set
 - Every endpoint that takes input has a zod schema for its path parameters, query and body. Schemas are strict: an unknown field is an error (DD-09). This is how a body that names an owner (BR-05) or an asset tag in a Borrower's request (BR-06) is rejected.
 - Shape checks run in middleware before the service is called and return `400 VALIDATION_FAILED` with one `details` entry per problem.
 - Business rules that need data run in the service and return `409` with a rule-specific code (DD-10).
+- A reference that must point inside the target record, such as a checkout `lineId` that must be a line of that request, is checked by the service and returns `400 VALIDATION_FAILED` with the field in `details` (section 4.7).
 - Malformed JSON returns `400 VALIDATION_FAILED`.
 
 ### 6.5 Errors (NFR-08)
@@ -645,7 +654,7 @@ Every error response, from any endpoint, has this shape:
 
 | Status | When | Codes (initial list; contracts add more) |
 | --- | --- | --- |
-| `400` | The input is malformed: missing or unknown fields, wrong types, values out of range | `VALIDATION_FAILED` |
+| `400` | The input is malformed: missing or unknown fields, wrong types, values out of range, or a reference outside the target record (6.4) | `VALIDATION_FAILED` |
 | `401` | No valid session, or wrong sign-in credentials | `UNAUTHENTICATED`, `INVALID_CREDENTIALS` |
 | `403` | Signed in, but the role may not perform the operation | `FORBIDDEN` |
 | `404` | The record does not exist, or it is outside the caller's scope (DD-06) | `NOT_FOUND` |
@@ -751,7 +760,7 @@ Each contract's STS includes, for every protected endpoint it adds: one call wit
 1. `POST /api/auth/login` with `{ "username", "password" }`.
 2. The server lowercases the username and loads the user. It runs `bcrypt.compare` even when the user does not exist (against a fixed dummy hash), so the response time does not reveal which usernames exist.
 3. On failure: `401 INVALID_CREDENTIALS` with "Username or password is incorrect." The same message is used for an unknown username and a wrong password (FR-01).
-4. On success: the server deletes the user's expired sessions, creates a new session (section 8.3), sets the cookie and returns `200 { "user": { "id", "username", "displayName", "role" } }`. If the request carried an older session cookie, that session is deleted, so a session token is never reused across sign-ins.
+4. On success: the server deletes every expired session (an indexed delete on `expiresAt`), creates a new session (section 8.3), sets the cookie and returns `200 { "user": { "id", "username", "displayName", "role" } }`. If the request carried an older session cookie, that session is deleted, so a session token is never reused across sign-ins.
 
 ### 8.3 Session lifecycle (NFR-04)
 
@@ -763,6 +772,7 @@ Each contract's STS includes, for every protected endpoint it adds: one call wit
 | Lifetime | Absolute: `SESSION_TTL_HOURS` (default 8, Proposed in Q-01) after sign-in. No sliding renewal. The value is configuration, so a different answer to Q-01 changes no code |
 | Check on each call | `authenticate` hashes the cookie token and loads the session where `expiresAt > now()`, together with its user. One indexed query per call |
 | Several sessions | A user may be signed in on several browsers. Each has its own session |
+| Clean-up | An expired session is rejected at once and its row is deleted at the next sign-in by any user, so expired rows do not pile up |
 | Many instances | Sessions are in the database, so any Cloud Run instance accepts any session (DD-02) |
 
 ### 8.4 Current user
@@ -890,6 +900,8 @@ flowchart LR
   SM["Secret Manager"] -.->|"DATABASE_URL, seed passwords"| JOB
   SM -.->|"DATABASE_URL"| RUN
 ```
+
+The kit's `ci-docker.yml` runs only on PRs into `main`. Lab 5 (#4) adds `staging` to its branch list, so feature PRs are checked too.
 
 ### 9.7 Cloud readiness (Lab 5 checklist)
 
