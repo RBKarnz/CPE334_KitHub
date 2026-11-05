@@ -6,7 +6,7 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part A |
-| Version | 1.1 |
+| Version | 1.2 |
 | Date | 2026-11-06 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Theme | 2. Inventory and Borrowing System |
@@ -17,6 +17,7 @@
 | --- | --- | --- | --- |
 | 1.0 | 2026-11-06 | Teerakarn Noiruksa | First baseline for the whole product (Sprints 1 to 3) |
 | 1.1 | 2026-11-06 | Teerakarn Noiruksa | Review of PR #10: added FR-30, BR-17, NFR-12, permissions table and Q-09; history covers edits and system actions; clarified availability before Sprint 3; fixed rule links and examples |
+| 1.2 | 2026-11-06 | Teerakarn Noiruksa | Resolved Q-04, Q-05 and Q-06 as decisions D-15, D-16 and D-17; A-04 and A-05 now point to them |
 
 ## 2. Introduction
 
@@ -54,7 +55,7 @@ KitHub is a course project. It uses synthetic data only and is not the faculty's
 | Request line (line) | One item type and a quantity inside a request |
 | Open request | A request in state `PENDING` or `APPROVED` |
 | Loan | One unit checked out to a Borrower against a request line. All loans of a request share the request's due date |
-| Due date | Checkout time plus the request's loan length |
+| Due date | Checkout time plus the request's loan length. In Sprint 1, checkout time plus the item type's maximum loan length (D-16) |
 | Overdue | A checked-out request whose due date has passed while at least one of its units is not returned. Overdue is derived, not stored as a state |
 | History entry | An append-only record of one state change or request edit: the record changed, what changed, the actor and the time |
 | System actor | The actor recorded for changes the product makes without a user action, such as expiry. It cannot sign in |
@@ -147,7 +148,7 @@ FRs are grouped by feature area. "Related BR" lists the rules the FR must enforc
 
 | ID | Requirement | Actor | Sprint | Related BR |
 | --- | --- | --- | --- | --- |
-| FR-16 | A Custodian can record checkout of a `PENDING` request by choosing one `AVAILABLE` unit of the requested item type. The system creates one `ACTIVE` loan, sets the unit to `ON_LOAN` and sets the request to `CHECKED_OUT`. Replaced by FR-17 from Sprint 2, when checkout requires an `APPROVED` request; Sprint 2 tests cover FR-17 only | Custodian | 1 | BR-02, BR-03, BR-16 |
+| FR-16 | A Custodian can record checkout of a `PENDING` request by choosing one `AVAILABLE` unit of the requested item type. The system creates one `ACTIVE` loan with due date = checkout time + the item type's maximum loan length (D-16), sets the unit to `ON_LOAN` and sets the request to `CHECKED_OUT`. If no unit of the item type is `AVAILABLE`, checkout is rejected and the request stays `PENDING` (D-17). Replaced by FR-17 from Sprint 2, when checkout requires an `APPROVED` request; Sprint 2 tests cover FR-17 only | Custodian | 1 | BR-02, BR-03, BR-16 |
 | FR-17 | A Custodian can record checkout of an `APPROVED` request by choosing one `AVAILABLE` unit per quantity on each line. The system creates one `ACTIVE` loan per unit, sets the due date for all of them and sets the request to `CHECKED_OUT` | Custodian | 2 | BR-02, BR-03, BR-06, BR-08, BR-11, BR-12; from Sprint 3: BR-13 |
 | FR-18 | A Borrower can see their own active loans with each unit's item type, asset tag and due date | Borrower | 2 | BR-05 |
 | FR-19 | A Custodian can see all active loans with the Borrower, unit and due date | Custodian | 2 | - |
@@ -176,7 +177,7 @@ FRs are grouped by feature area. "Related BR" lists the rules the FR must enforc
 
 | ID | Rule | Example of a rejected case | Sprint |
 | --- | --- | --- | --- |
-| BR-01 | A request line can be created only for an item type with enough available units for its quantity at that moment. In Sprint 1 a request has exactly one line with quantity 1. Until Sprint 3, available units = units in `AVAILABLE` state, so an approval does not reserve units: checkout of an approved request can still be rejected under BR-02 if no unit is left, and the request stays `APPROVED` until its Borrower cancels it (Q-04). From Sprint 3, quantities reserved by `APPROVED` requests are also subtracted (BR-13) | A Borrower requests an item type with 0 available units. The request is rejected and nothing is stored | 1 |
+| BR-01 | A request line can be created only for an item type with enough available units for its quantity at that moment. In Sprint 1 a request has exactly one line with quantity 1. Until Sprint 3, available units = units in `AVAILABLE` state, so an approval does not reserve units: checkout of an approved request can still be rejected under BR-02 if no unit is left, and the request stays `APPROVED` until its Borrower cancels it (accepted limitation, D-15). From Sprint 3, quantities reserved by `APPROVED` requests are also subtracted (BR-13) | A Borrower requests an item type with 0 available units. The request is rejected and nothing is stored | 1 |
 | BR-02 | Checkout is allowed only for a unit in `AVAILABLE` state that belongs to the line's item type | A Custodian checks out a unit that is `ON_LOAN`, or a unit of a different item type. The checkout is rejected and no loan is created | 1 |
 | BR-03 | A unit has at most one `ACTIVE` loan, even when two checkouts of it are attempted at the same time | Two Custodians submit checkout of `KH-ARD-0007` at the same moment. Exactly one succeeds; the other is rejected and no second loan exists | 1 |
 | BR-04 | A Borrower cannot hold two open requests that contain the same item type. To get more of it, they edit the pending request, or cancel the approved one and submit a new one. After a request is checked out, the Borrower may request the same item type again | A Borrower with a pending request for "Arduino Uno R3" creates a second request for "Arduino Uno R3". The second request is rejected | 1 |
@@ -265,8 +266,8 @@ Invalid examples: `ON_LOAN` → `RETIRED`, `RETIRED` → any state, `MAINTENANCE
 | A-01 | All accounts, devices and records are synthetic. No real student or staff data is used |
 | A-02 | There is one hardware room, and every Custodian may act on every item type, unit, request and loan in it |
 | A-03 | The Custodian checks the Borrower's identity at the counter before checkout; KitHub does not verify it again |
-| A-04 | Before Sprint 3, a `PENDING` or `APPROVED` request does not reserve units. "Available" means units in `AVAILABLE` state. From Sprint 3, units reserved by approved requests are also subtracted (see Q-04) |
-| A-05 | In Sprint 1, a request has no loan length, so a loan's due date is checkout time + the item type's maximum loan length (see Q-05) |
+| A-04 | Before Sprint 3, a `PENDING` or `APPROVED` request does not reserve units. "Available" means units in `AVAILABLE` state. From Sprint 3, units reserved by approved requests are also subtracted (confirmed by D-15) |
+| A-05 | In Sprint 1, a request has no loan length, so a loan's due date is checkout time + the item type's maximum loan length (confirmed by D-16) |
 | A-06 | All times are stored with a time zone and shown in Asia/Bangkok time |
 | A-07 | Asset tags are assigned by the Custodian and are unique across all item types |
 
@@ -288,6 +289,9 @@ Invalid examples: `ON_LOAN` → `RETIRED`, `RETIRED` → any state, `MAINTENANCE
 | D-12 | Small parts are lent only as returnable kits, and a kit counts as one unit | Consumables that are not returned are out of scope | 2026-11-05 |
 | D-13 | Units are returned together by default ("return all"), and a single early return is an exception | Matches a request's single due date while allowing a damaged unit to come back early | 2026-11-05 |
 | D-14 | A Borrower with an overdue request cannot create a new request until it is fully returned | Encourages on-time returns without fines | 2026-11-05 |
+| D-15 | Approved requests reserve units only from Sprint 3, together with the 48-hour expiry (BR-13). In Sprint 2, checkout of an approved request can be rejected if another request took the last unit; this is an accepted limitation | Reserving in Sprint 2 without expiry would let an approved request hold units until its Borrower cancels it | 2026-11-06 |
+| D-16 | In Sprint 1, a loan's due date is checkout time + the item type's maximum loan length. From Sprint 2 it is checkout time + the loan length chosen in the request (BR-08) | Sprint 1 requests have no loan length, but every loan needs a due date for the Sprint 3 overdue rules | 2026-11-06 |
+| D-17 | In Sprint 1, if no unit is available when a Custodian checks out a `PENDING` request, the checkout is rejected and the request stays `PENDING`; this is an accepted limitation until Sprint 2 adds rejection and cancellation. Seed data has several units per item type so the demo does not hit this case | Sprint 1 has no `REJECTED` state or cancel action | 2026-11-06 |
 
 ## 11. Open questions
 
@@ -296,9 +300,9 @@ Invalid examples: `ON_LOAN` → `RETIRED`, `RETIRED` → any state, `MAINTENANCE
 | Q-01 | Is an 8-hour session expiry acceptable? | Sets NFR-04 and its test | Open (Proposed default: 8 hours) |
 | Q-02 | Is "submit a request within 3 clicks from the catalog" the usability target we want? | Sets NFR-10 and its check | Open (Proposed) |
 | Q-03 | Can the team measure response time with 500 units on the deployed service in Sprint 3? If not, should NFR-11 be removed? | The course asks not to state targets that cannot be measured | Open (Proposed) |
-| Q-04 | Should approved requests reserve units from Sprint 2, when approval is introduced, instead of from Sprint 3? | Without a reservation, an approved request may find no unit at checkout | Open |
-| Q-05 | In Sprint 1, is the due date checkout time + the item type's maximum loan length (A-05)? | Sprint 1 requests have no loan length, but loans need a due date for later overdue rules | Open |
-| Q-06 | In Sprint 1 there is no `REJECTED` state. What happens to a `PENDING` request when no unit is available at checkout? | Without an answer, the request stays pending with no way to close it until Sprint 2 | Open |
+| Q-04 | Should approved requests reserve units from Sprint 2, when approval is introduced, instead of from Sprint 3? | Without a reservation, an approved request may find no unit at checkout | Resolved: D-15 (keep Sprint 3, accepted limitation) |
+| Q-05 | In Sprint 1, is the due date checkout time + the item type's maximum loan length (A-05)? | Sprint 1 requests have no loan length, but loans need a due date for later overdue rules | Resolved: D-16 (yes) |
+| Q-06 | In Sprint 1 there is no `REJECTED` state. What happens to a `PENDING` request when no unit is available at checkout? | Without an answer, the request stays pending with no way to close it until Sprint 2 | Resolved: D-17 (checkout rejected, request stays `PENDING`) |
 | Q-07 | Does the 48-hour pickup window count hours when the hardware room is closed, such as weekends? | Affects BR-13 and its tests | Open; settle before the Sprint 3 contract |
 | Q-08 | Do units in `CANCELLED`, `REJECTED` or `EXPIRED` requests count toward the 5-unit limit? (Assumed: no, only active loans and open requests count) | Affects BR-14 and its tests | Open |
 | Q-09 | How is expiry triggered: checked whenever a request is read or acted on, or by a scheduled job? | Decides when FR-15 happens, how it is tested, and how the System actor is recorded | Open; settle before the Sprint 3 contract |
