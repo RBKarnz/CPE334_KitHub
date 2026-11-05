@@ -663,7 +663,7 @@ Every error response, from any endpoint, has this shape:
 | `500` | Unexpected failure | `INTERNAL_ERROR` |
 | `503` | Readiness check cannot reach the database | `NOT_READY` |
 
-When several checks fail, the order is: authentication (`401`), role (`403`), input shape (`400`), record existence and scope (`404`), then business rules (`409`).
+When several checks fail, the order is: authentication (`401`), role (`403`), input shape (`400`), record existence and scope (`404`), references inside the found record such as a checkout `lineId` (`400`, section 6.4), then business rules (`409`).
 
 ### 6.6 Planned endpoints
 
