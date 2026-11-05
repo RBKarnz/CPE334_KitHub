@@ -1,0 +1,46 @@
+# dependencies
+node_modules/
+
+# env & secrets
+.env
+*.env
+!.env.example
+# GCP credentials (use Workload Identity Federation, never commit keys)
+gha-creds-*.json
+*-sa-key.json
+service-account*.json
+
+# build output
+dist/
+build/
+
+# prisma / local databases
+server/prisma/*.db
+*.db
+*.sqlite
+
+# python (deploy scripts & tests)
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+
+# logs & OS
+*.log
+.DS_Store
+Thumbs.db
+
+# uploaded files
+server/uploads/
+
+# test results & playwright reports
+test-results/
+playwright-report/
+coverage/
+
+# editor
+.vscode/
+.idea/
+
+# Claude Code local session state
+.claude/
