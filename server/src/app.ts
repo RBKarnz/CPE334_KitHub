@@ -10,7 +10,9 @@ import { noStore, requestId, requestLogger } from "./core/middleware/request-con
 import { requireJson } from "./core/middleware/require-json.js";
 import { authRouter } from "./features/auth/auth.routes.js";
 import { catalogRouter } from "./features/catalog/catalog.routes.js";
+import { loansRouter } from "./features/loans/loans.routes.js";
 import { requestsRouter } from "./features/requests/requests.routes.js";
+import { unitsRouter } from "./features/units/units.routes.js";
 
 export type AppConfigForApp = Pick<AppConfig, "nodeEnv" | "sessionTtlHours" | "cookieSecure" | "bcryptCost">;
 
@@ -48,7 +50,8 @@ export function createApp({ config, prisma, clientDistDir = DEFAULT_CLIENT_DIST,
   api.use(authRouter(prisma, config));
   api.use(catalogRouter(prisma));
   api.use(requestsRouter(prisma));
-  // Loans and units are mounted here by F-03.
+  api.use(loansRouter(prisma));
+  api.use(unitsRouter(prisma));
   mountTestRoutes?.(api);
 
   api.use(apiNotFound);
