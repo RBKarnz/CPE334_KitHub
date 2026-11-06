@@ -8,7 +8,7 @@
 | Sprint | 1 |
 | Issue | #14 (contract), #17 (implementation) |
 | Version | 1.5 |
-| Status | Proposed (becomes Agreed when merged into `staging`, before #17 starts) |
+| Status | Agreed (PR #27 merged into `staging`); implemented in #17 (PR #31) |
 | Date | 2026-11-07 |
 | Authors | Teerakarn Noiruksa (67070501062) |
 | Baseline | [SRS v1.2](../../srs.md), [System-Level SDS v1.1](../../system-sds.md), [Feature inventory](../../features.md) section 4.1, [Sprint plan v1.2](../plan.md) |
@@ -22,7 +22,7 @@
 | 1.2 | 2026-11-06 | Teerakarn Noiruksa | STS (8): every API test signs in and out through one shared helper that sends `Content-Type: application/json` on every `POST`, including logout, so setup steps do not get `415` | Note in the PR #27 re-review |
 | 1.3 | 2026-11-06 | Teerakarn Noiruksa | `415` message in 4.1 is "Request body must be JSON (Content-Type: application/json)." | The `requireJson` middleware from #13 returns this message for every endpoint, so F-01 uses it instead of its own text (#17) |
 | 1.4 | 2026-11-06 | Teerakarn Noiruksa | After sign-in (5): the page that sent the user to `/login` is skipped when it belongs to the other role | Review of PR #31 |
-| 1.5 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | The session-lifetime row (3.2) and AC-04 (7) cite decision D-18 instead of the open question Q-01. Wording only: the behavior is unchanged (8 hours, no renewal, `SESSION_TTL_HOURS` default 8) and no AC or TEST changes | Q-01 resolved as D-18 in SRS v1.3 (#36) |
+| 1.5 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | The session-lifetime row (3.2) and AC-04 (7) cite decision D-18 instead of the open question Q-01. Status (1) reads "Agreed (PR #27 merged into `staging`); implemented in #17 (PR #31)" instead of "Proposed". Wording only: the behavior is unchanged (8 hours, no renewal, `SESSION_TTL_HOURS` default 8) and no AC or TEST changes | Q-01 resolved as D-18 in SRS v1.3 (#36); the contract was merged and implemented (PR #37 review) |
 
 A change after this version is merged gets a new row here, and an AC or TEST change is also recorded in `docs/traceability.md` section 5.
 

@@ -18,7 +18,7 @@
 | 1.0 | 2026-11-06 | Teerakarn Noiruksa | First baseline for the whole product (Sprints 1 to 3) |
 | 1.1 | 2026-11-06 | Teerakarn Noiruksa | Review of PR #10: added FR-30, BR-17, NFR-12, permissions table and Q-09; history covers edits and system actions; clarified availability before Sprint 3; fixed rule links and examples |
 | 1.2 | 2026-11-06 | Teerakarn Noiruksa | Resolved Q-04, Q-05 and Q-06 as decisions D-15, D-16 and D-17; A-04 and A-05 now point to them |
-| 1.3 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | Resolved Q-01, Q-02 and Q-08 as D-18, D-19 and D-20; NFR-04, NFR-10 and BR-14 now point to them |
+| 1.3 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | Resolved Q-01, Q-02 and Q-08 as D-18, D-19 and D-20; NFR-04, NFR-10 and BR-14 now point to them; Q-03 status reads "Open; settle before the Sprint 3 measurement (SR-03)" |
 
 ## 2. Introduction
 
@@ -191,7 +191,7 @@ FRs are grouped by feature area. "Related BR" lists the rules the FR must enforc
 | BR-11 | Units are normally returned together with a condition per unit that defaults to good. A single unit may be returned early as an exception. A unit returned damaged goes to `MAINTENANCE` and cannot be checked out until it is set back to `AVAILABLE` | A Custodian records a unit's return as damaged but asks to set the unit to `AVAILABLE`. The return is rejected; a damaged unit can only go to `MAINTENANCE` | 2 |
 | BR-12 | A unit on loan cannot be retired, and a retired unit cannot be checked out | A Custodian retires a unit that is `ON_LOAN`. The action is rejected and the unit stays `ON_LOAN` | 2 |
 | BR-13 | An approved request reserves its quantities. If it is not checked out within 48 hours of approval, it becomes `EXPIRED` and the reservation is released | A Custodian checks out a request that expired. The checkout is rejected | 3 |
-| BR-14 | A Borrower may hold at most 5 units in total across active loans and open requests. A kit counts as one unit. A Borrower under the limit may request at any time without returning earlier loans. Only active loans and open requests count (D-20) | A Borrower with 4 units on loan creates a request for 2 more units. The request is rejected | 3 |
+| BR-14 | A Borrower may hold at most 5 units in total across active loans and open requests. A kit counts as one unit. A Borrower under the limit may request at any time without returning earlier loans. Units of `CANCELLED`, `REJECTED`, `EXPIRED` and `RETURNED` requests do not count (D-20) | A Borrower with 4 units on loan creates a request for 2 more units. The request is rejected | 3 |
 | BR-15 | A Borrower with an overdue request cannot create a new request until every unit of that request is returned | A Borrower with one unit overdue creates a new request. The request is rejected | 3 |
 | BR-16 | Every state change of a request, unit or loan, and every edit of a request, is recorded with its actor and the time. The actor is the signed-in user who acted, or the System actor for automatic changes such as expiry. History entries are never edited or deleted | No operation exists to edit or delete a history entry, and the data layer rejects any update or delete of one | 1 |
 | BR-17 | Only Borrowers create, edit or cancel requests. A Custodian cannot create, edit or cancel a request, for themselves or for a Borrower | A Custodian submits a new request or cancels a Borrower's request. The action is rejected and nothing changes | 1 |
