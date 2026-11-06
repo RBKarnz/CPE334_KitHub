@@ -22,7 +22,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | F-01 | Sign-in, sign-out, current user and roles | Sign in with a seeded account, sign out, show the current user and role; session lifecycle, password hashing and the server-side role check that later features reuse | FR-01, FR-02, FR-03 | BR-05, BR-17 | NFR-01, NFR-02, NFR-03, NFR-04 | SR-01 | 1 |
 | F-02 | Browse catalog and borrow request | Browse categories and item types with availability; a Borrower requests one unit of one item type and sees their own requests | FR-04, FR-07, FR-08 | BR-01, BR-04, BR-05, BR-16, BR-17 | NFR-02, NFR-09, NFR-12 | F-01 | 1 |
-| F-03 | Checkout and active loan | A Custodian views pending requests and checks out a chosen available unit, creating an active loan | FR-09, FR-16 | BR-02, BR-03, BR-16 | NFR-02, NFR-05, NFR-09 | F-01, F-02 | 1 |
+| F-03 | Checkout and active loan | A Custodian views pending requests and checks out a chosen available unit, creating an active loan | FR-09, FR-16 | BR-02, BR-03, BR-16 | NFR-02, NFR-05, NFR-09, NFR-12 | F-01, F-02 | 1 |
 | F-04 | Multi-line requests and item type detail | Item type details with limits and availability; requests with several lines and one loan length, capped by the smallest maximum among their item types | FR-05, FR-10 | BR-01, BR-04, BR-06, BR-07, BR-08, BR-17 | NFR-10 | F-02 | 2 |
 | F-05 | Edit and cancel requests | A Borrower edits a pending request and cancels a pending or approved request | FR-11, FR-12 | BR-01, BR-04, BR-07, BR-08, BR-10, BR-16, BR-17 | NFR-09 | F-04 | 2 |
 | F-06 | Approve and reject requests; all-requests view | A Custodian lists and filters all requests, and approves or rejects a whole request with a reason | FR-13, FR-14, FR-30 | BR-09, BR-16 | NFR-02, NFR-09 | F-02 | 2 |
@@ -41,8 +41,8 @@
 
 | ID | Responsibility | Requirements | Issues | Sprint |
 | --- | --- | --- | --- | --- |
-| SR-01 | Platform foundation: project skeleton, configuration, JSON error handling, health and readiness, migrations and seed | NFR-06, NFR-07, NFR-08 | #13 | 1 |
-| SR-02 | Delivery: Docker image, CI on PRs, deployment to GCP, persistence across redeploys | NFR-06 (redeploy), NFR-07 (Secret Manager) | #1 to #9 (Lab 5) | 2 (by 15 Nov) |
+| SR-01 | Platform foundation: project skeleton, configuration, JSON error handling, health and readiness, migrations and seed (SDS sections 4.8, 6.5, 6.7, 9.1) | NFR-06, NFR-07, NFR-08 | #13 | 1 |
+| SR-02 | Delivery: Docker image, CI on PRs, deployment to GCP, persistence across redeploys (SDS sections 9.5 to 9.7) | NFR-06 (redeploy), NFR-07 (Secret Manager) | #1 to #9 (Lab 5) | 2 (by 15 Nov) |
 | SR-03 | Hardening: performance measurement, permission and error regression suite, UAT and maintenance defects | NFR-11; re-verifies NFR-01, NFR-02, NFR-08 | Created in Sprint 3 | 3 |
 
 ### 3.2 Cross-cutting rules

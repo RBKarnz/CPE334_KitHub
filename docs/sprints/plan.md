@@ -6,7 +6,7 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part D |
-| Version | 1.1 |
+| Version | 1.2 |
 | Date | 2026-11-06 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Baseline | [SRS v1.2](../srs.md), [System-Level SDS v1.1](../system-sds.md) |
@@ -17,6 +17,7 @@
 | --- | --- | --- | --- |
 | 1.0 | 2026-11-06 | Methipat Mansap | First plan for Sprints 1 to 3 |
 | 1.1 | 2026-11-06 | Methipat Mansap | Review of PR #25: baseline link updated to SDS v1.1 |
+| 1.2 | 2026-11-06 | Teerakarn Noiruksa | Review of PR #26: F-03 also verifies NFR-12 (pending requests list states, AC-25) |
 
 ## 2. Overview
 
@@ -47,7 +48,7 @@ Feature IDs are stable. [`docs/features.md`](../features.md) (Part B, #11) descr
 | --- | --- | --- | --- | --- | --- | --- |
 | F-01 | Sign-in, sign-out, current user and roles | FR-01, FR-02, FR-03 | BR-05, BR-17 | NFR-01, NFR-02, NFR-03, NFR-04 | SR-01 | 1 |
 | F-02 | Browse catalog and borrow request | FR-04, FR-07, FR-08 | BR-01, BR-04, BR-05, BR-16, BR-17 | NFR-02, NFR-09, NFR-12 | F-01 | 1 |
-| F-03 | Checkout and active loan | FR-09, FR-16 | BR-02, BR-03, BR-16 | NFR-02, NFR-05, NFR-09 | F-01, F-02 | 1 |
+| F-03 | Checkout and active loan | FR-09, FR-16 | BR-02, BR-03, BR-16 | NFR-02, NFR-05, NFR-09, NFR-12 | F-01, F-02 | 1 |
 | F-04 | Multi-line requests and item type detail | FR-05, FR-10 | BR-01, BR-04, BR-06, BR-07, BR-08, BR-17 | NFR-10 | F-02 | 2 |
 | F-05 | Edit and cancel requests | FR-11, FR-12 | BR-01, BR-04, BR-07, BR-08, BR-10, BR-16, BR-17 | NFR-09 | F-04 | 2 |
 | F-06 | Approve and reject requests; all-requests view | FR-13, FR-14, FR-30 | BR-09, BR-16 | NFR-02, NFR-09 | F-02 | 2 |
