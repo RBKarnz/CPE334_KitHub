@@ -214,7 +214,7 @@ The Custodian-only endpoints named in AC-06 are built in F-03 (#19), after F-01 
 
 ## 9. Definition of Done
 
-The product-level Definition of Done for Sprint 1 is `docs/sprints/sprint-1/definition-of-done.md`, added by contract F-03 (#28); it applies to F-01 as well. Whichever of #27 and #28 merges second turns that path into a link. The items below are what F-01 must show for it.
+The product-level Definition of Done for Sprint 1 is [Product Definition of Done](definition-of-done.md), added by contract F-03 (#28); it applies to F-01 as well. Whichever of #27 and #28 merges second turns that path into a link. The items below are what F-01 must show for it.
 
 F-01 is done when all of the following are true and recorded in the PR for #17:
 
