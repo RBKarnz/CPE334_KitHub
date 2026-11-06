@@ -6,7 +6,7 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part C |
-| Version | 1.3 |
+| Version | 1.4 |
 | Date | 2026-11-07 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Baseline | [SRS v1.3](srs.md) |
@@ -20,6 +20,7 @@
 | 1.1 | 2026-11-06 | Methipat Mansap | Review of PR #25: a wrong sign-in, or a first visit with no session, no longer shows "session has ended" (5.3); checkout checks that each `lineId` belongs to the request (4.7, 6.4); sign-in deletes every expired session (8.2, 8.3); note on the CI trigger for `staging` (9.6) |
 | 1.2 | 2026-11-06 | Methipat Mansap | Issue #34 (SR-04): "Visual style" row in 5.3; `PageHeader`, `MessagePage`, `Logo` and `styles/` in the code layout (3.6). No behavior or API change |
 | 1.3 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | Issue #36: baseline SRS v1.3. Session lifetime (8.3) and `SESSION_TTL_HOURS` (9.1) cite D-18; the BR-14 query (4.5) cites D-20; Q-01 and Q-08 marked resolved in section 13. No behavior, API or schema change |
+| 1.4 | 2026-11-07 | Methipat Mansap | Issue #38 (SR-04 defect fix): "Visual style" in 5.3 moves the narrow layout from below 576 px to below 768 px and adds the horizontal-scroll safety net around the Pending requests table. No behavior or API change |
 
 ## 2. Introduction
 
@@ -588,7 +589,7 @@ Search and filter (FR-06) are added to the Catalog screen in Sprint 3.
 | Confirmation | Checkout, cancel, reject and retire ask for confirmation in a dialog that names the request or unit |
 | States and times | States are shown as a badge with the state's text, never by color alone. Times use the format "6 Nov 2026, 14:30" in Asia/Bangkok time |
 | Accessibility | Every input has a label; dialogs can be used and closed with the keyboard |
-| Visual style | "Anti-static" (SR-04, #34), chosen by the team from image mockups. Bootstrap 5 stays the base; `client/src/styles/theme.css` sets its CSS variables and adds `kh-*` classes: charcoal `#23262e` text and navigation bar, silver `#e9ebee` page, white panels, pink anti-static foam `#f2a7c3` as the one texture (under the navigation bar, behind the sign-in card and the units in the checkout dialog), and `#c2255c` for primary buttons and selection. One self-hosted font, Chakra Petch (`@fontsource/chakra-petch`), and `bootstrap-icons`, both from npm and bundled by Vite: no runtime CDN. The logo and favicon are original SVGs. Text meets WCAG AA contrast (lowest pair 4.6:1); icons are decorative (`aria-hidden`) and never replace text. Buttons have clipped corners, so their focus ring is drawn inside the button. Below 576 px the navigation bar uses two rows and the Pending requests table shows each row as a card, with the column name before each value |
+| Visual style | "Anti-static" (SR-04, #34), chosen by the team from image mockups. Bootstrap 5 stays the base; `client/src/styles/theme.css` sets its CSS variables and adds `kh-*` classes: charcoal `#23262e` text and navigation bar, silver `#e9ebee` page, white panels, pink anti-static foam `#f2a7c3` as the one texture (under the navigation bar, behind the sign-in card and the units in the checkout dialog), and `#c2255c` for primary buttons and selection. One self-hosted font, Chakra Petch (`@fontsource/chakra-petch`), and `bootstrap-icons`, both from npm and bundled by Vite: no runtime CDN. The logo and favicon are original SVGs. Text meets WCAG AA contrast (lowest pair 4.6:1); icons are decorative (`aria-hidden`) and never replace text. Buttons have clipped corners, so their focus ring is drawn inside the button. Below 768 px (Bootstrap's `md` breakpoint; from 576 to 767 px `.container` is only 540 px wide, #38) the navigation bar uses two rows, the Catalog and My requests rows wrap, and the Pending requests table shows each row as a card, with the column name before each value. The table sits in a `.table-responsive` scroller inside its panel, so if it is ever wider than the panel it scrolls sideways inside the panel; the panel's clipped corner never cuts off a column and the page itself never scrolls sideways. Checked at every width from 320 to 1440 px |
 
 One shared `AsyncState` component renders the loading, empty and error states, so every list behaves the same way. The UI's API client decides what to do from `error.code`, not from the HTTP status alone (DD-10).
 

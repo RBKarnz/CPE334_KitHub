@@ -36,56 +36,60 @@ export function PendingRequestsPage() {
         isEmpty={items.length === 0}
         empty="No pending requests."
       >
-        {/* Below 576 px each row shows as a card (theme.css); data-label names the column there.
-            The explicit roles keep the table semantics that some browsers drop with display: block. */}
+        {/* Below 768 px each row shows as a card (theme.css); data-label names the column there.
+            The explicit roles keep the table semantics that some browsers drop with display: block.
+            .table-responsive is a safety net: if the table is ever wider than the panel, the panel
+            scrolls sideways instead of clipping columns (issue #38). */}
         <div className="kh-panel">
-          <table className="table align-middle kh-table kh-table-cards" role="table">
-            <thead role="rowgroup">
-              <tr role="row">
-                <th scope="col" role="columnheader">Request</th>
-                <th scope="col" role="columnheader">Borrower</th>
-                <th scope="col" role="columnheader">Item type</th>
-                <th scope="col" role="columnheader">Quantity</th>
-                <th scope="col" role="columnheader">Created</th>
-                <th scope="col" role="columnheader">Action</th>
-              </tr>
-            </thead>
-            <tbody role="rowgroup">
-              {items.map((request) => {
-                // Every Sprint 1 request has exactly one line (BR-01).
-                const line = request.lines[0];
-                return (
-                  <tr key={request.id} role="row">
-                    <td role="cell">
-                      <Link className="fw-bold" to={`/requests/${request.id}`}>
-                        #{request.id}
-                      </Link>
-                    </td>
-                    <td role="cell" data-label="Borrower">
-                      {request.borrower.displayName} <span className="text-body-secondary">({request.borrower.username})</span>
-                    </td>
-                    <td role="cell" data-label="Item type" className="fw-semibold">
-                      {line?.itemType.name}
-                    </td>
-                    <td role="cell" data-label="Quantity">{line?.quantity}</td>
-                    <td role="cell" data-label="Created">{formatDateTime(request.createdAt)}</td>
-                    <td role="cell">
-                      <button
-                        type="button"
-                        className="btn btn-primary btn-sm px-3"
-                        onClick={() => {
-                          setNotice(null);
-                          setActive(request);
-                        }}
-                      >
-                        Check out<span className="visually-hidden"> Request #{request.id}</span>
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="table-responsive">
+            <table className="table align-middle kh-table kh-table-cards" role="table">
+              <thead role="rowgroup">
+                <tr role="row">
+                  <th scope="col" role="columnheader">Request</th>
+                  <th scope="col" role="columnheader">Borrower</th>
+                  <th scope="col" role="columnheader">Item type</th>
+                  <th scope="col" role="columnheader">Quantity</th>
+                  <th scope="col" role="columnheader">Created</th>
+                  <th scope="col" role="columnheader">Action</th>
+                </tr>
+              </thead>
+              <tbody role="rowgroup">
+                {items.map((request) => {
+                  // Every Sprint 1 request has exactly one line (BR-01).
+                  const line = request.lines[0];
+                  return (
+                    <tr key={request.id} role="row">
+                      <td role="cell">
+                        <Link className="fw-bold" to={`/requests/${request.id}`}>
+                          #{request.id}
+                        </Link>
+                      </td>
+                      <td role="cell" data-label="Borrower">
+                        {request.borrower.displayName} <span className="text-body-secondary">({request.borrower.username})</span>
+                      </td>
+                      <td role="cell" data-label="Item type" className="fw-semibold">
+                        {line?.itemType.name}
+                      </td>
+                      <td role="cell" data-label="Quantity">{line?.quantity}</td>
+                      <td role="cell" data-label="Created">{formatDateTime(request.createdAt)}</td>
+                      <td role="cell">
+                        <button
+                          type="button"
+                          className="btn btn-primary btn-sm px-3"
+                          onClick={() => {
+                            setNotice(null);
+                            setActive(request);
+                          }}
+                        >
+                          Check out<span className="visually-hidden"> Request #{request.id}</span>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </AsyncState>
       {active && (

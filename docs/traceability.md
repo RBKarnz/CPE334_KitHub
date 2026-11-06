@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.7 |
+| Version | 1.8 |
 | Date | 2026-11-07 |
 | Source requirements | `docs/srs.md` v1.3 |
-| Features and AC/TEST definitions | `docs/features.md` v1.5 |
+| Features and AC/TEST definitions | `docs/features.md` v1.6 |
 | Feature and SR IDs | Same as `docs/sprints/plan.md` section 3 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 
@@ -121,3 +121,4 @@ None. Notes on three rows:
 | 2026-11-06 | FR-09, BR-02, BR-03, BR-16, NFR-01, NFR-05, NFR-09 and NFR-12 move to Verified: all their tests pass on `1891aa0` (server 160 passed, client 39 passed, 0 skipped). FR-08, FR-16 and NFR-02 stay Specified, with the F-03 part noted, because they also depend on the E2E tests TEST-30 and TEST-32 (#20). AC-to-test results are in `docs/features.md` 4.3.1 | F-03 implemented (#19); contract F-03 section 9, DoD item 6 | PR #33 |
 | 2026-11-06 | SR-04 UI polish added to Sprint 1 (`docs/sprints/plan.md` v1.3, `docs/features.md` v1.4): one shared visual style for every Sprint 1 screen, recorded as "Visual style" in SDS 5.3 (v1.2). No requirement, AC, test or status changes: no routes, API calls, guards, server code or contract-specified text change, and all 39 client and 160 server tests pass without editing an assertion. The manual test guide was re-run and its screenshots replaced | The plain Bootstrap look would carry into the Deliverable 1 screenshots, the Lab 6 UAT and the demo video; the team chose the design from image mockups first | #34, PR #35 |
 | 2026-11-07 | Resolved Q-01, Q-02 and Q-08 as D-18 to D-20; no requirement added or removed; no AC behavior changed. NFR-04, NFR-10 and BR-14 cite the decisions; AC-04 cites D-18 (`docs/features.md` v1.5, F-01 contract v1.5); SDS v1.3 and plan v1.4 follow. F-01 (v1.5) and F-02 (v1.2) contract status lines read "Agreed", as F-03 does. Manual test guide: no-borrowing-limit limitation, loan lengths per D-08, requests named by item type and Borrower, MT-14 example. No row in this document changes status | Team decision; PR #37 review | #36, PR #37, SRS v1.3 |
+| 2026-11-07 | SR-04 defect fix: the narrow layout (two-row navigation bar, Pending requests rows as cards) now applies below 768 px instead of 576 px, and the Pending requests table scrolls inside its panel if it is ever wider than the panel. SR-04 in `docs/sprints/plan.md` v1.5 and `docs/features.md` v1.6 covers every width from 320 to 1440 px; SDS 5.3 "Visual style" updated (v1.4). CSS and markup in `client/` only: no requirement, AC, test or status changes, no server or contract text change, and all 39 client tests pass without editing an assertion. The 1280 px look is unchanged, so the manual test guide screenshots stay | Defect found after PR #35: from 576 to 764 px the Pending requests table was wider than its panel and the panel's clipped corner hid the Action column, so **Check out** could not be clicked (F-03, FR-16); from 576 to 636 px **Sign out** sat past the right edge of the navigation bar (F-01, FR-02) | #38, PR #39 |
