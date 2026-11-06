@@ -7,6 +7,7 @@ import { createRequest } from "../api/requests";
 import { useLoad } from "../api/useLoad";
 import { useAuth } from "../auth/AuthProvider";
 import { AsyncState } from "../components/AsyncState";
+import { PageHeader } from "../components/PageHeader";
 
 type Outcome = { kind: "success"; requestId: number } | { kind: "error"; message: string };
 
@@ -43,8 +44,8 @@ export function CatalogPage() {
 
   const categories = catalog.data ?? [];
   return (
-    <main className="container">
-      <h1 className="h3 mb-3">Catalog</h1>
+    <main className="container kh-main">
+      <PageHeader>Catalog</PageHeader>
       {outcome?.kind === "success" && (
         <div className="alert alert-success" role="status">
           Request #{outcome.requestId} submitted. <Link to="/requests">See My requests</Link>
@@ -63,29 +64,29 @@ export function CatalogPage() {
         empty="The catalog is empty."
       >
         {categories.map((category) => (
-          <section key={category.id} className="mb-4" aria-labelledby={`category-${category.id}`}>
-            <h2 id={`category-${category.id}`} className="h5">
+          <section key={category.id} className="kh-category" aria-labelledby={`category-${category.id}`}>
+            <h2 id={`category-${category.id}`} className="kh-section-title">
               {category.name}
             </h2>
             {category.itemTypes.length === 0 ? (
-              <p className="text-body-secondary">No item types in this category yet.</p>
+              <p className="kh-panel kh-empty text-body-secondary mb-0">No item types in this category yet.</p>
             ) : (
-              <ul className="list-group">
+              <ul className="kh-panel kh-rows">
                 {category.itemTypes.map((itemType) => {
                   const none = itemType.availableCount === 0;
                   return (
-                    <li key={itemType.id} className="list-group-item d-flex align-items-center gap-3">
-                      <span className="flex-grow-1">
+                    <li key={itemType.id} className="kh-row kh-catalog-row">
+                      <span className="kh-item-name">
                         {itemType.name}
-                        {itemType.isKit && <span className="badge text-bg-light border ms-2">Kit</span>}
+                        {itemType.isKit && <span className="badge kh-kit ms-2">Kit</span>}
                       </span>
-                      <span className={none ? "text-body-secondary" : ""}>
+                      <span className={`kh-available${none ? " text-body-secondary" : ""}`}>
                         {none ? "None available" : `${itemType.availableCount} available`}
                       </span>
                       {isBorrower && (
                         <button
                           type="button"
-                          className="btn btn-primary btn-sm"
+                          className="btn btn-primary btn-sm px-3"
                           aria-label={`Request ${itemType.name}`}
                           disabled={none || submittingId !== null}
                           onClick={() => handleRequest(itemType.id)}

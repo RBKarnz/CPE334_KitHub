@@ -5,6 +5,7 @@ import { fetchRequest } from "../api/requests";
 import { useLoad } from "../api/useLoad";
 import { useAuth } from "../auth/AuthProvider";
 import { AsyncState } from "../components/AsyncState";
+import { PageHeader } from "../components/PageHeader";
 import { StatusBadge } from "../components/StatusBadge";
 import { formatDateTime } from "../format";
 import { NotFoundPage } from "./NotFoundPage";
@@ -29,15 +30,18 @@ export function RequestDetailPage() {
   if (!valid) return <NotFoundPage />;
   if (detail.error?.status === 404)
     return (
-      <main className="container">
-        <h1 className="h3">Request not found.</h1>
-        <Link to={back.to}>{back.label}</Link>
+      <main className="container kh-main">
+        <div className="kh-panel kh-message">
+          <i className="bi bi-search" aria-hidden="true" />
+          <h1 className="h3 mt-2">Request not found.</h1>
+          <Link to={back.to}>{back.label}</Link>
+        </div>
       </main>
     );
 
   const r = detail.data;
   return (
-    <main className="container">
+    <main className="container kh-main">
       <AsyncState
         loading={detail.loading && !r}
         error={detail.error}
@@ -47,19 +51,21 @@ export function RequestDetailPage() {
       >
         {r && (
           <>
-            <h1 className="h3 d-flex align-items-center gap-2">
+            <PageHeader>
               Request #{r.id} <StatusBadge status={r.status} />
-            </h1>
-            <p className="text-body-secondary">Created {formatDateTime(r.createdAt)}</p>
-            {r.dueAt && <p>Due {formatDateTime(r.dueAt)}</p>}
-            <ul className="list-group">
+            </PageHeader>
+            <p className="kh-meta">Created {formatDateTime(r.createdAt)}</p>
+            {r.dueAt && <p className="kh-due">Due {formatDateTime(r.dueAt)}</p>}
+            <ul className="kh-panel kh-rows">
               {r.lines.map((line) => (
-                <li key={line.id} className="list-group-item">
-                  {line.itemType.name} × {line.quantity}
+                <li key={line.id} className="kh-row d-block">
+                  <span className="fw-semibold">
+                    {line.itemType.name} × {line.quantity}
+                  </span>
                   {/* After checkout: the unit's asset tag and the checkout time (contract F-03 4.4). */}
                   {line.loans.map((loan) => (
-                    <div key={loan.id} className="small text-body-secondary">
-                      Unit <span className="font-monospace">{loan.unit.assetTag}</span> ·{" "}
+                    <div key={loan.id} className="small text-body-secondary mt-1">
+                      Unit <span className="kh-tag text-body">{loan.unit.assetTag}</span> ·{" "}
                       <span>Checked out {formatDateTime(loan.checkedOutAt)}</span>
                     </div>
                   ))}
