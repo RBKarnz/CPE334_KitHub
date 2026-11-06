@@ -1,0 +1,220 @@
+# KitHub: Engineering Contract F-01, Sign-in, sign-out, current user and roles
+
+## 1. Document info
+
+| Field | Value |
+| --- | --- |
+| Feature | F-01 Sign-in, sign-out, current user and roles |
+| Sprint | 1 |
+| Issue | #14 (contract), #17 (implementation) |
+| Version | 1.0 |
+| Status | Proposed (becomes Agreed when merged into `staging`, before #17 starts) |
+| Date | 2026-11-06 |
+| Authors | Teerakarn Noiruksa (67070501062) |
+| Baseline | [SRS v1.2](../../srs.md), [System-Level SDS v1.1](../../system-sds.md), [Feature inventory](../../features.md) section 4.1, [Sprint plan v1.2](../plan.md) |
+
+### Version history
+
+| Version | Date | Author | Change | Reason |
+| --- | --- | --- | --- | --- |
+| 1.0 | 2026-11-06 | Teerakarn Noiruksa | First contract | Part E: contract before implementation |
+
+A change after this version is merged gets a new row here, and an AC or TEST change is also recorded in `docs/traceability.md` section 5.
+
+## 2. Scope
+
+### 2.1 Linked requirements
+
+| Type | IDs | What F-01 does for them |
+| --- | --- | --- |
+| FR | FR-01, FR-02, FR-03 | Sign in with a seeded account, sign out, show the signed-in user's display name and role |
+| BR | BR-05, BR-17 | Provides `req.user` from the session, which every later feature uses as owner and actor (BR-05), and `requireRole`, which later features use to keep Custodians from creating, editing or cancelling requests (BR-17). The rules themselves are tested in F-02 (AC-12, AC-14, AC-15) |
+| NFR | NFR-01, NFR-02, NFR-03, NFR-04 | Rejects calls without a valid session, rejects the wrong role, stores bcrypt hashes, ends sessions at sign-out and after 8 hours |
+
+### 2.2 In scope
+
+- `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
+- The `authenticate` and `requireRole` middleware used by every later endpoint (SDS 7.2)
+- Session creation, lookup, expiry and deletion (SDS 8.3)
+- Sign-in screen, navigation bar with the user and a sign-out button, route guards, Forbidden page
+- Password hashing used by the seed (#13) and by sign-in
+
+### 2.3 Out of scope
+
+- Self-registration, password change and recovery (D-03, SRS 4.2)
+- Limiting repeated sign-in attempts (SDS 8.6, a Sprint 3 hardening candidate)
+- The seed itself: accounts and passwords come from #13 (SDS 4.8)
+
+### 2.4 Dependencies
+
+| Depends on | What is needed |
+| --- | --- |
+| #13 skeleton (SR-01) | Express app, config reader, JSON error handler, Prisma client, `users` and `sessions` tables, seeded accounts |
+| SDS v1.1 | Sections 5.2, 5.3, 6, 7 and 8 |
+
+Later features depend on F-01 for `authenticate`, `requireRole` and `req.user`.
+
+## 3. Behavior
+
+### 3.1 Sign-in workflow
+
+```mermaid
+sequenceDiagram
+  actor U as User
+  participant UI
+  participant API
+  participant DB as PostgreSQL
+  U->>UI: Enter username and password, press Sign in
+  UI->>API: POST /api/auth/login { username, password }
+  API->>API: Validate body (400 VALIDATION_FAILED)
+  API->>DB: Find user by lowercase username
+  API->>API: bcrypt.compare (dummy hash if no user)
+  alt Wrong username or password
+    API-->>UI: 401 INVALID_CREDENTIALS
+    UI-->>U: Message under the form, username kept, password cleared
+  else Correct
+    API->>DB: Delete expired sessions and the caller's old session
+    API->>DB: Insert session (SHA-256 of token, userId, expiresAt)
+    API-->>UI: 200 { user } + Set-Cookie kithub_session
+    UI-->>U: Go to the role's landing page or the page they came from
+  end
+```
+
+### 3.2 Rules
+
+| Case | Behavior | Source |
+| --- | --- | --- |
+| Username case | Compared in lowercase. `Borrower1` signs in as `borrower1` | SDS 4.2 |
+| Unknown username or wrong password | Same `401 INVALID_CREDENTIALS` and message "Username or password is incorrect."; `bcrypt.compare` runs in both cases so the time is similar | FR-01, SDS 8.2 |
+| Password longer than 72 bytes | Accepted by validation, compared normally, and fails because no seeded password is that long (the seed rejects them) | SDS 8.1 |
+| Signing in while already signed in | The old session in the cookie is deleted and a new one is created | SDS 8.2 |
+| Session lifetime | Absolute `SESSION_TTL_HOURS` (default 8) from sign-in; no renewal | NFR-04, Q-01 |
+| Expired session | Rejected as `401 UNAUTHENTICATED` at once; the row is deleted at the next sign-in by any user | SDS 8.3 |
+| Sign-out | Deletes the session row and clears the cookie; `204` even with no session or an expired one | FR-02, SDS 8.5 |
+| Several browsers | Each sign-in has its own session; signing out in one does not end the others | SDS 8.3 |
+| Role | Read from `users` on every call, never from the cookie or the client | SDS 7.2 |
+
+### 3.3 Middleware for later features
+
+| Middleware | Where | Behavior |
+| --- | --- | --- |
+| `authenticate` | All `/api` routes except `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/health`, `GET /api/ready` | Reads `kithub_session`, hashes it, loads the session with `expiresAt > now()` and its user, sets `req.user = { id, role }`. Otherwise `401 UNAUTHENTICATED` |
+| `requireRole(...roles)` | On each protected route | `403 FORBIDDEN` if `req.user.role` is not listed. Runs before validation and before any record is read (SDS 6.5 order) |
+
+`POST /api/auth/logout` runs without `authenticate`, so it reads the cookie itself.
+
+## 4. API
+
+All bodies are JSON. `POST` without `Content-Type: application/json` returns `415 UNSUPPORTED_MEDIA_TYPE`. Every response has `Cache-Control: no-store`. Errors use the shape in SDS 6.5.
+
+### 4.1 `POST /api/auth/login`
+
+| Item | Value |
+| --- | --- |
+| Who | Anyone |
+| Body | `{ "username": string, "password": string }`. Strict: both required, no other fields. `username` 1 to 64 characters after trimming; `password` 1 to 256 characters |
+| Success | `200 { "user": { "id", "username", "displayName", "role" } }` and `Set-Cookie: kithub_session=<token>; HttpOnly; SameSite=Lax; Path=/; Max-Age=<SESSION_TTL_HOURS × 3600>` (`Secure` when `COOKIE_SECURE`) |
+
+```json
+{ "user": { "id": 3, "username": "borrower1", "displayName": "Borrower One", "role": "BORROWER" } }
+```
+
+| Error | Status and code | Message |
+| --- | --- | --- |
+| Missing, empty, too long or unknown field; malformed JSON | `400 VALIDATION_FAILED`, one `details` entry per field | "The request is not valid." |
+| Unknown username or wrong password | `401 INVALID_CREDENTIALS` | "Username or password is incorrect." |
+| Not JSON | `415 UNSUPPORTED_MEDIA_TYPE` | "Send the request body as JSON." |
+
+The request body of this route is never logged (SDS 8.1).
+
+### 4.2 `POST /api/auth/logout`
+
+| Item | Value |
+| --- | --- |
+| Who | Anyone |
+| Body | None |
+| Success | `204`, no body, and `Set-Cookie: kithub_session=; Max-Age=0; Path=/` |
+| Errors | None for a missing, unknown or expired session; it is still `204` |
+
+### 4.3 `GET /api/auth/me`
+
+| Item | Value |
+| --- | --- |
+| Who | Signed in (either role) |
+| Success | `200 { "user": { "id", "username", "displayName", "role" } }` |
+| Error | `401 UNAUTHENTICATED`, "You are not signed in." |
+
+`passwordHash` and session fields never appear in any response (SDS 6.3).
+
+## 5. UI
+
+| Element | Behavior |
+| --- | --- |
+| Sign-in page `/login` | Labelled Username and Password fields and a Sign in button. No pre-filled values and no user picker (SDS 8.6). Empty fields show "Enter your username." or "Enter your password." under the field without calling the API. While the call runs the button is disabled with a spinner |
+| Wrong sign-in | The form stays open, keeps the username, clears the password and shows "Username or password is incorrect." (SDS 5.3) |
+| After sign-in | Borrower goes to `/catalog`, Custodian to `/pending`, or to the page that sent them to `/login` (SDS 5.2) |
+| App load | Shows "Loading…" while `GET /api/auth/me` runs, so the sign-in page does not flash. `401` on a first visit opens `/login` with no message |
+| Navigation bar | KitHub name, the role's links, display name with a role badge ("Borrower" or "Custodian") (FR-03), Sign out button |
+| Sign out | Calls `POST /api/auth/logout`, clears the current user and opens `/login` with no message |
+| Session ended | A `401 UNAUTHENTICATED` from any call after sign-in clears the user and opens `/login` with "Your session has ended. Please sign in again." (SDS 5.3) |
+| Route guards | `RequireAuth` sends a signed-out user to `/login`. `RequireRole` shows the Forbidden page ("You do not have permission to do this.") for the other role's routes. These are convenience only; the API enforces access |
+
+The pages that the role links open (Catalog, My requests, Pending requests) come from F-02 and F-03. Until they exist, the links open a placeholder page.
+
+## 6. Data
+
+| Layer | Change |
+| --- | --- |
+| `users` | Fields as in SDS 4.2: `id`, `username` (unique, lowercase), `displayName`, `role` (`BORROWER` or `CUSTODIAN`), `passwordHash` (bcrypt). Created by the first migration in #13. F-01 adds no field |
+| `sessions` | `id` (SHA-256 hex of the token, PK), `userId` (FK, cascade, indexed), `expiresAt` (indexed). Created in #13. F-01 adds no field |
+| Migration | None in #17 if #13's first migration has both tables as above. If #13 leaves out `sessions`, #17 adds it in an additive migration (DD-14) and records it here |
+| Seed | No change; #13 seeds `custodian1`, `custodian2` and, with `SEED_DEMO_DATA=true`, `borrower1`, `borrower2` |
+| Configuration | Uses `SESSION_TTL_HOURS`, `COOKIE_SECURE`, `BCRYPT_COST` (SDS 9.1). No new variable |
+
+## 7. Acceptance criteria
+
+Adopted from `docs/features.md` section 4.1 without change.
+
+| AC | Expected outcome | Requirements |
+| --- | --- | --- |
+| AC-01 | A seeded user signs in with a valid username and password; a session starts and the current-user call returns their display name and role | FR-01, FR-03 |
+| AC-02 | Sign-in with an unknown username or a wrong password is rejected with the same generic message, and no session starts | FR-01 |
+| AC-03 | After sign-out, a request that reuses the old session is treated as not signed in | FR-02, NFR-04 |
+| AC-04 | A new session expires 8 hours after sign-in (Proposed, Q-01), and a request that carries a session whose expiry has passed is rejected as not signed in and returns no data. The test stores a session with its expiry in the past, so no clock control is needed | NFR-04 |
+| AC-05 | A protected operation called without a valid session is rejected and returns no private data | NFR-01 |
+| AC-06 | A Borrower who calls a Custodian-only operation (record checkout, list the units of an item type) is rejected and nothing changes | NFR-02 |
+| AC-07 | Stored passwords are salted hashes from an adaptive algorithm: no value equals its plain text, the value shows the algorithm and cost, and two accounts with the same password have different values | NFR-03 |
+
+Related AC in other contracts: a Custodian creating a request (AC-15) and cross-Borrower access (AC-14) are in F-02, #15.
+
+## 8. Software Test Specification
+
+Levels and tools follow SDS section 10. API tests run against `kithub_test` with seeded `custodian1` and `borrower1` (test passwords set in the test environment) and `BCRYPT_COST=4` for speed, except TEST-07, which also checks the default cost.
+
+| Test | AC | Level | Precondition / input | Action | Expected result |
+| --- | --- | --- | --- | --- | --- |
+| TEST-01 | AC-01 | API | `borrower1` and `custodian1` exist. Valid username and password for each; a second case sends `Borrower1` in upper case | `POST /api/auth/login`, then `GET /api/auth/me` with the returned cookie | Login `200` with `user.username`, `displayName`, `role`; `Set-Cookie` has `kithub_session`, `HttpOnly`, `SameSite=Lax`; one new row in `sessions`; `/me` `200` with the same user and role. No `passwordHash` in either body |
+| TEST-02 | AC-02 | API | Cases: unknown username `nobody`; `borrower1` with a wrong password; empty password; unknown field `role` | `POST /api/auth/login` | Unknown username and wrong password: both `401 INVALID_CREDENTIALS` with the identical `message`, no `Set-Cookie`, `sessions` row count unchanged. Empty password and unknown field: `400 VALIDATION_FAILED` with the field in `details`, no session |
+| TEST-03 | AC-03 | API | `borrower1` signed in; cookie value saved | `POST /api/auth/logout`, then `GET /api/auth/me` with the saved cookie; then `POST /api/auth/logout` again with no cookie | Logout `204` with `Max-Age=0`; the session row is gone; `/me` `401 UNAUTHENTICATED`; second logout `204` |
+| TEST-04 | AC-04 | API | (a) `borrower1` signs in. (b) A session row for `borrower1` inserted with `expiresAt = now() - 1 minute` and a known token | (a) read the new session row. (b) `GET /api/auth/me` with that token | (a) `expiresAt` is sign-in time + 8 hours (±1 minute) and cookie `Max-Age` is 28800. (b) `401 UNAUTHENTICATED`, body has only `error`, no user fields |
+| TEST-05 | AC-05 | API | No cookie; a cookie with a random unknown token | `GET /api/auth/me`, and `GET /api/categories` once F-02 exists | `401 UNAUTHENTICATED` with the SDS 6.5 error shape and no private data. `/api/health` and `POST /api/auth/login` stay reachable without a cookie |
+| TEST-06 | AC-06 | API | `borrower1` signed in. In #17: a route registered only in the test app as `POST /api/test/custodian-only` with `requireRole("CUSTODIAN")`, whose handler writes a row. From #19: the real `POST /api/requests/:id/checkout` and `GET /api/item-types/:id/units` | Call each with the Borrower's cookie | `403 FORBIDDEN`; the handler never runs, so no row is written. From #19: no loan created, request and unit states unchanged, no unit list returned. `custodian1` gets past the role check on the same routes |
+| TEST-07 | AC-07 | Unit | `hashPassword` with the default `BCRYPT_COST` (12); the same plain password hashed twice | Hash, then inspect the values | Neither value equals the plain text; both start with `$2a$12$` or `$2b$12$`; the two values differ; `verifyPassword` accepts the right password and rejects a wrong one |
+
+UI behavior in section 5 is checked by the E2E tests in #20: sign-in and sign-out in TEST-30, the forbidden case in TEST-32. Selected component tests (wrong sign-in keeps the username, first visit shows no message) are added in #17 if time allows and are not required for this contract.
+
+### 8.1 Why TEST-06 has two stages
+
+The Custodian-only endpoints named in AC-06 are built in F-03 (#19), after F-01 (#17). So #17 tests `requireRole` on a route that exists only in the test app, which proves the middleware rejects the wrong role before the handler runs. When #19 adds the real endpoints, the same TEST-06 gains those cases, and contract F-03 (#16) lists them. The test ID does not change.
+
+## 9. Definition of Done
+
+F-01 is done when all of the following are true and recorded in the PR for #17:
+
+1. The behavior in sections 3 to 6 is implemented; any difference is recorded in the version history with its reason.
+2. The failing tests for AC-01 to AC-07 were committed before the implementation (TDD evidence), and the commit is named in the PR.
+3. TEST-01 to TEST-07 pass; the command, the counts (passed, failed, skipped) and the tested commit are in the PR. Failed or skipped tests are disclosed, not removed.
+4. No password, token or secret is in the repository, the logs or any API response.
+5. The PR into `staging` is reviewed by the teammate with a specific check or finding, and CI passes.
+6. `README` setup steps still work from a clean clone, and the traceability rows for F-01 are updated.
+7. Known incomplete work is listed in the PR.
