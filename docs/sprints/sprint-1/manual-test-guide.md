@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Covers | Sprint 1: F-01 sign-in and roles, F-02 catalog and borrow request, F-03 checkout and active loan |
-| Screenshots taken on | commit `1891aa0` (branch `feature/19-checkout`, #19), local dev servers, fresh demo database |
+| Screenshots taken on | commit `95ce498` (branch `ui/34-polish`, #34, SR-04 visual style), local dev servers, fresh demo database. MT-01 to MT-17 all gave the expected result |
 | Time needed | About 20 minutes |
 | Used for | Teammate and Lab 6 UAT walkthroughs; screenshots for Deliverable 1 Part F |
 
