@@ -60,7 +60,7 @@ export function RequestDetailPage() {
               {r.lines.map((line) => (
                 <li key={line.id} className="kh-row d-block">
                   <span className="fw-semibold">
-                  {line.itemType.name} × {line.quantity}
+                    {line.itemType.name} × {line.quantity}
                   </span>
                   {/* After checkout: the unit's asset tag and the checkout time (contract F-03 4.4). */}
                   {line.loans.map((loan) => (

@@ -1,5 +1,7 @@
 // KitHub logo: a chip with a K, the anti-static theme's mark (issue #34). Decorative: the
 // "KitHub" text next to it carries the name.
+// public/favicon.svg is the same chip with a charcoal frame on purpose: without it the pale pink chip
+// and grey pins disappear on a light browser tab. The frame insets the chip, so its dot sits at (8.5, 10.5).
 const PIN_X = [8, 13, 18, 23];
 
 export function Logo({ size = 30 }: { size?: number }) {
