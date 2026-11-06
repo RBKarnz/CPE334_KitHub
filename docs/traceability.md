@@ -26,9 +26,9 @@ Sprint 1 rows link to planned AC and tests from `docs/features.md`. Sprint 2 and
 
 | Requirement | Summary | Feature | Sprint | AC | Tests | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| FR-01 | Sign in with a seeded account | F-01 | 1 | AC-01, AC-02 | TEST-01, TEST-02, TEST-30 | Planned |
-| FR-02 | Sign out ends the session | F-01 | 1 | AC-03 | TEST-03 | Planned |
-| FR-03 | Show current user and role | F-01 | 1 | AC-01 | TEST-01 | Planned |
+| FR-01 | Sign in with a seeded account | F-01 | 1 | AC-01, AC-02 | TEST-01, TEST-02, TEST-30 | Specified |
+| FR-02 | Sign out ends the session | F-01 | 1 | AC-03 | TEST-03 | Specified |
+| FR-03 | Show current user and role | F-01 | 1 | AC-01 | TEST-01 | Specified |
 | FR-04 | Browse categories and item types with availability | F-02 | 1 | AC-08 | TEST-08 | Planned |
 | FR-05 | Item type details | F-04 | 2 | Contract F-04 | - | Planned |
 | FR-06 | Search and filter item types | F-12 | 3 | Contract F-12 | - | Planned |
@@ -85,10 +85,10 @@ A rule enforced by several features is listed once, with the sprint that first e
 
 | Requirement | Summary | Feature or responsibility | Sprint | AC | Tests | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| NFR-01 | Unauthenticated requests rejected without data | F-01; F-03 endpoints in AC-41; re-verified by SR-03 | 1 | AC-05, AC-41 | TEST-05, TEST-41 | Planned |
+| NFR-01 | Unauthenticated requests rejected without data | F-01; F-03 endpoints in AC-41; re-verified by SR-03 | 1 | AC-05, AC-41 | TEST-05, TEST-41 | Specified |
 | NFR-02 | Cross-Borrower and cross-role access rejected | F-01, F-02, F-03 (cross-cutting rule); kept by F-06, F-09, F-13; re-verified by SR-03 | 1 | AC-06, AC-14, AC-15 | TEST-06, TEST-14, TEST-15, TEST-32, TEST-41 | Planned |
-| NFR-03 | Adaptive salted password hashing | F-01 | 1 | AC-07 | TEST-07 | Planned |
-| NFR-04 | Sign-out invalidates the session; 8-hour expiry (Proposed) | F-01 | 1 | AC-03, AC-04 | TEST-03, TEST-04 | Planned |
+| NFR-03 | Adaptive salted password hashing | F-01 | 1 | AC-07 | TEST-07 | Specified |
+| NFR-04 | Sign-out invalidates the session; 8-hour expiry (Proposed) | F-01 | 1 | AC-03, AC-04 | TEST-03, TEST-04 | Specified |
 | NFR-05 | Concurrent checkouts give one active loan | F-03; kept by F-07, F-10 | 1 | AC-22 | TEST-22 | Specified |
 | NFR-06 | Data survives restart and redeploy | SR-01 (restart); SR-02 (redeploy, from Lab 5) | 1 | - | TEST-27; redeploy check in Lab 5 | Planned |
 | NFR-07 | All settings from environment; no real secret in the repository | SR-01; SR-02 (Secret Manager) | 1 | - | TEST-28 | Planned |
