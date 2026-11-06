@@ -86,7 +86,7 @@ A rule enforced by several features is listed once, with the sprint that first e
 | Requirement | Summary | Feature or responsibility | Sprint | AC | Tests | Status |
 | --- | --- | --- | --- | --- | --- | --- |
 | NFR-01 | Unauthenticated requests rejected without data | F-01; re-verified by SR-03 | 1 | AC-05 | TEST-05 | Specified |
-| NFR-02 | Cross-Borrower and cross-role access rejected | F-01, F-02, F-03 (cross-cutting rule); kept by F-06, F-09, F-13; re-verified by SR-03 | 1 | AC-06, AC-14, AC-15 | TEST-06, TEST-14, TEST-15, TEST-32 | Planned |
+| NFR-02 | Cross-Borrower and cross-role access rejected | F-01, F-02, F-03 (cross-cutting rule); kept by F-06, F-09, F-13; re-verified by SR-03 | 1 | AC-06, AC-14, AC-15 | TEST-06, TEST-14, TEST-15, TEST-32, TEST-41 | Planned |
 | NFR-03 | Adaptive salted password hashing | F-01 | 1 | AC-07 | TEST-07 | Specified |
 | NFR-04 | Sign-out invalidates the session; 8-hour expiry (Proposed) | F-01 | 1 | AC-03, AC-04 | TEST-03, TEST-04 | Specified |
 | NFR-05 | Concurrent checkouts give one active loan | F-03; kept by F-07, F-10 | 1 | AC-22 | TEST-22 | Planned |

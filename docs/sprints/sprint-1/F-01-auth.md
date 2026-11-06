@@ -7,7 +7,7 @@
 | Feature | F-01 Sign-in, sign-out, current user and roles |
 | Sprint | 1 |
 | Issue | #14 (contract), #17 (implementation) |
-| Version | 1.0 |
+| Version | 1.1 |
 | Status | Proposed (becomes Agreed when merged into `staging`, before #17 starts) |
 | Date | 2026-11-06 |
 | Authors | Teerakarn Noiruksa (67070501062) |
@@ -18,6 +18,7 @@
 | Version | Date | Author | Change | Reason |
 | --- | --- | --- | --- | --- |
 | 1.0 | 2026-11-06 | Teerakarn Noiruksa | First contract | Part E: contract before implementation |
+| 1.1 | 2026-11-06 | Teerakarn Noiruksa | TEST-06 covers only the test-app route; the real-endpoint cases of AC-06 are TEST-41 (b) in contract F-03 (8, 8.1). Every `POST`, including logout, needs `Content-Type: application/json` (4, 4.2, 5, TEST-03). Corrected the 72-byte note (3.2), the sign-in field limits (4.1), how TEST-07 gets cost 12, and the link to the product Definition of Done (9) | Review of PR #27 |
 
 A change after this version is merged gets a new row here, and an AC or TEST change is also recorded in `docs/traceability.md` section 5.
 
@@ -86,7 +87,7 @@ sequenceDiagram
 | --- | --- | --- |
 | Username case | Compared in lowercase. `Borrower1` signs in as `borrower1` | SDS 4.2 |
 | Unknown username or wrong password | Same `401 INVALID_CREDENTIALS` and message "Username or password is incorrect."; `bcrypt.compare` runs in both cases so the time is similar | FR-01, SDS 8.2 |
-| Password longer than 72 bytes | Accepted by validation, compared normally, and fails because no seeded password is that long (the seed rejects them) | SDS 8.1 |
+| Password longer than 72 bytes | Accepted by validation and compared normally; bcrypt compares only the first 72 bytes (SDS 8.1). The seed rejects longer passwords, so a stored password never depends on bytes after the 72nd | SDS 8.1 |
 | Signing in while already signed in | The old session in the cookie is deleted and a new one is created | SDS 8.2 |
 | Session lifetime | Absolute `SESSION_TTL_HOURS` (default 8) from sign-in; no renewal | NFR-04, Q-01 |
 | Expired session | Rejected as `401 UNAUTHENTICATED` at once; the row is deleted at the next sign-in by any user | SDS 8.3 |
@@ -105,14 +106,15 @@ sequenceDiagram
 
 ## 4. API
 
-All bodies are JSON. `POST` without `Content-Type: application/json` returns `415 UNSUPPORTED_MEDIA_TYPE`. Every response has `Cache-Control: no-store`. Errors use the shape in SDS 6.5.
+All bodies are JSON. Every `POST`, including one with no body such as logout, must send `Content-Type: application/json`; otherwise the API returns `415 UNSUPPORTED_MEDIA_TYPE` (SDS 6.2). The UI's API client always sends this header on `POST`, so the rule is the same for every endpoint and keeps the cross-site protection in SDS 8.6 uniform. Every response has `Cache-Control: no-store`. Errors use the shape in SDS 6.5.
 
 ### 4.1 `POST /api/auth/login`
 
 | Item | Value |
 | --- | --- |
 | Who | Anyone |
-| Body | `{ "username": string, "password": string }`. Strict: both required, no other fields. `username` 1 to 64 characters after trimming; `password` 1 to 256 characters |
+| Body | `{ "username": string, "password": string }`. Strict: both required, no other fields. `username` 1 to 64 characters, not trimmed, compared in lowercase; `password` 1 to 256 characters |
+| Field limits | Contract-level choice: SDS 8.2 does not fix sign-in limits. They are wider than the stored username rule (3 to 32 characters from `a-z 0-9 . _ -`, SDS 4.2) on purpose: any value that passes validation but cannot exist gets the same `401` as a wrong password, so validation reveals nothing about stored usernames |
 | Success | `200 { "user": { "id", "username", "displayName", "role" } }` and `Set-Cookie: kithub_session=<token>; HttpOnly; SameSite=Lax; Path=/; Max-Age=<SESSION_TTL_HOURS × 3600>` (`Secure` when `COOKIE_SECURE`) |
 
 ```json
@@ -132,9 +134,9 @@ The request body of this route is never logged (SDS 8.1).
 | Item | Value |
 | --- | --- |
 | Who | Anyone |
-| Body | None |
+| Headers | `Content-Type: application/json`; no body |
 | Success | `204`, no body, and `Set-Cookie: kithub_session=; Max-Age=0; Path=/` |
-| Errors | None for a missing, unknown or expired session; it is still `204` |
+| Errors | `415 UNSUPPORTED_MEDIA_TYPE` without the header, and the session is not deleted. A missing, unknown or expired session is not an error; it is still `204` |
 
 ### 4.3 `GET /api/auth/me`
 
@@ -155,7 +157,7 @@ The request body of this route is never logged (SDS 8.1).
 | After sign-in | Borrower goes to `/catalog`, Custodian to `/pending`, or to the page that sent them to `/login` (SDS 5.2) |
 | App load | Shows "Loading…" while `GET /api/auth/me` runs, so the sign-in page does not flash. `401` on a first visit opens `/login` with no message |
 | Navigation bar | KitHub name, the role's links, display name with a role badge ("Borrower" or "Custodian") (FR-03), Sign out button |
-| Sign out | Calls `POST /api/auth/logout`, clears the current user and opens `/login` with no message |
+| Sign out | Calls `POST /api/auth/logout` with `Content-Type: application/json`, clears the current user and opens `/login` with no message |
 | Session ended | A `401 UNAUTHENTICATED` from any call after sign-in clears the user and opens `/login` with "Your session has ended. Please sign in again." (SDS 5.3) |
 | Route guards | `RequireAuth` sends a signed-out user to `/login`. `RequireRole` shows the Forbidden page ("You do not have permission to do this.") for the other role's routes. These are convenience only; the API enforces access |
 
@@ -189,25 +191,27 @@ Related AC in other contracts: a Custodian creating a request (AC-15) and cross-
 
 ## 8. Software Test Specification
 
-Levels and tools follow SDS section 10. API tests run against `kithub_test` with seeded `custodian1` and `borrower1` (test passwords set in the test environment) and `BCRYPT_COST=4` for speed, except TEST-07, which also checks the default cost.
+Levels and tools follow SDS section 10. API tests run against `kithub_test` with seeded `custodian1` and `borrower1` (test passwords set in the test environment) and `BCRYPT_COST=4` for speed. TEST-07 passes cost 12 explicitly and checks the default separately.
 
 | Test | AC | Level | Precondition / input | Action | Expected result |
 | --- | --- | --- | --- | --- | --- |
 | TEST-01 | AC-01 | API | `borrower1` and `custodian1` exist. Valid username and password for each; a second case sends `Borrower1` in upper case | `POST /api/auth/login`, then `GET /api/auth/me` with the returned cookie | Login `200` with `user.username`, `displayName`, `role`; `Set-Cookie` has `kithub_session`, `HttpOnly`, `SameSite=Lax`; one new row in `sessions`; `/me` `200` with the same user and role. No `passwordHash` in either body |
 | TEST-02 | AC-02 | API | Cases: unknown username `nobody`; `borrower1` with a wrong password; empty password; unknown field `role` | `POST /api/auth/login` | Unknown username and wrong password: both `401 INVALID_CREDENTIALS` with the identical `message`, no `Set-Cookie`, `sessions` row count unchanged. Empty password and unknown field: `400 VALIDATION_FAILED` with the field in `details`, no session |
-| TEST-03 | AC-03 | API | `borrower1` signed in; cookie value saved | `POST /api/auth/logout`, then `GET /api/auth/me` with the saved cookie; then `POST /api/auth/logout` again with no cookie | Logout `204` with `Max-Age=0`; the session row is gone; `/me` `401 UNAUTHENTICATED`; second logout `204` |
+| TEST-03 | AC-03 | API | `borrower1` signed in; cookie value saved. Every logout below sends `Content-Type: application/json` unless stated | (a) `POST /api/auth/logout` without `Content-Type`. (b) `POST /api/auth/logout`, then `GET /api/auth/me` with the saved cookie. (c) `POST /api/auth/logout` again with no cookie | (a) `415 UNSUPPORTED_MEDIA_TYPE` and the session row still exists. (b) Logout `204` with `Max-Age=0`; the session row is gone; `/me` `401 UNAUTHENTICATED`. (c) `204` |
 | TEST-04 | AC-04 | API | (a) `borrower1` signs in. (b) A session row for `borrower1` inserted with `expiresAt = now() - 1 minute` and a known token | (a) read the new session row. (b) `GET /api/auth/me` with that token | (a) `expiresAt` is sign-in time + 8 hours (±1 minute) and cookie `Max-Age` is 28800. (b) `401 UNAUTHENTICATED`, body has only `error`, no user fields |
 | TEST-05 | AC-05 | API | No cookie; a cookie with a random unknown token | `GET /api/auth/me`, and `GET /api/categories` once F-02 exists | `401 UNAUTHENTICATED` with the SDS 6.5 error shape and no private data. `/api/health` and `POST /api/auth/login` stay reachable without a cookie |
-| TEST-06 | AC-06 | API | `borrower1` signed in. In #17: a route registered only in the test app as `POST /api/test/custodian-only` with `requireRole("CUSTODIAN")`, whose handler writes a row. From #19: the real `POST /api/requests/:id/checkout` and `GET /api/item-types/:id/units` | Call each with the Borrower's cookie | `403 FORBIDDEN`; the handler never runs, so no row is written. From #19: no loan created, request and unit states unchanged, no unit list returned. `custodian1` gets past the role check on the same routes |
-| TEST-07 | AC-07 | Unit | `hashPassword` with the default `BCRYPT_COST` (12); the same plain password hashed twice | Hash, then inspect the values | Neither value equals the plain text; both start with `$2a$12$` or `$2b$12$`; the two values differ; `verifyPassword` accepts the right password and rejects a wrong one |
+| TEST-06 | AC-06 | API | `borrower1` and `custodian1` signed in. A route registered only in the test app as `POST /api/test/custodian-only` with `requireRole("CUSTODIAN")`, whose handler writes a row | Call the route with the Borrower's cookie, then with the Custodian's cookie | Borrower: `403 FORBIDDEN` with only the `error` object; the handler never runs, so no row is written. Custodian: passes the role check and the handler writes its row |
+| TEST-07 | AC-07 | Unit | (a) `hashPassword(password, 12)` called twice with the same plain password; the cost is passed explicitly, so the test does not depend on `BCRYPT_COST=4` in the test environment. (b) The config reader with `BCRYPT_COST` unset | (a) Hash, then inspect the values. (b) Read the cost | (a) Neither value equals the plain text; both start with `$2a$12$` or `$2b$12$`; the two values differ; `verifyPassword` accepts the right password and rejects a wrong one. (b) The default cost is 12 |
 
 UI behavior in section 5 is checked by the E2E tests in #20: sign-in and sign-out in TEST-30, the forbidden case in TEST-32. Selected component tests (wrong sign-in keeps the username, first visit shows no message) are added in #17 if time allows and are not required for this contract.
 
-### 8.1 Why TEST-06 has two stages
+### 8.1 Where the AC-06 cases are tested
 
-The Custodian-only endpoints named in AC-06 are built in F-03 (#19), after F-01 (#17). So #17 tests `requireRole` on a route that exists only in the test app, which proves the middleware rejects the wrong role before the handler runs. When #19 adds the real endpoints, the same TEST-06 gains those cases, and contract F-03 (#16) lists them. The test ID does not change.
+The Custodian-only endpoints named in AC-06 are built in F-03 (#19), after F-01 (#17). So TEST-06 tests `requireRole` on a route that exists only in the test app, which proves the middleware rejects the wrong role before the handler runs. The real-endpoint cases of AC-06, a Borrower calling `GET /api/item-types/:id/units` and `POST /api/requests/:id/checkout`, are TEST-41 (b) in contract F-03 (`docs/sprints/sprint-1/F-03-checkout.md`, #16), which #19 implements. AC-06 is therefore verified by TEST-06, TEST-41 (b) and the E2E test TEST-32.
 
 ## 9. Definition of Done
+
+The product-level Definition of Done for Sprint 1 is `docs/sprints/sprint-1/definition-of-done.md`, added by contract F-03 (#28); it applies to F-01 as well. Whichever of #27 and #28 merges second turns that path into a link. The items below are what F-01 must show for it.
 
 F-01 is done when all of the following are true and recorded in the PR for #17:
 
