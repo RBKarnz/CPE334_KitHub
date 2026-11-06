@@ -7,8 +7,8 @@ import { useAuth } from "./AuthProvider";
 
 export function LoadingScreen() {
   return (
-    <div className="container py-5 text-center" role="status">
-      <span className="spinner-border spinner-border-sm me-2" aria-hidden="true" />
+    <div className="container kh-state justify-content-center py-5" role="status">
+      <span className="spinner-border spinner-border-sm" aria-hidden="true" />
       Loading…
     </div>
   );

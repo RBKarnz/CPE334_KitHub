@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import type { Role } from "../api/auth";
 import { landingPath, useAuth } from "../auth/AuthProvider";
+import { Logo } from "./Logo";
 
 // Sprint 1 links per role (SDS 5.2).
 const LINKS: Record<Role, { to: string; label: string }[]> = {
@@ -34,27 +35,37 @@ export function NavBar() {
   };
 
   return (
-    <nav className="navbar navbar-expand bg-body-tertiary mb-4">
-      <div className="container">
-        <NavLink className="navbar-brand" to={landingPath(user.role)}>
-          KitHub
-        </NavLink>
-        <ul className="navbar-nav me-auto">
-          {LINKS[user.role].map((link) => (
-            <li className="nav-item" key={link.to}>
-              <NavLink className="nav-link" to={link.to}>
-                {link.label}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-        <span className="navbar-text me-3">
-          {user.displayName} <span className="badge text-bg-secondary">{ROLE_LABEL[user.role]}</span>
-        </span>
-        <button type="button" className="btn btn-outline-secondary btn-sm" onClick={handleSignOut} disabled={signingOut}>
-          Sign out
-        </button>
-      </div>
-    </nav>
+    <>
+      <nav className="kh-nav" aria-label="Main">
+        {/* One set of elements for every width; the layout changes in CSS only (theme.css). */}
+        <div className="container kh-nav-inner">
+          <NavLink className="kh-brand" to={landingPath(user.role)}>
+            <Logo />
+            KitHub
+          </NavLink>
+          <ul className="kh-nav-links">
+            {LINKS[user.role].map((link) => (
+              <li key={link.to}>
+                <NavLink className="kh-nav-link" to={link.to}>
+                  {link.label}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+          <span className="kh-nav-user">
+            <span>{user.displayName}</span> <span className="badge kh-role">{ROLE_LABEL[user.role]}</span>
+          </span>
+          <button
+            type="button"
+            className="btn btn-sm kh-signout"
+            onClick={handleSignOut}
+            disabled={signingOut}
+          >
+            Sign out
+          </button>
+        </div>
+      </nav>
+      <div className="kh-foam kh-foam-strip mb-2" aria-hidden="true" />
+    </>
   );
 }
