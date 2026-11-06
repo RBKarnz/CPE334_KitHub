@@ -7,7 +7,7 @@
 | Feature | F-01 Sign-in, sign-out, current user and roles |
 | Sprint | 1 |
 | Issue | #14 (contract), #17 (implementation) |
-| Version | 1.2 |
+| Version | 1.3 |
 | Status | Proposed (becomes Agreed when merged into `staging`, before #17 starts) |
 | Date | 2026-11-06 |
 | Authors | Teerakarn Noiruksa (67070501062) |
@@ -20,6 +20,7 @@
 | 1.0 | 2026-11-06 | Teerakarn Noiruksa | First contract | Part E: contract before implementation |
 | 1.1 | 2026-11-06 | Teerakarn Noiruksa | TEST-06 covers only the test-app route; the real-endpoint cases of AC-06 are TEST-41 (b) in contract F-03 (8, 8.1). Every `POST`, including logout, needs `Content-Type: application/json` (4, 4.2, 5, TEST-03). Corrected the 72-byte note (3.2), the sign-in field limits (4.1), how TEST-07 gets cost 12, and the link to the product Definition of Done (9) | Review of PR #27 |
 | 1.2 | 2026-11-06 | Teerakarn Noiruksa | STS (8): every API test signs in and out through one shared helper that sends `Content-Type: application/json` on every `POST`, including logout, so setup steps do not get `415` | Note in the PR #27 re-review |
+| 1.3 | 2026-11-06 | Teerakarn Noiruksa | `415` message in 4.1 is "Request body must be JSON (Content-Type: application/json)." | The `requireJson` middleware from #13 returns this message for every endpoint, so F-01 uses it instead of its own text (#17) |
 
 A change after this version is merged gets a new row here, and an AC or TEST change is also recorded in `docs/traceability.md` section 5.
 
@@ -126,7 +127,7 @@ All bodies are JSON. Every `POST`, including one with no body such as logout, mu
 | --- | --- | --- |
 | Missing, empty, too long or unknown field; malformed JSON | `400 VALIDATION_FAILED`, one `details` entry per field | "The request is not valid." |
 | Unknown username or wrong password | `401 INVALID_CREDENTIALS` | "Username or password is incorrect." |
-| Not JSON | `415 UNSUPPORTED_MEDIA_TYPE` | "Send the request body as JSON." |
+| Not JSON | `415 UNSUPPORTED_MEDIA_TYPE` | "Request body must be JSON (Content-Type: application/json)." |
 
 The request body of this route is never logged (SDS 8.1).
 

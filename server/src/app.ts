@@ -1,19 +1,24 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import express, { type Express } from "express";
+import express, { type Express, type Router } from "express";
 import type { PrismaClient } from "@prisma/client";
 import type { AppConfig } from "./core/config.js";
 import { healthRouter } from "./core/health.routes.js";
 import { apiNotFound, errorHandler } from "./core/middleware/error-handler.js";
 import { noStore, requestId, requestLogger } from "./core/middleware/request-context.js";
 import { requireJson } from "./core/middleware/require-json.js";
+import { authRouter } from "./features/auth/auth.routes.js";
+
+export type AppConfigForApp = Pick<AppConfig, "nodeEnv" | "sessionTtlHours" | "cookieSecure" | "bcryptCost">;
 
 export interface AppDeps {
-  config: Pick<AppConfig, "nodeEnv">;
+  config: AppConfigForApp;
   prisma: PrismaClient;
   /** Folder of the built UI. Defaults to client/dist next to server/ (DD-01). */
   clientDistDir?: string;
+  /** Tests only: adds routes that exist only in the test app, before the not-found handler. */
+  mountTestRoutes?: (api: Router) => void;
 }
 
 const DEFAULT_CLIENT_DIST = path.resolve(
@@ -24,7 +29,7 @@ const DEFAULT_CLIENT_DIST = path.resolve(
   "dist",
 );
 
-export function createApp({ config, prisma, clientDistDir = DEFAULT_CLIENT_DIST }: AppDeps): Express {
+export function createApp({ config, prisma, clientDistDir = DEFAULT_CLIENT_DIST, mountTestRoutes }: AppDeps): Express {
   const app = express();
   app.disable("x-powered-by");
   // Cloud Run puts one proxy in front of the container.
@@ -37,7 +42,10 @@ export function createApp({ config, prisma, clientDistDir = DEFAULT_CLIENT_DIST 
   api.use(express.json({ limit: "100kb" }));
 
   api.use(healthRouter(prisma));
-  // Feature routers (auth, catalog, requests, ...) are mounted here by their features.
+  // Feature routers. Each applies authenticate and requireRole to its own routes (SDS 7.2).
+  api.use(authRouter(prisma, config));
+  // Catalog, requests and loans are mounted here by F-02 and F-03.
+  mountTestRoutes?.(api);
 
   api.use(apiNotFound);
   api.use(errorHandler(true));
