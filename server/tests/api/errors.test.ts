@@ -38,6 +38,18 @@ describe("TEST-29 (NFR-08): JSON error shape", () => {
 
     expectErrorShape(res, 400, "VALIDATION_FAILED");
     expect(res.body.error.details).toEqual([{ field: "body", issue: "Malformed JSON" }]);
+    expect(res.body.error.message).toBe("The request body is not valid JSON.");
+  });
+
+  it.each(["null", '"text"', "42"])("a JSON body of %s returns 400 VALIDATION_FAILED: must be a JSON object", async (raw) => {
+    const res = await request(createTestApp())
+      .post("/api/does-not-exist")
+      .set("Content-Type", "application/json")
+      .send(raw);
+
+    expectErrorShape(res, 400, "VALIDATION_FAILED");
+    expect(res.body.error.message).toBe("The request body must be a JSON object.");
+    expect(res.body.error.details).toEqual([{ field: "body", issue: "Must be a JSON object" }]);
   });
 });
 

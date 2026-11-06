@@ -10,9 +10,21 @@ import {
 } from "../errors.js";
 import { zodIssuesToDetails } from "./validate.js";
 
-/** Errors raised by express.json() (body-parser) carry a `type`. */
+/** Errors raised by express.json() (body-parser) carry a `type` and the raw `body` text. */
 interface BodyParserError extends Error {
   type?: string;
+  body?: unknown;
+}
+
+/** True when the raw body is valid JSON, so body-parser rejected it only for not being an object or array. */
+function isValidJson(raw: unknown): boolean {
+  if (typeof raw !== "string") return false;
+  try {
+    JSON.parse(raw);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /** Turns any thrown value into a known AppError. Unknown errors become 500. */
@@ -21,8 +33,12 @@ export function toAppError(err: unknown): AppError | null {
   if (err instanceof ZodError) return new ValidationError(zodIssuesToDetails(err));
 
   const type = (err as BodyParserError | undefined)?.type;
-  if (type === "entity.parse.failed")
+  if (type === "entity.parse.failed") {
+    // express.json() is strict: a body such as `null` or `"text"` is valid JSON but not an object.
+    if (isValidJson((err as BodyParserError).body))
+      return new ValidationError([{ field: "body", issue: "Must be a JSON object" }], "The request body must be a JSON object.");
     return new ValidationError([{ field: "body", issue: "Malformed JSON" }], "The request body is not valid JSON.");
+  }
   if (type === "entity.too.large")
     return new ValidationError([{ field: "body", issue: "Larger than 100 KB" }], "The request body is too large.");
   if (type === "charset.unsupported" || type === "encoding.unsupported") return new UnsupportedMediaTypeError();
