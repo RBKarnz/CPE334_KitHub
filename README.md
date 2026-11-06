@@ -96,6 +96,34 @@ NODE_ENV=production npm start
 
 Open `http://localhost:3000`: the server serves the built UI and the API from one origin.
 
+## 6. End-to-end tests
+
+Playwright drives Chromium through the built UI, the API and `kithub_test` ([SDS section 10](docs/system-sds.md#10-test-architecture)). The tests are in `e2e/`; what each one checks is in [features section 4.4](docs/features.md#44-system-checks-for-sprint-1-13-skeleton-20-e2e).
+
+Before the first run, from the repository root:
+
+1. Finish sections 1 to 4 once: `kithub_test` exists, `TEST_DATABASE_URL` is set in `server/.env` (or exported in the shell), and `npm ci` has run in `server/` and `client/`.
+2. Install the root packages and the Chromium browser:
+
+   ```sh
+   npm ci
+   npx playwright install chromium
+   ```
+
+Then run:
+
+```sh
+npm run test:e2e
+```
+
+What the command does:
+
+- Refuses to run unless `TEST_DATABASE_URL` is set, differs from `DATABASE_URL` and names a database ending in `_test`, as the server tests do. It never touches `kithub`.
+- Applies the migrations to `kithub_test` and empties its tables. Each test empties them again and creates its own users, catalog and units with a test-only password, so the demo seed is not needed.
+- Builds `client/` and `server/`, then starts the server with `NODE_ENV=production` on port 3100, so it serves the built UI as the deployed app does. Port 3100 must be free; a dev server on 3000 can keep running.
+
+The HTML report is written to `playwright-report/`; open it with `npm run test:e2e:report`. It includes screenshots of the main steps. Traces, screenshots and videos of a failed test go to `test-results/`. Both folders are ignored by Git; never commit them, because a trace can contain session cookies.
+
 ## Seeded accounts
 
 | Username | Role | Seeded when |

@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.6 |
+| Version | 1.7 |
 | Date | 2026-11-07 |
 | Source requirements | `docs/srs.md` v1.3 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
 | Traceability | `docs/traceability.md` |
@@ -15,7 +15,7 @@
 - Feature and SR IDs, boundaries, dependencies and sprints are the same as in `docs/sprints/plan.md` section 3. A change to either document must change both in the same PR.
 - Sprint 1 features list their planned acceptance criteria (`AC-xx`) and tests (`TEST-xx`). Their contracts (#14, #15, #16) adopt these IDs; any change is recorded in the contract's version history and in section 5 of `docs/traceability.md`.
 - Sprint 2 and Sprint 3 features have a sprint allocation now. Their AC and tests are written in their contracts before implementation.
-- **ID numbering.** AC-n is verified by TEST-n, and each number is used once across AC and TEST. A number may hold a test with no AC of the same number: the system checks TEST-27 to TEST-32, and supporting tests such as a unit test of a domain function that serves AC numbered elsewhere. A number never holds an AC whose TEST-n verifies something else. Sprint 1 contracts written in parallel take fixed blocks: F-02 (#15) adds AC and tests from 33 to 40, F-03 (#16) uses 41 to 49 for its AC and 50 to 52 for supporting tests. Every later addition, including an F-02 addition that does not fit its block, takes the next free number above the highest AC or TEST on `staging` and claims it in its PR description.
+- **ID numbering.** AC-n is verified by TEST-n, and each number is used once across AC and TEST. A number may hold a test with no AC of the same number: the system checks TEST-27 to TEST-32 and TEST-53, and supporting tests such as a unit test of a domain function that serves AC numbered elsewhere. A number never holds an AC whose TEST-n verifies something else. Sprint 1 contracts written in parallel take fixed blocks: F-02 (#15) adds AC and tests from 33 to 40, F-03 (#16) uses 41 to 49 for its AC and 50 to 52 for supporting tests. Every later addition, including an F-02 addition that does not fit its block, takes the next free number above the highest AC or TEST on `staging` and claims it in its PR description.
 
 ## 2. Features
 
@@ -45,7 +45,7 @@
 | SR-01 | Platform foundation: project skeleton, configuration, JSON error handling, health and readiness, migrations and seed (SDS sections 4.8, 6.5, 6.7, 9.1) | NFR-06, NFR-07, NFR-08 | #13 | 1 |
 | SR-02 | Delivery: Docker image, CI on PRs, deployment to GCP, persistence across redeploys (SDS sections 9.5 to 9.7) | NFR-06 (redeploy), NFR-07 (Secret Manager) | #1 to #9 (Lab 5) | 2 (by 15 Nov) |
 | SR-03 | Hardening: performance measurement, permission and error regression suite, UAT and maintenance defects | NFR-11; re-verifies NFR-01, NFR-02, NFR-08 | Created in Sprint 3 | 3 |
-| SR-04 | UI polish: one shared visual style (theme on Bootstrap 5 CSS variables, one self-hosted font, icons, logo) for every Sprint 1 screen at every width from 320 to 1440 px, with the narrow layout (two-row navigation bar, table rows as cards) below 768 px; visual only, no behavior, API or contract text change (SDS 5.3 "Visual style") | None new; keeps NFR-12 and the SDS 5.3 accessibility rules | #34, #38 | 1 |
+| SR-04 | UI polish: one shared visual style (theme on Bootstrap 5 CSS variables, one self-hosted font, icons, logo) for every Sprint 1 screen at every width from 320 to 1440 px, with the narrow layout (two-row navigation bar, table rows as cards) below 768 px; visual only, no behavior, API or contract text change (SDS 5.3 "Visual style") | None new; keeps NFR-12 and the SDS 5.3 accessibility rules. Regression check for #38: TEST-53 (section 4.4) | #34, #38; TEST-53 in #20 | 1 |
 
 ### 3.2 Cross-cutting rules
 
@@ -161,3 +161,17 @@ Every test file is at the path planned in contract F-03 section 8.2. Extra UI te
 | TEST-30 | E2E journey: Borrower signs in, requests an item, sees it `PENDING`, signs out; Custodian signs in and checks out a unit; Borrower sees `CHECKED_OUT` | AC-01, AC-09, AC-19, AC-26 | E2E | #20 |
 | TEST-31 | E2E rejection: a duplicate open request is refused in the UI with the rule's message | AC-11 | E2E | #20 |
 | TEST-32 | E2E forbidden: a Borrower cannot reach a Custodian operation, and the API rejects it when called directly | AC-06 | E2E | #20 |
+| TEST-53 | E2E narrow screens (SR-04, regression for #38): with 8 pending requests, at 640 and 760 px the page has no sideways scroll, and the first and last **Check out** buttons are fully visible and open the checkout dialog with a mouse click; at 600 px **Sign out** is fully visible | SR-04 (keeps FR-16 and FR-02 usable below 768 px) | E2E | #20 |
+
+TEST-53 takes the next free number above the highest AC or TEST on `staging` (52), as section 1 requires; it was claimed in PR #40.
+
+#### 4.4.1 E2E results (#20)
+
+Tested commit `c5a432f` on 2026-11-07. `npm run test:e2e` at the repository root (Playwright 1.64.1, Chromium) builds `client/` and `server/`, starts the server with `NODE_ENV=production` on port 3100 so it serves the built UI (DD-01), and points it at `kithub_test` only. The global setup applies migrations and empties every table; each test empties the tables again and creates its own users, catalog and units with the server test factories, never the demo seed (SDS 4.8). Result: 4 passed, 0 failed, 0 skipped, 0 flaky, in each of 3 runs in a row. On the same commit `npm test` in `server/` gave 160 passed (26 files) and in `client/` 39 passed (5 files), 0 failed, 0 skipped. TEST-53 fails against the client from before the #38 fix (`91157da`), so it catches that defect.
+
+| Test | AC | Test file | Test name | Backend check | Result on `c5a432f` |
+| --- | --- | --- | --- | --- | --- |
+| TEST-30 | AC-01, AC-09, AC-19, AC-26 | `e2e/journey.spec.ts` | "TEST-30: Borrower requests, Custodian checks out, Borrower sees Checked out" | After the UI journey, the database holds one `ACTIVE` loan for the request, unit `KH-ARD-0001` is `ON_LOAN`, the request is `CHECKED_OUT`, and the due date is the checkout time + 14 days; the Custodian's success message and the Borrower's detail page show the stored times | Pass (1 test, 3 of 3 runs) |
+| TEST-31 | AC-11 | `e2e/rejection.spec.ts` | "TEST-31: a second request for an item type with an open request is refused with the BR-04 message" | The alert reads "You already have an open request for Arduino Uno R3 (Request #n)."; the database still holds exactly one open request for that item type and no other request | Pass (1 test, 3 of 3 runs) |
+| TEST-32 | AC-06 | `e2e/forbidden.spec.ts` | "TEST-32: a Borrower sees the Forbidden page at /pending and the API refuses checkout with 403" | From the same signed-in browser context, `POST /api/requests/:id/checkout` and `GET /api/item-types/:id/units` return `403 FORBIDDEN` with only the `error` object; loans, history entries, request and unit states are unchanged | Pass (1 test, 3 of 3 runs) |
+| TEST-53 | None (SR-04) | `e2e/narrow-screens.spec.ts` | "TEST-53: Check out is reachable at 640 and 760 px and Sign out is visible at 600 px" | No loan is created by opening and cancelling the dialogs | Pass (1 test, 3 of 3 runs) |

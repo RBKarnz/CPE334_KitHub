@@ -167,14 +167,16 @@ These are expected in Sprint 1 and are not defects:
 
 ## 7. Automated tests behind each scenario
 
-| MT | Automated tests |
-| --- | --- |
-| MT-01 to MT-03 | TEST-01, TEST-02, TEST-03, TEST-05 (`server/tests/api/auth.test.ts`); F-01 UI tests (`client/tests/App.test.tsx`) |
-| MT-04 to MT-08, MT-10 | TEST-08 to TEST-11, TEST-13, TEST-17, TEST-40 |
-| MT-09 | TEST-06, TEST-41 (b) (API); "a Borrower opening a Custodian route sees the Forbidden page" (`client/tests/App.test.tsx`) |
-| MT-11 | TEST-18, TEST-15 |
-| MT-12, MT-14 | TEST-19, TEST-48, TEST-49, TEST-50 |
-| MT-13 | TEST-26 |
-| MT-15 | TEST-47, TEST-22 |
-| MT-16 | TEST-25, TEST-17 |
-| MT-17 | TEST-27 (`server/tests/api/persistence.test.ts`, NFR-06) |
+The E2E column lists the Playwright tests in `e2e/` that repeat the same steps in a browser against the built app and `kithub_test` (README section 6, `docs/features.md` 4.4.1).
+
+| MT | Automated tests | E2E |
+| --- | --- | --- |
+| MT-01 to MT-03 | TEST-01, TEST-02, TEST-03, TEST-05 (`server/tests/api/auth.test.ts`); F-01 UI tests (`client/tests/App.test.tsx`) | MT-02: TEST-30 (sign in, name and role badge, sign out) |
+| MT-04 to MT-08, MT-10 | TEST-08 to TEST-11, TEST-13, TEST-17, TEST-40 | MT-04, MT-06: TEST-30 (catalog count, request, Pending in My requests); MT-07: TEST-31 (duplicate request refused, one open request stays) |
+| MT-09 | TEST-06, TEST-41 (b) (API); "a Borrower opening a Custodian route sees the Forbidden page" (`client/tests/App.test.tsx`) | TEST-32 (Forbidden page at `/pending`, and `403 FORBIDDEN` from the API in the same browser) |
+| MT-11 | TEST-18, TEST-15 | TEST-30 (Custodian lands on Pending requests; no Request button in the catalog); TEST-53 (the list at 600, 640 and 760 px) |
+| MT-12, MT-14 | TEST-19, TEST-48, TEST-49, TEST-50 | MT-12: TEST-30 (dialog lists only Arduino units, confirm button names unit and request, success message, request leaves the list); TEST-53 (Check out opens the dialog at 640 and 760 px) |
+| MT-13 | TEST-26 | TEST-30 (count drops by one; Borrower sees Checked out, the asset tag and the 14-day due date; the loan, unit and request checked in the database) |
+| MT-15 | TEST-47, TEST-22 | - |
+| MT-16 | TEST-25, TEST-17 | - |
+| MT-17 | TEST-27 (`server/tests/api/persistence.test.ts`, NFR-06) | - |
