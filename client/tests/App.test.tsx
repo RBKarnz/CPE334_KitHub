@@ -25,6 +25,7 @@ beforeEach(() => {
   routes = {
     "GET /api/categories": [{ status: 200, body: { items: [] } }],
     "GET /api/requests": [{ status: 200, body: { items: [] } }],
+    "GET /api/requests?status=PENDING": [{ status: 200, body: { items: [] } }],
   };
   calls = [];
   vi.stubGlobal(

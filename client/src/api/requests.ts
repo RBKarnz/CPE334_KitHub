@@ -34,3 +34,7 @@ export const createRequest = (itemTypeId: number) =>
 export const fetchMyRequests = () => apiFetch<{ items: BorrowRequest[] }>("/requests").then((r) => r.items);
 
 export const fetchRequest = (id: number) => apiFetch<BorrowRequest>(`/requests/${id}`);
+
+/** Custodian: every Borrower's PENDING requests, oldest first (contract F-03 5.1, F03-D2). */
+export const fetchPendingRequests = () =>
+  apiFetch<{ items: BorrowRequest[] }>("/requests?status=PENDING").then((r) => r.items);

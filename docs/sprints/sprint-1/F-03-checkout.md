@@ -6,8 +6,8 @@
 | --- | --- |
 | Feature | F-03 Checkout and active loan |
 | Sprint | 1 (due 2026-11-08) |
-| Version | 1.0 |
-| Status | Draft, in review. Becomes `Approved for implementation` when the PR for #16 is reviewed and merged into `staging` |
+| Version | 1.2 |
+| Status | Approved for implementation (PR #28 merged into `staging`); implemented in #19 |
 | Date | 2026-11-06 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Baseline | [SRS v1.2](../../srs.md), [System-Level SDS v1.1](../../system-sds.md), [Feature inventory](../../features.md), [Traceability](../../traceability.md), [Three-sprint plan v1.2](../plan.md) |
@@ -20,6 +20,7 @@
 | --- | --- | --- | --- |
 | 1.0 | 2026-11-06 | Methipat Mansap | First contract. Adopts AC-18 to AC-26 and TEST-18 to TEST-26 from `docs/features.md` 4.3; adds AC-41 to AC-49 and TEST-41 to TEST-49; decisions F03-D1 to F03-D8 |
 | 1.1 | 2026-11-06 | Methipat Mansap | Review of PR #28. TEST-n now verifies AC-n for AC-41 to AC-49 (old TEST-42 and TEST-44 split; the race, unit list and dialog tests renumbered TEST-47 to TEST-49); the supporting unit tests became TEST-50 (`computeDueAt`) and TEST-51 (transitions); new TEST-52 checks that a unique violation on the loan insert becomes `409 UNIT_NOT_AVAILABLE` (3.6 row 15, 3.9). After a 0-row conditional update the service re-reads the request or unit to build the `409` (3.1, 3.7, 3.9). TEST-24 sends a JSON body. F-01 contract v1.2 (#27) is merged and names TEST-41 (b) for the real-endpoint cases of AC-06, as here |
+| 1.2 | 2026-11-06 | Methipat Mansap | Header only, found while starting #19: Version and Status were not updated when v1.1 was merged. Sections 2.2 and 2.4 still describe the state before F-02; the F-02 contract (section 3.6) confirmed F02-A1 to F02-A7 with no change. No design, AC or test change |
 
 Changes after approval get a new version row with the reason. AC and TEST IDs are never reused for a different meaning.
 

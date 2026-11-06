@@ -1,4 +1,4 @@
-// Routes for Sprint 1 (SDS 5.1). Pending requests is a placeholder until F-03 builds it.
+// Routes for Sprint 1 (SDS 5.1).
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { AuthProvider, landingPath, useAuth } from "./auth/AuthProvider";
 import { LoadingScreen, RequireAuth, RequireRole } from "./auth/guards";
@@ -7,7 +7,7 @@ import { CatalogPage } from "./pages/CatalogPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MyRequestsPage } from "./pages/MyRequestsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
-import { PlaceholderPage } from "./pages/PlaceholderPage";
+import { PendingRequestsPage } from "./pages/pending/PendingRequestsPage";
 import { RequestDetailPage } from "./pages/RequestDetailPage";
 
 function SignedInLayout() {
@@ -49,7 +49,7 @@ function AppRoutes() {
           path="/pending"
           element={
             <RequireRole role="CUSTODIAN">
-              <PlaceholderPage title="Pending requests" />
+              <PendingRequestsPage />
             </RequireRole>
           }
         />

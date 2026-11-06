@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.4 |
+| Version | 1.5 |
 | Date | 2026-11-06 |
 | Source requirements | `docs/srs.md` v1.2 |
-| Features and AC/TEST definitions | `docs/features.md` v1.2 |
+| Features and AC/TEST definitions | `docs/features.md` v1.3 |
 | Feature and SR IDs | Same as `docs/sprints/plan.md` section 3 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 
@@ -33,15 +33,15 @@ Sprint 1 rows link to planned AC and tests from `docs/features.md`. Sprint 2 and
 | FR-05 | Item type details | F-04 | 2 | Contract F-04 | - | Planned |
 | FR-06 | Search and filter item types | F-12 | 3 | Contract F-12 | - | Planned |
 | FR-07 | Borrower requests one unit of one item type | F-02 | 1 | AC-09, AC-34, AC-35, AC-40 | TEST-09, TEST-30, TEST-34, TEST-35, TEST-40 | Specified; F-02 part (TEST-09, TEST-34, TEST-35, TEST-40) verified on `dd36f2e`, TEST-30 (E2E, #20) to come |
-| FR-08 | Borrower lists and opens own requests | F-02 | 1 | AC-13, AC-26, AC-39 | TEST-13, TEST-26, TEST-30, TEST-39 | Specified; F-02 part (TEST-13, TEST-39) verified on `dd36f2e`, TEST-26 (F-03, #19) and TEST-30 (E2E, #20) to come |
-| FR-09 | Custodian lists pending requests | F-03 | 1 | AC-18 | TEST-18 | Specified |
+| FR-08 | Borrower lists and opens own requests | F-02 | 1 | AC-13, AC-26, AC-39 | TEST-13, TEST-26, TEST-30, TEST-39 | Specified; F-02 part (TEST-13, TEST-39) verified on `dd36f2e`, F-03 part (TEST-26) on `1891aa0`, TEST-30 (E2E, #20) to come |
+| FR-09 | Custodian lists pending requests | F-03 | 1 | AC-18 | TEST-18 | Verified (`1891aa0`) |
 | FR-10 | Multi-line request with one loan length | F-04 | 2 | Contract F-04 | - | Planned |
 | FR-11 | Borrower edits a pending request | F-05 | 2 | Contract F-05 | - | Planned |
 | FR-12 | Borrower cancels a pending or approved request | F-05 | 2 | Contract F-05 | - | Planned |
 | FR-13 | Custodian approves a whole request | F-06 | 2 | Contract F-06 | - | Planned |
 | FR-14 | Custodian rejects a request with a reason | F-06 | 2 | Contract F-06 | - | Planned |
 | FR-15 | Approved request expires after 48 hours | F-10 | 3 | Contract F-10 | - | Planned |
-| FR-16 | Sprint 1 checkout of a pending request; rejected if no unit is available (D-17) | F-03 | 1 | AC-19, AC-20, AC-26, AC-42 to AC-49 | TEST-19, TEST-20, TEST-26, TEST-30, TEST-42 to TEST-51 | Specified |
+| FR-16 | Sprint 1 checkout of a pending request; rejected if no unit is available (D-17) | F-03 | 1 | AC-19, AC-20, AC-26, AC-42 to AC-49 | TEST-19, TEST-20, TEST-26, TEST-30, TEST-42 to TEST-51 | Specified; F-03 part (TEST-19, TEST-20, TEST-26, TEST-42 to TEST-51) verified on `1891aa0`, TEST-30 (E2E, #20) to come |
 | FR-17 | Checkout of an approved request, one unit per quantity | F-07 | 2 | Contract F-07 | - | Planned |
 | FR-18 | Borrower sees own active loans | F-07 | 2 | Contract F-07 | - | Planned |
 | FR-19 | Custodian sees all active loans | F-07 | 2 | Contract F-07 | - | Planned |
@@ -64,8 +64,8 @@ A rule enforced by several features is listed once, with the sprint that first e
 | Requirement | Summary | Feature | Sprint | AC | Tests | Status |
 | --- | --- | --- | --- | --- | --- | --- |
 | BR-01 | Request only what is available | F-02; kept by F-04, F-05 (Sprint 2) and F-10 reserved units (Sprint 3) | 1 | AC-10, AC-38, AC-40 | TEST-10, TEST-38, TEST-40 | Verified (`dd36f2e`) |
-| BR-02 | Checkout only an `AVAILABLE` unit of the line's item type | F-03; kept by F-07 (Sprint 2) | 1 | AC-20, AC-21, AC-45, AC-46 | TEST-20, TEST-21, TEST-45, TEST-46, TEST-51 | Specified |
-| BR-03 | At most one active loan per unit, under concurrency | F-03; kept by F-07 (Sprint 2) | 1 | AC-22 | TEST-22, TEST-52 | Specified |
+| BR-02 | Checkout only an `AVAILABLE` unit of the line's item type | F-03; kept by F-07 (Sprint 2) | 1 | AC-20, AC-21, AC-45, AC-46 | TEST-20, TEST-21, TEST-45, TEST-46, TEST-51 | Verified (`1891aa0`) |
+| BR-03 | At most one active loan per unit, under concurrency | F-03; kept by F-07 (Sprint 2) | 1 | AC-22 | TEST-22, TEST-52 | Verified (`1891aa0`) |
 | BR-04 | No two open requests with the same item type | F-02; kept by F-04, F-05 (Sprint 2) | 1 | AC-11, AC-36, AC-37, AC-38 | TEST-11, TEST-31, TEST-36, TEST-37, TEST-38 | Specified; F-02 part (TEST-11, TEST-36, TEST-37, TEST-38) verified on `dd36f2e`, TEST-31 (E2E, #20) to come |
 | BR-05 | Owner is always the signed-in user; no cross-Borrower access | F-01 (mechanism), F-02; kept by F-13 (Sprint 3) | 1 | AC-09, AC-12, AC-14, AC-39 | TEST-09, TEST-12, TEST-14, TEST-39 | Verified (`dd36f2e`) |
 | BR-06 | Borrower never chooses the unit | F-04, F-07 | 2 | Contract F-04, F-07 | - | Planned |
@@ -78,25 +78,25 @@ A rule enforced by several features is listed once, with the sprint that first e
 | BR-13 | Approved requests reserve units and expire after 48 hours | F-10 | 3 | Contract F-10 | - | Planned |
 | BR-14 | 5-unit borrowing limit per Borrower | F-11 | 3 | Contract F-11 | - | Planned |
 | BR-15 | Overdue Borrowers cannot create requests | F-11 | 3 | Contract F-11 | - | Planned |
-| BR-16 | Append-only history with actor and time | F-02, F-03 (cross-cutting rule, `docs/features.md` 3.2); kept by F-05, F-06, F-08, F-09, F-10, F-13 | 1 | AC-16, AC-23, AC-24 | TEST-16, TEST-23, TEST-24 | Specified; F-02 part (TEST-16) verified on `dd36f2e`, TEST-23 and TEST-24 (F-03, #19) to come |
+| BR-16 | Append-only history with actor and time | F-02, F-03 (cross-cutting rule, `docs/features.md` 3.2); kept by F-05, F-06, F-08, F-09, F-10, F-13 | 1 | AC-16, AC-23, AC-24 | TEST-16, TEST-23, TEST-24 | Verified (TEST-16 on `dd36f2e`, TEST-23 and TEST-24 on `1891aa0`) |
 | BR-17 | Only Borrowers create, edit or cancel requests | F-01, F-02; kept by F-04, F-05 (Sprint 2) | 1 | AC-15, AC-40 | TEST-15, TEST-40 | Verified (`dd36f2e`) |
 
 ## 4. Non-functional requirements
 
 | Requirement | Summary | Feature or responsibility | Sprint | AC | Tests | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| NFR-01 | Unauthenticated requests rejected without data | F-01; F-02 endpoints in AC-33; F-03 endpoints in AC-41; re-verified by SR-03 | 1 | AC-05, AC-33, AC-41 | TEST-05, TEST-33, TEST-41 | Specified; F-01 part (TEST-05) verified on `7828473`, F-02 part (TEST-33) on `dd36f2e` |
-| NFR-02 | Cross-Borrower and cross-role access rejected | F-01, F-02, F-03 (cross-cutting rule); kept by F-06, F-09, F-13; re-verified by SR-03 | 1 | AC-06, AC-14, AC-15 | TEST-06, TEST-14, TEST-15, TEST-32, TEST-41 | Specified; F-01 part (TEST-06) verified on `7828473`, F-02 part (TEST-14, TEST-15) on `dd36f2e` |
+| NFR-01 | Unauthenticated requests rejected without data | F-01; F-02 endpoints in AC-33; F-03 endpoints in AC-41; re-verified by SR-03 | 1 | AC-05, AC-33, AC-41 | TEST-05, TEST-33, TEST-41 | Verified (TEST-05 on `7828473`, TEST-33 on `dd36f2e`, TEST-41 on `1891aa0`) |
+| NFR-02 | Cross-Borrower and cross-role access rejected | F-01, F-02, F-03 (cross-cutting rule); kept by F-06, F-09, F-13; re-verified by SR-03 | 1 | AC-06, AC-14, AC-15 | TEST-06, TEST-14, TEST-15, TEST-32, TEST-41 | Specified; F-01 part (TEST-06) verified on `7828473`, F-02 part (TEST-14, TEST-15) on `dd36f2e`, F-03 part (TEST-41) on `1891aa0`, TEST-32 (E2E, #20) to come |
 | NFR-03 | Adaptive salted password hashing | F-01 | 1 | AC-07 | TEST-07 | Verified (`7828473`) |
 | NFR-04 | Sign-out invalidates the session; 8-hour expiry (Proposed) | F-01 | 1 | AC-03, AC-04 | TEST-03, TEST-04 | Verified (`7828473`) |
-| NFR-05 | Concurrent checkouts give one active loan | F-03; kept by F-07, F-10 | 1 | AC-22 | TEST-22, TEST-52 | Specified |
+| NFR-05 | Concurrent checkouts give one active loan | F-03; kept by F-07, F-10 | 1 | AC-22 | TEST-22, TEST-52 | Verified (`1891aa0`) |
 | NFR-06 | Data survives restart and redeploy | SR-01 (restart); SR-02 (redeploy, from Lab 5) | 1 | - | TEST-27; redeploy check in Lab 5 | Planned (restart half: TEST-27 passes on `ef7cd71`, PR #29; redeploy check pending) |
 | NFR-07 | All settings from environment; no real secret in the repository | SR-01; SR-02 (Secret Manager) | 1 | - | TEST-28; manual clean-clone check | Verified (`ef7cd71`, PR #29) |
 | NFR-08 | Consistent JSON errors, no stack trace | SR-01; re-verified by SR-03 | 1 | - | TEST-29 | Verified (`ef7cd71`, PR #29) |
-| NFR-09 | History entry for every state change and request edit | F-02, F-03 (cross-cutting rule); kept by F-05, F-06, F-08, F-10 | 1 | AC-16, AC-23 | TEST-16, TEST-23 | Specified; F-02 part (TEST-16) verified on `dd36f2e`, TEST-23 (F-03, #19) to come |
+| NFR-09 | History entry for every state change and request edit | F-02, F-03 (cross-cutting rule); kept by F-05, F-06, F-08, F-10 | 1 | AC-16, AC-23 | TEST-16, TEST-23 | Verified (TEST-16 on `dd36f2e`, TEST-23 on `1891aa0`) |
 | NFR-10 | Request within 3 clicks from the catalog (Proposed) | F-04 | 2 | Contract F-04 | - | Planned |
 | NFR-11 | Lists within 2 seconds with 500 units (Proposed) | SR-03; applies to F-12, F-14 | 3 | - | Measured in Sprint 3 if Q-03 confirms | Planned |
-| NFR-12 | Loading, empty and error states in every list | F-02, F-03 (cross-cutting rule) | 1 | AC-17, AC-25 | TEST-17, TEST-25 | Specified; F-02 part (TEST-17) verified on `dd36f2e`, TEST-25 (F-03, #19) to come |
+| NFR-12 | Loading, empty and error states in every list | F-02, F-03 (cross-cutting rule) | 1 | AC-17, AC-25 | TEST-17, TEST-25 | Verified (TEST-17 on `dd36f2e`, TEST-25 on `1891aa0`) |
 
 ## 5. Uncovered requirements and approved changes
 
@@ -118,3 +118,4 @@ None. Two rows depend on open questions:
 | 2026-11-06 | F-02 contract adds AC-33 to AC-40 with TEST-33 to TEST-40 (TEST-n verifies AC-n), in the block 33 to 40 reserved for F-02. AC-08 to AC-17 are unchanged. FR-04, FR-07, BR-01, BR-04, BR-05 and BR-17 move to Specified. With the F-03 contract (PR #28) already merged, the rows that F-02 and F-03 share also move to Specified: FR-08, BR-16, NFR-02, NFR-09 and NFR-12. NFR-01 gains AC-33 | Failure and boundary cases in the F-02 design (no session, invalid body, unknown item type, BR-04 limits and race, rule order, list and detail inputs, catalog request action) had no AC | PR #30, F-02 contract v1.1 |
 | 2026-11-06 | FR-02, FR-03, NFR-03 and NFR-04 move to Verified: all their tests (TEST-01, TEST-03, TEST-04, TEST-07) pass on `7828473`. FR-01, NFR-01 and NFR-02 stay Specified, with the F-01 part noted, because they also depend on tests from #19 and #20 | F-01 implemented (#17); contract F-01 section 9, DoD item 6 | PR #31 |
 | 2026-11-06 | FR-04, BR-01, BR-05 and BR-17 move to Verified: all their tests pass on `dd36f2e`. FR-07, FR-08, BR-04, BR-16, NFR-01, NFR-02, NFR-09 and NFR-12 stay Specified, with the F-02 part noted, because they also depend on tests from #19 and #20 | F-02 implemented (#18) | PR #32 |
+| 2026-11-06 | FR-09, BR-02, BR-03, BR-16, NFR-01, NFR-05, NFR-09 and NFR-12 move to Verified: all their tests pass on `1891aa0` (server 160 passed, client 39 passed, 0 skipped). FR-08, FR-16 and NFR-02 stay Specified, with the F-03 part noted, because they also depend on the E2E tests TEST-30 and TEST-32 (#20). AC-to-test results are in `docs/features.md` 4.3.1 | F-03 implemented (#19); contract F-03 section 9, DoD item 6 | PR #33 |

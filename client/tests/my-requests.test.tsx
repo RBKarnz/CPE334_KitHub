@@ -7,6 +7,7 @@ import * as requestsApi from "../src/api/requests";
 import type { BorrowRequest } from "../src/api/requests";
 import { MyRequestsPage } from "../src/pages/MyRequestsPage";
 import { RequestDetailPage } from "../src/pages/RequestDetailPage";
+import { checkedOut12 } from "./fixtures";
 import { borrower, custodian, deferred, renderAs } from "./render";
 
 const request12: BorrowRequest = {
@@ -66,6 +67,21 @@ describe("Request detail (contract F-02 section 5)", () => {
     expect(await screen.findByRole("heading", { name: /Request #12/ })).toHaveTextContent("Pending");
     expect(screen.getByText("Arduino Uno R3 × 1")).toBeInTheDocument();
     expect(screen.getByText("Created 6 Nov 2026, 13:10")).toBeInTheDocument();
+  });
+
+  it("after checkout the Borrower sees Checked out, the due date, the asset tag and the checkout time (contract F-03 4.4)", async () => {
+    // Borrower view: the loan has no checkedOutBy (F03-D7).
+    const { checkedOutBy: _hidden, ...loan } = checkedOut12.lines[0].loans[0];
+    vi.spyOn(requestsApi, "fetchRequest").mockResolvedValue({
+      ...checkedOut12,
+      lines: [{ ...checkedOut12.lines[0], loans: [loan] }],
+    });
+    renderAs(borrower, <RequestDetailPage />, { path: "/requests/:id", at: "/requests/12" });
+
+    expect(await screen.findByRole("heading", { name: /Request #12/ })).toHaveTextContent("Checked out");
+    expect(screen.getByText("Due 20 Nov 2026, 14:30")).toBeInTheDocument();
+    expect(screen.getByText("KH-ARD-0007")).toBeInTheDocument();
+    expect(screen.getByText("Checked out 6 Nov 2026, 14:30")).toBeInTheDocument();
   });
 
   it("a 404 shows 'Request not found.' with a link to My requests", async () => {
