@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.0 |
+| Version | 1.1 |
 | Date | 2026-11-06 |
 | Source requirements | `docs/srs.md` v1.2 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
 | Traceability | `docs/traceability.md` |
@@ -15,6 +15,7 @@
 - Feature and SR IDs, boundaries, dependencies and sprints are the same as in `docs/sprints/plan.md` section 3. A change to either document must change both in the same PR.
 - Sprint 1 features list their planned acceptance criteria (`AC-xx`) and tests (`TEST-xx`). Their contracts (#14, #15, #16) adopt these IDs; any change is recorded in the contract's version history and in section 5 of `docs/traceability.md`.
 - Sprint 2 and Sprint 3 features have a sprint allocation now. Their AC and tests are written in their contracts before implementation.
+- **ID numbering.** AC-n is verified by TEST-n, and each number is used once across AC and TEST. A number may hold a test with no AC of the same number: the system checks TEST-27 to TEST-32, and supporting tests such as a unit test of a domain function that serves AC numbered elsewhere. A number never holds an AC whose TEST-n verifies something else. Sprint 1 contracts written in parallel take fixed blocks: F-02 (#15) adds AC and tests from 33 to 40, F-03 (#16) uses 41 to 49 for its AC and 50 to 52 for supporting tests. Every later addition, including an F-02 addition that does not fit its block, takes the next free number above the highest AC or TEST on `staging` and claims it in its PR description.
 
 ## 2. Features
 
@@ -86,19 +87,30 @@ Test levels: **Unit** (domain logic), **API** (HTTP + database), **Integration**
 | AC-16 | Creating a request writes a history entry with the Borrower as actor and a timestamp | BR-16, NFR-09 | TEST-16 | Integration |
 | AC-17 | The catalog and the Borrower's request list show a loading, an empty and an error state | NFR-12 | TEST-17 | UI |
 
-### 4.3 F-03 Checkout and active loan (contract #16)
+### 4.3 F-03 Checkout and active loan (contract #16, `docs/sprints/sprint-1/F-03-checkout.md`)
 
 | AC | Expected outcome | Requirements | Test | Level |
 | --- | --- | --- | --- | --- |
 | AC-18 | A Custodian sees every `PENDING` request with its Borrower, line and creation time | FR-09 | TEST-18 | API |
-| AC-19 | A Custodian checks out an `AVAILABLE` unit of the requested item type; one `ACTIVE` loan is created with due date = checkout time + the item type's maximum loan length, the unit becomes `ON_LOAN` and the request becomes `CHECKED_OUT` | FR-16 | TEST-19 | API |
-| AC-20 | Checkout is rejected, no loan is created, the request stays `PENDING` and every unit keeps its state in both cases: (a) the chosen unit is not `AVAILABLE`; (b) no unit of the item type is `AVAILABLE` (D-17), so the unit list for the item type has no `AVAILABLE` unit and checkout with any of its units is rejected | FR-16, BR-02 | TEST-20 | API |
+| AC-19 | A Custodian checks out an `AVAILABLE` unit of the requested item type; one `ACTIVE` loan is created with due date = checkout time + the item type's maximum loan length, the unit becomes `ON_LOAN` and the request becomes `CHECKED_OUT` | FR-16 | TEST-19, TEST-50, TEST-51 | API + Unit |
+| AC-20 | Checkout is rejected, no loan is created, the request stays `PENDING` and every unit keeps its state in both cases: (a) the chosen unit is not `AVAILABLE`; (b) no unit of the item type is `AVAILABLE` (D-17), so the unit list for the item type has no `AVAILABLE` unit and checkout with any of its units is rejected | FR-16, BR-02 | TEST-20, TEST-51 | API + Unit |
 | AC-21 | Checkout with a unit of a different item type is rejected and no loan is created | BR-02 | TEST-21 | API |
-| AC-22 | Two simultaneous checkouts of the same unit produce exactly one `ACTIVE` loan; the other checkout is rejected | BR-03, NFR-05 | TEST-22 | Integration |
+| AC-22 | Two simultaneous checkouts of the same unit produce exactly one `ACTIVE` loan; the other checkout is rejected | BR-03, NFR-05 | TEST-22, TEST-52 | Integration + Unit |
 | AC-23 | Checkout writes history entries for the request, the unit and the loan, with the Custodian as actor and a timestamp | BR-16, NFR-09 | TEST-23 | Integration |
 | AC-24 | The data layer rejects any update or delete of a history entry | BR-16 | TEST-24 | Integration |
 | AC-25 | The Custodian's pending request list shows a loading, an empty and an error state | NFR-12 | TEST-25 | UI |
 | AC-26 | After checkout, the Borrower sees their request as `CHECKED_OUT` and the item type's available count has dropped by one | FR-08, FR-16 | TEST-26 | API |
+| AC-41 | A call without a valid session to the pending list, the unit list or checkout is rejected with `401 UNAUTHENTICATED`, returns no request, unit or loan data, and nothing changes | NFR-01 | TEST-41 | API |
+| AC-42 | Checkout of a request ID that does not exist is rejected with `404 NOT_FOUND` and nothing changes | FR-16 | TEST-42 | API |
+| AC-43 | Checkout of a request that is not `PENDING` (already `CHECKED_OUT`) is rejected with `409 INVALID_STATE`; the request keeps its state and its one loan, and nothing else changes | FR-16 | TEST-43, TEST-51 | API + Unit |
+| AC-44 | A checkout body that fails the schema (unknown field, missing `units`, a non-integer or non-positive ID, zero entries or two entries) is rejected with `400 VALIDATION_FAILED` naming each problem in `details`, and nothing changes | FR-16 | TEST-44 | API |
+| AC-45 | Checkout whose `lineId` is a line of another request is rejected with `400 VALIDATION_FAILED` naming `units[0].lineId`; neither request changes and no loan is created | FR-16, BR-02 | TEST-45 | API |
+| AC-46 | Checkout with a `unitId` that does not exist is rejected with `404 NOT_FOUND` naming `units[0].unitId`; the request stays `PENDING` and nothing changes | FR-16, BR-02 | TEST-46 | API |
+| AC-47 | Two simultaneous checkouts of the same request with two different `AVAILABLE` units produce exactly one loan; the other checkout is rejected with `409 INVALID_STATE` and its unit stays `AVAILABLE` | FR-16 | TEST-47 | Integration |
+| AC-48 | A Custodian who lists the units of an item type with `status=AVAILABLE` receives only that item type's `AVAILABLE` units, ordered by asset tag; an unknown item type gives `404 NOT_FOUND` and an invalid `status` gives `400 VALIDATION_FAILED` | FR-16, D-17 | TEST-48 | API |
+| AC-49 | In the checkout dialog the Custodian chooses one of the listed `AVAILABLE` units and confirms with a button that names the request and the unit. With no unit available, the dialog says so and sends no checkout. A `409` is shown as an alert with the API message and the unit list is fetched again. On success the dialog shows the asset tag and due date and the request leaves the pending list | FR-16, D-17 | TEST-49 | UI |
+
+AC-41 to AC-49 with TEST-41 to TEST-49, and the supporting tests TEST-50 (unit test of the due-date rule, D-16), TEST-51 (unit test of the F-03 state transitions) and TEST-52 (unit test of the unique-violation conversion), were added by the F-03 contract (`docs/traceability.md` 5.2). The F-03 cases of AC-06 (a Borrower calling the unit list or checkout) are TEST-41 (b), as the F-01 contract (section 8.1) states.
 
 ### 4.4 System checks for Sprint 1 (#13 skeleton, #20 E2E)
 
