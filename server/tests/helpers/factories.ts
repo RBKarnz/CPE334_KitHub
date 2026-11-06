@@ -1,7 +1,7 @@
 // Small factories that later feature tests reuse. Tests create their own data and do not
 // depend on the demo seed (SDS 4.8).
 import bcrypt from "bcryptjs";
-import { Role, UnitStatus, type PrismaClient } from "@prisma/client";
+import { RequestStatus, Role, UnitStatus, type PrismaClient } from "@prisma/client";
 
 /** Test-only password. It exists only in test code and is never a real account password. */
 export const TEST_PASSWORD = "test-only-password";
@@ -90,4 +90,36 @@ export async function createUnit(
       status: overrides.status ?? UnitStatus.AVAILABLE,
     },
   });
+}
+
+/**
+ * Creates a request with one line in the chosen state (F02-A7). Test data only: it writes no
+ * history entry and no loans, so a CHECKED_OUT request here has no loan rows.
+ */
+export async function createRequest(
+  prisma: PrismaClient,
+  options: { borrowerId: number; itemTypeId: number; status?: RequestStatus; createdAt?: Date; quantity?: number },
+) {
+  return prisma.borrowRequest.create({
+    data: {
+      borrowerId: options.borrowerId,
+      status: options.status ?? RequestStatus.PENDING,
+      ...(options.createdAt ? { createdAt: options.createdAt } : {}),
+      lines: { create: { itemTypeId: options.itemTypeId, quantity: options.quantity ?? 1 } },
+    },
+    include: { lines: true },
+  });
+}
+
+/** Creates an item type with units in the given states, for example { AVAILABLE: 2, ON_LOAN: 1 }. */
+export async function createItemTypeWithUnits(
+  prisma: PrismaClient,
+  overrides: Parameters<typeof createItemType>[1],
+  units: Partial<Record<UnitStatus, number>>,
+) {
+  const itemType = await createItemType(prisma, overrides);
+  for (const [status, count] of Object.entries(units) as [UnitStatus, number][]) {
+    for (let i = 0; i < count; i++) await createUnit(prisma, { itemTypeId: itemType.id, status });
+  }
+  return itemType;
 }
