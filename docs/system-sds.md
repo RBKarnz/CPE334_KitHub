@@ -17,7 +17,7 @@
 | Version | Date | Author | Change |
 | --- | --- | --- | --- |
 | 1.0 | 2026-11-06 | Methipat Mansap | First baseline for the whole product (Sprints 1 to 3) |
-| 1.1 | 2026-11-06 | Methipat Mansap | Review of PR #25: a wrong sign-in no longer shows "session has ended" (5.3); checkout checks that each `lineId` belongs to the request (4.7, 6.4); sign-in deletes every expired session (8.2, 8.3); note on the CI trigger for `staging` (9.6) |
+| 1.1 | 2026-11-06 | Methipat Mansap | Review of PR #25: a wrong sign-in, or a first visit with no session, no longer shows "session has ended" (5.3); checkout checks that each `lineId` belongs to the request (4.7, 6.4); sign-in deletes every expired session (8.2, 8.3); note on the CI trigger for `staging` (9.6) |
 
 ## 2. Introduction
 
@@ -578,7 +578,7 @@ Search and filter (FR-06) are added to the Catalog screen in Sprint 3.
 | Rule rejection | A `409` from the API is shown as an alert at the top of the form or dialog with the API `message`, for example "Arduino Uno R3 has no available units." Nothing is changed in the UI's data until a successful response |
 | Submitting | The submit button is disabled and shows a spinner while the call runs, so a double click sends one call |
 | Success | A short confirmation, for example "Request #12 submitted", and the list is refreshed from the API |
-| Session ended | A `401` with code `UNAUTHENTICATED` from any call clears the current user and goes to `/login` with "Your session has ended. Please sign in again." |
+| Session ended | A `401` with code `UNAUTHENTICATED` from any call clears the current user and goes to `/login`. The message "Your session has ended. Please sign in again." is shown only if the app had a signed-in user before that call. On a first visit with no session (`GET /api/auth/me` returns `401`), the sign-in page opens without a message |
 | Wrong sign-in | `401 INVALID_CREDENTIALS` from `POST /api/auth/login` does not end a session and does not redirect. The sign-in form stays open, keeps the username, clears the password and shows the API message "Username or password is incorrect." (FR-01) |
 | Forbidden | A `403` shows "You do not have permission to do this." |
 | Confirmation | Checkout, cancel, reject and retire ask for confirmation in a dialog that names the request or unit |

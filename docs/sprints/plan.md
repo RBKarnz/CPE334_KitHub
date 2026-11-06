@@ -6,7 +6,7 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part D |
-| Version | 1.0 |
+| Version | 1.1 |
 | Date | 2026-11-06 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Baseline | [SRS v1.2](../srs.md), [System-Level SDS v1.1](../system-sds.md) |
@@ -16,6 +16,7 @@
 | Version | Date | Author | Change |
 | --- | --- | --- | --- |
 | 1.0 | 2026-11-06 | Methipat Mansap | First plan for Sprints 1 to 3 |
+| 1.1 | 2026-11-06 | Methipat Mansap | Review of PR #25: baseline link updated to SDS v1.1 |
 
 ## 2. Overview
 
