@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.2 |
+| Version | 1.3 |
 | Date | 2026-11-06 |
 | Source requirements | `docs/srs.md` v1.2 |
 | Features and AC/TEST definitions | `docs/features.md` v1.2 |
@@ -20,15 +20,15 @@ Every requirement in the SRS appears exactly once as a row below. All 59 rows ha
 | NFR | 10 | 1 | 1 | 12 |
 | Total | 25 | 24 | 10 | 59 |
 
-Sprint 1 rows link to planned AC and tests from `docs/features.md`. Sprint 2 and 3 rows link to the feature whose contract will define their AC and tests before implementation. The Status column moves from Planned → Specified (contract merged) → Verified (test passing on a recorded commit).
+Sprint 1 rows link to planned AC and tests from `docs/features.md`. Sprint 2 and 3 rows link to the feature whose contract will define their AC and tests before implementation. The Status column moves from Planned → Specified (contract merged) → Verified (test passing on a recorded commit). A row whose tests come from several features stays Specified until all of them pass, with a note on the part already verified.
 
 ## 2. Functional requirements
 
 | Requirement | Summary | Feature | Sprint | AC | Tests | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| FR-01 | Sign in with a seeded account | F-01 | 1 | AC-01, AC-02 | TEST-01, TEST-02, TEST-30 | Specified |
-| FR-02 | Sign out ends the session | F-01 | 1 | AC-03 | TEST-03 | Specified |
-| FR-03 | Show current user and role | F-01 | 1 | AC-01 | TEST-01 | Specified |
+| FR-01 | Sign in with a seeded account | F-01 | 1 | AC-01, AC-02 | TEST-01, TEST-02, TEST-30 | Specified; F-01 part (TEST-01, TEST-02) verified on `7828473`, TEST-30 (E2E, #20) to come |
+| FR-02 | Sign out ends the session | F-01 | 1 | AC-03 | TEST-03 | Verified (`7828473`) |
+| FR-03 | Show current user and role | F-01 | 1 | AC-01 | TEST-01 | Verified (`7828473`) |
 | FR-04 | Browse categories and item types with availability | F-02 | 1 | AC-08 | TEST-08 | Specified |
 | FR-05 | Item type details | F-04 | 2 | Contract F-04 | - | Planned |
 | FR-06 | Search and filter item types | F-12 | 3 | Contract F-12 | - | Planned |
@@ -85,10 +85,10 @@ A rule enforced by several features is listed once, with the sprint that first e
 
 | Requirement | Summary | Feature or responsibility | Sprint | AC | Tests | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| NFR-01 | Unauthenticated requests rejected without data | F-01; F-02 endpoints in AC-33; F-03 endpoints in AC-41; re-verified by SR-03 | 1 | AC-05, AC-33, AC-41 | TEST-05, TEST-33, TEST-41 | Specified |
-| NFR-02 | Cross-Borrower and cross-role access rejected | F-01, F-02, F-03 (cross-cutting rule); kept by F-06, F-09, F-13; re-verified by SR-03 | 1 | AC-06, AC-14, AC-15 | TEST-06, TEST-14, TEST-15, TEST-32, TEST-41 | Specified |
-| NFR-03 | Adaptive salted password hashing | F-01 | 1 | AC-07 | TEST-07 | Specified |
-| NFR-04 | Sign-out invalidates the session; 8-hour expiry (Proposed) | F-01 | 1 | AC-03, AC-04 | TEST-03, TEST-04 | Specified |
+| NFR-01 | Unauthenticated requests rejected without data | F-01; F-02 endpoints in AC-33; F-03 endpoints in AC-41; re-verified by SR-03 | 1 | AC-05, AC-33, AC-41 | TEST-05, TEST-33, TEST-41 | Specified; F-01 part (TEST-05) verified on `7828473` |
+| NFR-02 | Cross-Borrower and cross-role access rejected | F-01, F-02, F-03 (cross-cutting rule); kept by F-06, F-09, F-13; re-verified by SR-03 | 1 | AC-06, AC-14, AC-15 | TEST-06, TEST-14, TEST-15, TEST-32, TEST-41 | Specified; F-01 part (TEST-06) verified on `7828473` |
+| NFR-03 | Adaptive salted password hashing | F-01 | 1 | AC-07 | TEST-07 | Verified (`7828473`) |
+| NFR-04 | Sign-out invalidates the session; 8-hour expiry (Proposed) | F-01 | 1 | AC-03, AC-04 | TEST-03, TEST-04 | Verified (`7828473`) |
 | NFR-05 | Concurrent checkouts give one active loan | F-03; kept by F-07, F-10 | 1 | AC-22 | TEST-22, TEST-52 | Specified |
 | NFR-06 | Data survives restart and redeploy | SR-01 (restart); SR-02 (redeploy, from Lab 5) | 1 | - | TEST-27; redeploy check in Lab 5 | Planned (restart half: TEST-27 passes on `ef7cd71`, PR #29; redeploy check pending) |
 | NFR-07 | All settings from environment; no real secret in the repository | SR-01; SR-02 (Secret Manager) | 1 | - | TEST-28; manual clean-clone check | Verified (`ef7cd71`, PR #29) |
@@ -116,3 +116,4 @@ None. Two rows depend on open questions:
 | 2026-11-06 | Resolved Q-04, Q-05 and Q-06 as D-15, D-16 and D-17; Sprint 1 due date and rejected checkout added to FR-16 | Team decision | PR #24, SRS v1.2 |
 | 2026-11-06 | F-03 contract adds AC-41 to AC-49 with TEST-41 to TEST-49 (TEST-n verifies AC-n), and supporting unit tests TEST-50 (due date, AC-19), TEST-51 (transitions, AC-19, AC-20, AC-43) and TEST-52 (unique-violation conversion, AC-22). TEST-41 (b) runs the F-03 cases of AC-06, as the F-01 contract states. AC-18 to AC-26 are unchanged. FR-09, FR-16, BR-02, BR-03 and NFR-05 move to Specified. `docs/features.md` section 1 gains the ID numbering rule, with blocks 33 to 40 for F-02 and 41 to 52 for F-03 | Failure cases in the F-03 design (unknown request or unit, request not pending, invalid body, line of another request, same-request race, unit list, checkout dialog) had no AC; numbering clarified in the PR #28 review | PR #28, F-03 contract v1.1 |
 | 2026-11-06 | F-02 contract adds AC-33 to AC-40 with TEST-33 to TEST-40 (TEST-n verifies AC-n), in the block 33 to 40 reserved for F-02. AC-08 to AC-17 are unchanged. FR-04, FR-07, BR-01, BR-04, BR-05 and BR-17 move to Specified. With the F-03 contract (PR #28) already merged, the rows that F-02 and F-03 share also move to Specified: FR-08, BR-16, NFR-02, NFR-09 and NFR-12. NFR-01 gains AC-33 | Failure and boundary cases in the F-02 design (no session, invalid body, unknown item type, BR-04 limits and race, rule order, list and detail inputs, catalog request action) had no AC | PR #30, F-02 contract v1.1 |
+| 2026-11-06 | FR-02, FR-03, NFR-03 and NFR-04 move to Verified: all their tests (TEST-01, TEST-03, TEST-04, TEST-07) pass on `7828473`. FR-01, NFR-01 and NFR-02 stay Specified, with the F-01 part noted, because they also depend on tests from #19 and #20 | F-01 implemented (#17); contract F-01 section 9, DoD item 6 | PR #31 |
