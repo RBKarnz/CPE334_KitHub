@@ -42,7 +42,5 @@ coverage/
 .vscode/
 .idea/
 
-# Claude Code: share the project settings (enabled plugins); keep local state and
-# personal settings (settings.local.json) out of git
-.claude/*
-!.claude/settings.json
+# Claude Code local session state
+.claude/
