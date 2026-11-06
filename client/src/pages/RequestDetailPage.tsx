@@ -56,9 +56,11 @@ export function RequestDetailPage() {
               {r.lines.map((line) => (
                 <li key={line.id} className="list-group-item">
                   {line.itemType.name} × {line.quantity}
+                  {/* After checkout: the unit's asset tag and the checkout time (contract F-03 4.4). */}
                   {line.loans.map((loan) => (
                     <div key={loan.id} className="small text-body-secondary">
-                      Unit {loan.unit.assetTag}, due {formatDateTime(loan.dueAt)}
+                      Unit <span className="font-monospace">{loan.unit.assetTag}</span> ·{" "}
+                      <span>Checked out {formatDateTime(loan.checkedOutAt)}</span>
                     </div>
                   ))}
                 </li>

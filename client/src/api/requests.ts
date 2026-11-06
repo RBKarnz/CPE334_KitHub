@@ -35,6 +35,6 @@ export const fetchMyRequests = () => apiFetch<{ items: BorrowRequest[] }>("/requ
 
 export const fetchRequest = (id: number) => apiFetch<BorrowRequest>(`/requests/${id}`);
 
-/** Stub for the failing UI tests of #19; implemented next. */
-export const fetchPendingRequests = (): Promise<BorrowRequest[]> =>
-  Promise.reject(new Error("fetchPendingRequests is not implemented yet (#19)"));
+/** Custodian: every Borrower's PENDING requests, oldest first (contract F-03 5.1, F03-D2). */
+export const fetchPendingRequests = () =>
+  apiFetch<{ items: BorrowRequest[] }>("/requests?status=PENDING").then((r) => r.items);

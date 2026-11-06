@@ -1,4 +1,6 @@
-// Units of an item type (contract F-03 5.2). Stub for the failing UI tests of #19; implemented next.
+// Units of an item type, for the checkout dialog (contract F-03 5.2). Custodian only.
+import { apiFetch } from "./client";
+
 export type UnitStatus = "AVAILABLE" | "ON_LOAN" | "MAINTENANCE" | "RETIRED";
 
 export interface UnitSummary {
@@ -7,5 +9,8 @@ export interface UnitSummary {
   status: UnitStatus;
 }
 
-export const fetchUnits = (_itemTypeId: number, _status?: UnitStatus): Promise<UnitSummary[]> =>
-  Promise.reject(new Error("fetchUnits is not implemented yet (#19)"));
+/** Ordered by asset tag. Without `status`, every unit of the item type (F03-D8). */
+export const fetchUnits = (itemTypeId: number, status?: UnitStatus) =>
+  apiFetch<{ items: UnitSummary[] }>(
+    `/item-types/${itemTypeId}/units${status ? `?status=${encodeURIComponent(status)}` : ""}`,
+  ).then((r) => r.items);
