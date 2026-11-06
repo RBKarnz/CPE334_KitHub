@@ -3,9 +3,9 @@
 // - Inserts a record only if none exists with the same natural key (username, category
 //   name, item type name, asset tag). Never changes an existing record.
 // - Passwords come only from environment variables and are never printed.
-import bcrypt from "bcryptjs";
 import { PrismaClient, Role, UnitStatus } from "@prisma/client";
 import type { SeedConfig } from "../src/core/config.js";
+import { hashPassword } from "../src/features/auth/password.js";
 
 interface SeedItemType {
   name: string;
@@ -135,7 +135,7 @@ export async function seed(prisma: PrismaClient, config: SeedConfig): Promise<Se
       .filter((a) => !existing.has(a.username))
       .map(async (a) => ({
         ...a,
-        passwordHash: await bcrypt.hash(
+        passwordHash: await hashPassword(
           a.role === Role.CUSTODIAN ? config.custodianPassword : (config.borrowerPassword as string),
           config.bcryptCost,
         ),
