@@ -7,7 +7,7 @@
 | Feature | F-01 Sign-in, sign-out, current user and roles |
 | Sprint | 1 |
 | Issue | #14 (contract), #17 (implementation) |
-| Version | 1.1 |
+| Version | 1.2 |
 | Status | Proposed (becomes Agreed when merged into `staging`, before #17 starts) |
 | Date | 2026-11-06 |
 | Authors | Teerakarn Noiruksa (67070501062) |
@@ -19,6 +19,7 @@
 | --- | --- | --- | --- | --- |
 | 1.0 | 2026-11-06 | Teerakarn Noiruksa | First contract | Part E: contract before implementation |
 | 1.1 | 2026-11-06 | Teerakarn Noiruksa | TEST-06 covers only the test-app route; the real-endpoint cases of AC-06 are TEST-41 (b) in contract F-03 (8, 8.1). Every `POST`, including logout, needs `Content-Type: application/json` (4, 4.2, 5, TEST-03). Corrected the 72-byte note (3.2), the sign-in field limits (4.1), how TEST-07 gets cost 12, and the link to the product Definition of Done (9) | Review of PR #27 |
+| 1.2 | 2026-11-06 | Teerakarn Noiruksa | STS (8): every API test signs in and out through one shared helper that sends `Content-Type: application/json` on every `POST`, including logout, so setup steps do not get `415` | Note in the PR #27 re-review |
 
 A change after this version is merged gets a new row here, and an AC or TEST change is also recorded in `docs/traceability.md` section 5.
 
@@ -192,6 +193,8 @@ Related AC in other contracts: a Custodian creating a request (AC-15) and cross-
 ## 8. Software Test Specification
 
 Levels and tools follow SDS section 10. API tests run against `kithub_test` with seeded `custodian1` and `borrower1` (test passwords set in the test environment) and `BCRYPT_COST=4` for speed. TEST-07 passes cost 12 explicitly and checks the default separately.
+
+All API tests sign in and sign out through one shared helper in `server/tests/helpers/`, which sends `Content-Type: application/json` on every `POST`, including logout (section 4.2). A setup step that signs out without the header would get `415` and leave the session in place, so the tests would not start from the state they assume. Later contracts use the same helper, for example the signed-out-session setup of TEST-41 (a) in F-03.
 
 | Test | AC | Level | Precondition / input | Action | Expected result |
 | --- | --- | --- | --- | --- | --- |
