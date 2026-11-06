@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.2 |
+| Version | 1.3 |
 | Date | 2026-11-06 |
 | Source requirements | `docs/srs.md` v1.2 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
 | Traceability | `docs/traceability.md` |
@@ -121,6 +121,34 @@ AC-33 to AC-40 with TEST-33 to TEST-40 were added by the F-02 contract (`docs/tr
 | AC-49 | In the checkout dialog the Custodian chooses one of the listed `AVAILABLE` units and confirms with a button that names the request and the unit. With no unit available, the dialog says so and sends no checkout. A `409` is shown as an alert with the API message and the unit list is fetched again. On success the dialog shows the asset tag and due date and the request leaves the pending list | FR-16, D-17 | TEST-49 | UI |
 
 AC-41 to AC-49 with TEST-41 to TEST-49, and the supporting tests TEST-50 (unit test of the due-date rule, D-16), TEST-51 (unit test of the F-03 state transitions) and TEST-52 (unit test of the unique-violation conversion), were added by the F-03 contract (`docs/traceability.md` 5.2). The F-03 cases of AC-06 (a Borrower calling the unit list or checkout) are TEST-41 (b), as the F-01 contract (section 8.1) states.
+
+#### 4.3.1 F-03 results (#19)
+
+Automated tests only; the manual checks are in `docs/sprints/sprint-1/manual-test-guide.md` (MT-11 to MT-17). Tested commit `1891aa0` on 2026-11-06: `npm test` in `server/` 160 passed, 0 failed, 0 skipped (26 files, against `kithub_test`); `npm test` in `client/` 39 passed, 0 failed, 0 skipped (5 files). TDD: the server tests failed on `8a03ecd` and the UI tests on `7b19841`, before the implementation commits.
+
+| AC | Planned test | Test file | Test names | Result on `1891aa0` |
+| --- | --- | --- | --- | --- |
+| AC-18 | TEST-18 | `server/tests/api/pending-requests.test.ts` | "TEST-18: lists every Borrower's PENDING requests oldest first …" | Pass (1 test) |
+| AC-19 | TEST-19, TEST-50, TEST-51 | `server/tests/api/checkout.test.ts`, `server/tests/unit/due-date.test.ts`, `server/tests/unit/transitions.test.ts` | "TEST-19: checking out an AVAILABLE unit …", "TEST-19: … maxLoanDays 3 …"; "TEST-50 (a)" to "(e)"; "TEST-51 (a)" | Pass (2 + 8 + 3 tests) |
+| AC-20 | TEST-20, TEST-51 | `server/tests/api/checkout.test.ts`, `server/tests/unit/transitions.test.ts` | "TEST-20 (a)", "(b)", "(c)"; "TEST-51 (b)" | Pass (3 + 6 tests) |
+| AC-21 | TEST-21 | `server/tests/api/checkout.test.ts` | "TEST-21 (a)", "TEST-21 (b)" | Pass (2 tests) |
+| AC-22 | TEST-22, TEST-52 | `server/tests/api/checkout-concurrency.test.ts`, `server/tests/unit/checkout-errors.test.ts` | "TEST-22 (a): two simultaneous checkouts … 5 rounds", "TEST-22 (b)"; "TEST-52 (a)" to "(c)" | Pass (2 + 3 tests) |
+| AC-23 | TEST-23 | `server/tests/api/checkout-history.test.ts` | "TEST-23: exactly three entries …" | Pass (1 test) |
+| AC-24 | TEST-24 | `server/tests/api/checkout-history.test.ts` | "TEST-24 (a)", "TEST-24 (b)", "TEST-24: patch …", "TEST-24: delete …" | Pass (4 tests) |
+| AC-25 | TEST-25 | `client/tests/PendingRequestsPage.test.tsx` | "TEST-25 (a)" to "(d)", "TEST-25: rows keep the API order" | Pass (5 tests) |
+| AC-26 | TEST-26 | `server/tests/api/checkout.test.ts` | "TEST-26: Borrower sees CHECKED_OUT …" | Pass (1 test) |
+| AC-41 | TEST-41 (a) | `server/tests/api/checkout-access.test.ts` | "TEST-41 (a): … with no cookie …", "… with a signed-out session cookie …" (3 endpoints each) | Pass (6 tests) |
+| AC-06 (F-03 cases) | TEST-41 (b) | `server/tests/api/checkout-access.test.ts` | "TEST-41 (b): … as a Borrower is 403 …" (unit list, checkout) | Pass (2 tests) |
+| AC-42 | TEST-42 | `server/tests/api/checkout.test.ts` | "TEST-42 (a)", "TEST-42 (b)" | Pass (2 tests) |
+| AC-43 | TEST-43, TEST-51 | `server/tests/api/checkout.test.ts`, `server/tests/unit/transitions.test.ts` | "TEST-43: checking out a CHECKED_OUT request again …"; "TEST-51 (b)" | Pass (1 + 6 tests) |
+| AC-44 | TEST-44 | `server/tests/api/checkout.test.ts` | "TEST-44 (a)" to "(h)" | Pass (9 tests) |
+| AC-45 | TEST-45 | `server/tests/api/checkout.test.ts` | "TEST-45 (a)", "TEST-45 (b)" | Pass (2 tests) |
+| AC-46 | TEST-46 | `server/tests/api/checkout.test.ts` | "TEST-46 (a)", "TEST-46 (b)" | Pass (2 tests) |
+| AC-47 | TEST-47 | `server/tests/api/checkout-concurrency.test.ts` | "TEST-47: two simultaneous checkouts of one request … 5 rounds" | Pass (1 test) |
+| AC-48 | TEST-48 | `server/tests/api/units.test.ts` | "TEST-48 (a)" to "(f)" | Pass (6 tests) |
+| AC-49 | TEST-49 | `client/tests/CheckoutDialog.test.tsx` | "TEST-49 (a)" to "(e)" | Pass (6 tests) |
+
+Every test file is at the path planned in contract F-03 section 8.2. Extra UI tests outside the STS also pass: the dialog's `INVALID_STATE`, Cancel/Escape and unit-list error cases (`client/tests/CheckoutDialog.test.tsx`), and the Borrower request detail after checkout (`client/tests/my-requests.test.tsx`, contract F-03 4.4).
 
 ### 4.4 System checks for Sprint 1 (#13 skeleton, #20 E2E)
 
