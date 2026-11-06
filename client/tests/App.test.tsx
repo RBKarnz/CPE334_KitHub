@@ -21,7 +21,11 @@ function reply(key: string, ...replies: Reply[]) {
 }
 
 beforeEach(() => {
-  routes = {};
+  // Pages from F-02 load these; the F-01 tests do not look at their content.
+  routes = {
+    "GET /api/categories": [{ status: 200, body: { items: [] } }],
+    "GET /api/requests": [{ status: 200, body: { items: [] } }],
+  };
   calls = [];
   vi.stubGlobal(
     "fetch",

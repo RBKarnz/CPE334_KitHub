@@ -1,12 +1,14 @@
-// Routes for Sprint 1 (SDS 5.1). Catalog, My requests and Pending requests are placeholders
-// until F-02 and F-03 build them.
+// Routes for Sprint 1 (SDS 5.1). Pending requests is a placeholder until F-03 builds it.
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { AuthProvider, landingPath, useAuth } from "./auth/AuthProvider";
 import { LoadingScreen, RequireAuth, RequireRole } from "./auth/guards";
 import { NavBar } from "./components/NavBar";
+import { CatalogPage } from "./pages/CatalogPage";
 import { LoginPage } from "./pages/LoginPage";
+import { MyRequestsPage } from "./pages/MyRequestsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
+import { RequestDetailPage } from "./pages/RequestDetailPage";
 
 function SignedInLayout() {
   return (
@@ -32,15 +34,17 @@ function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route element={<SignedInLayout />}>
         <Route path="/" element={<Home />} />
-        <Route path="/catalog" element={<PlaceholderPage title="Catalog" />} />
+        <Route path="/catalog" element={<CatalogPage />} />
         <Route
           path="/requests"
           element={
             <RequireRole role="BORROWER">
-              <PlaceholderPage title="My requests" />
+              <MyRequestsPage />
             </RequireRole>
           }
         />
+        {/* Borrower (own) and Custodian; the API scopes it (DD-06). */}
+        <Route path="/requests/:id" element={<RequestDetailPage />} />
         <Route
           path="/pending"
           element={

@@ -9,6 +9,8 @@ import { apiNotFound, errorHandler } from "./core/middleware/error-handler.js";
 import { noStore, requestId, requestLogger } from "./core/middleware/request-context.js";
 import { requireJson } from "./core/middleware/require-json.js";
 import { authRouter } from "./features/auth/auth.routes.js";
+import { catalogRouter } from "./features/catalog/catalog.routes.js";
+import { requestsRouter } from "./features/requests/requests.routes.js";
 
 export type AppConfigForApp = Pick<AppConfig, "nodeEnv" | "sessionTtlHours" | "cookieSecure" | "bcryptCost">;
 
@@ -44,7 +46,9 @@ export function createApp({ config, prisma, clientDistDir = DEFAULT_CLIENT_DIST,
   api.use(healthRouter(prisma));
   // Feature routers. Each applies authenticate and requireRole to its own routes (SDS 7.2).
   api.use(authRouter(prisma, config));
-  // Catalog, requests and loans are mounted here by F-02 and F-03.
+  api.use(catalogRouter(prisma));
+  api.use(requestsRouter(prisma));
+  // Loans and units are mounted here by F-03.
   mountTestRoutes?.(api);
 
   api.use(apiNotFound);
