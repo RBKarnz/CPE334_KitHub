@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { fetchPendingRequests, type BorrowRequest } from "../../api/requests";
 import { useLoad } from "../../api/useLoad";
 import { AsyncState } from "../../components/AsyncState";
+import { PageHeader } from "../../components/PageHeader";
 import { formatDateTime } from "../../format";
 import { CheckoutDialog, checkoutConfirmation } from "./CheckoutDialog";
 
@@ -21,8 +22,8 @@ export function PendingRequestsPage() {
 
   const items = pending.data ?? [];
   return (
-    <main className="container">
-      <h1 className="h3 mb-3">Pending requests</h1>
+    <main className="container kh-main">
+      <PageHeader>Pending requests</PageHeader>
       {notice && (
         <div className="alert alert-success" role="status">
           {notice}
@@ -35,8 +36,9 @@ export function PendingRequestsPage() {
         isEmpty={items.length === 0}
         empty="No pending requests."
       >
-        <div className="table-responsive">
-          <table className="table align-middle">
+        {/* Below 576 px each row shows as a card (theme.css); data-label names the column there. */}
+        <div className="kh-panel">
+          <table className="table align-middle kh-table kh-table-cards">
             <thead>
               <tr>
                 <th scope="col">Request</th>
@@ -54,18 +56,22 @@ export function PendingRequestsPage() {
                 return (
                   <tr key={request.id}>
                     <td>
-                      <Link to={`/requests/${request.id}`}>#{request.id}</Link>
+                      <Link className="fw-bold" to={`/requests/${request.id}`}>
+                        #{request.id}
+                      </Link>
                     </td>
-                    <td>
-                      {request.borrower.displayName} ({request.borrower.username})
+                    <td data-label="Borrower">
+                      {request.borrower.displayName} <span className="text-body-secondary">({request.borrower.username})</span>
                     </td>
-                    <td>{line?.itemType.name}</td>
-                    <td>{line?.quantity}</td>
-                    <td>{formatDateTime(request.createdAt)}</td>
+                    <td data-label="Item type" className="fw-semibold">
+                      {line?.itemType.name}
+                    </td>
+                    <td data-label="Quantity">{line?.quantity}</td>
+                    <td data-label="Created">{formatDateTime(request.createdAt)}</td>
                     <td>
                       <button
                         type="button"
-                        className="btn btn-primary btn-sm"
+                        className="btn btn-primary btn-sm px-3"
                         onClick={() => {
                           setNotice(null);
                           setActive(request);

@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { ApiError } from "../api/client";
 import { afterSignInPath, useAuth } from "../auth/AuthProvider";
+import { Logo } from "../components/Logo";
 
 interface FieldErrors {
   username?: string;
@@ -45,51 +46,56 @@ export function LoginPage() {
   };
 
   return (
-    <main className="container py-5" style={{ maxWidth: 420 }}>
-      <h1 className="h3 mb-4">Sign in to KitHub</h1>
-      {notice && !formError && (
-        <div className="alert alert-info" role="status">
-          {notice}
-        </div>
-      )}
-      {formError && (
-        <div className="alert alert-danger" role="alert">
-          {formError}
-        </div>
-      )}
-      <form onSubmit={handleSubmit} noValidate>
+    <main className="kh-signin kh-foam">
+      <div className="kh-card">
         <div className="mb-3">
-          <label htmlFor="username" className="form-label">
-            Username
-          </label>
-          <input
-            id="username"
-            className={`form-control${fieldErrors.username ? " is-invalid" : ""}`}
-            autoComplete="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          {fieldErrors.username && <div className="invalid-feedback">{fieldErrors.username}</div>}
+          <Logo size={44} />
         </div>
-        <div className="mb-3">
-          <label htmlFor="password" className="form-label">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            className={`form-control${fieldErrors.password ? " is-invalid" : ""}`}
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          {fieldErrors.password && <div className="invalid-feedback">{fieldErrors.password}</div>}
-        </div>
-        <button type="submit" className="btn btn-primary w-100" disabled={submitting}>
-          {submitting && <span className="spinner-border spinner-border-sm me-2" aria-hidden="true" />}
-          Sign in
-        </button>
-      </form>
+        <h1 className="mb-4">Sign in to KitHub</h1>
+        {notice && !formError && (
+          <div className="alert alert-info" role="status">
+            {notice}
+          </div>
+        )}
+        {formError && (
+          <div className="alert alert-danger" role="alert">
+            {formError}
+          </div>
+        )}
+        <form onSubmit={handleSubmit} noValidate>
+          <div className="mb-3">
+            <label htmlFor="username" className="form-label">
+              Username
+            </label>
+            <input
+              id="username"
+              className={`form-control form-control-lg${fieldErrors.username ? " is-invalid" : ""}`}
+              autoComplete="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            {fieldErrors.username && <div className="invalid-feedback">{fieldErrors.username}</div>}
+          </div>
+          <div className="mb-3">
+            <label htmlFor="password" className="form-label">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              className={`form-control form-control-lg${fieldErrors.password ? " is-invalid" : ""}`}
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            {fieldErrors.password && <div className="invalid-feedback">{fieldErrors.password}</div>}
+          </div>
+          <button type="submit" className="btn btn-primary btn-lg w-100" disabled={submitting}>
+            {submitting && <span className="spinner-border spinner-border-sm me-2" aria-hidden="true" />}
+            Sign in
+          </button>
+        </form>
+      </div>
     </main>
   );
 }

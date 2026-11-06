@@ -136,22 +136,25 @@ export function CheckoutDialog({ request, onClose, onCheckedOut, onStale }: Chec
                 empty={`No unit of ${line.itemType.name} is available. The request stays pending.`}
               >
                 <fieldset disabled={submitting}>
-                  <legend className="form-label fs-6">Available units</legend>
-                  {available.map((unit) => (
-                    <div className="form-check" key={unit.id}>
-                      <input
-                        className="form-check-input"
-                        type="radio"
-                        name="checkout-unit"
-                        id={`${titleId}-unit-${unit.id}`}
-                        checked={selectedId === unit.id}
-                        onChange={() => setSelectedId(unit.id)}
-                      />
-                      <label className="form-check-label font-monospace" htmlFor={`${titleId}-unit-${unit.id}`}>
-                        {unit.assetTag}
-                      </label>
-                    </div>
-                  ))}
+                  <legend className="kh-legend fs-6">Available units</legend>
+                  {/* Each unit is a chip pressed into anti-static foam; the whole chip selects it. */}
+                  <div className="kh-chips kh-foam">
+                    {available.map((unit) => (
+                      <div className={`kh-chip${selectedId === unit.id ? " is-selected" : ""}`} key={unit.id}>
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="checkout-unit"
+                          id={`${titleId}-unit-${unit.id}`}
+                          checked={selectedId === unit.id}
+                          onChange={() => setSelectedId(unit.id)}
+                        />
+                        <label className="kh-tag" htmlFor={`${titleId}-unit-${unit.id}`}>
+                          {unit.assetTag}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </fieldset>
               </AsyncState>
             </div>
