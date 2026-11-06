@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
 import { fetchRequest } from "../api/requests";
 import { useLoad } from "../api/useLoad";
+import { useAuth } from "../auth/AuthProvider";
 import { AsyncState } from "../components/AsyncState";
 import { StatusBadge } from "../components/StatusBadge";
 import { formatDateTime } from "../format";
@@ -12,15 +13,25 @@ export function RequestDetailPage() {
   const { id } = useParams();
   const requestId = Number(id);
   const valid = Number.isInteger(requestId) && requestId > 0;
-  const load = useCallback(() => fetchRequest(requestId), [requestId]);
+  // An ID that is not a positive integer never reaches the API.
+  const load = useCallback(
+    () => (valid ? fetchRequest(requestId) : Promise.resolve(undefined)),
+    [valid, requestId],
+  );
   const detail = useLoad(load);
+  const { user } = useAuth();
+  // /requests is Borrower-only, so a Custodian goes back to Pending requests instead.
+  const back =
+    user?.role === "CUSTODIAN"
+      ? { to: "/pending", label: "Back to Pending requests" }
+      : { to: "/requests", label: "Back to My requests" };
 
   if (!valid) return <NotFoundPage />;
   if (detail.error?.status === 404)
     return (
       <main className="container">
         <h1 className="h3">Request not found.</h1>
-        <Link to="/requests">Back to My requests</Link>
+        <Link to={back.to}>{back.label}</Link>
       </main>
     );
 

@@ -1,12 +1,13 @@
 // My requests and request detail: TEST-17 (list states), contract F-02 8.2.
 import { act, fireEvent, screen } from "@testing-library/react";
+import { Link } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "../src/api/client";
 import * as requestsApi from "../src/api/requests";
 import type { BorrowRequest } from "../src/api/requests";
 import { MyRequestsPage } from "../src/pages/MyRequestsPage";
 import { RequestDetailPage } from "../src/pages/RequestDetailPage";
-import { borrower, deferred, renderAs } from "./render";
+import { borrower, custodian, deferred, renderAs } from "./render";
 
 const request12: BorrowRequest = {
   id: 12,
@@ -75,5 +76,42 @@ describe("Request detail (contract F-02 section 5)", () => {
 
     expect(await screen.findByRole("heading", { name: "Request not found." })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Back to My requests" })).toHaveAttribute("href", "/requests");
+  });
+
+  it("a Custodian's 404 links back to Pending requests, not the Borrower-only list", async () => {
+    vi.spyOn(requestsApi, "fetchRequest").mockRejectedValue(
+      new ApiError(404, "NOT_FOUND", "Request 99 does not exist."),
+    );
+    renderAs(custodian, <RequestDetailPage />, { path: "/requests/:id", at: "/requests/99" });
+
+    expect(await screen.findByRole("heading", { name: "Request not found." })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Back to Pending requests" })).toHaveAttribute("href", "/pending");
+  });
+
+  it("an ID that is not a positive integer shows Not found without calling the API", async () => {
+    const fetch = vi.spyOn(requestsApi, "fetchRequest");
+    renderAs(borrower, <RequestDetailPage />, { path: "/requests/:id", at: "/requests/abc" });
+
+    expect(await screen.findByRole("heading", { name: "Page not found" })).toBeInTheDocument();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("moving to another request ID loads that request", async () => {
+    const fetch = vi
+      .spyOn(requestsApi, "fetchRequest")
+      .mockImplementation(async (id) => ({ ...request12, id }));
+    const { getByRole } = renderAs(
+      borrower,
+      <>
+        <RequestDetailPage />
+        <Link to="/requests/13">next</Link>
+      </>,
+      { path: "/requests/:id", at: "/requests/12" },
+    );
+
+    expect(await screen.findByRole("heading", { name: /Request #12/ })).toBeInTheDocument();
+    fireEvent.click(getByRole("link", { name: "next" }));
+    expect(await screen.findByRole("heading", { name: /Request #13/ })).toBeInTheDocument();
+    expect(fetch).toHaveBeenLastCalledWith(13);
   });
 });

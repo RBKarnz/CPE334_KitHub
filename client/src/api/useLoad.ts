@@ -32,9 +32,10 @@ export function useLoad<T>(load: () => Promise<T>): LoadState<T> {
       .finally(() => id === callId.current && setLoading(false));
   }, []);
 
+  // Loads again when the load function changes, for example /requests/1 → /requests/2.
   useEffect(() => {
     reload();
-  }, [reload]);
+  }, [reload, load]);
 
   return { data, error, loading, reload };
 }
