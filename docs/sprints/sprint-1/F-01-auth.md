@@ -7,9 +7,9 @@
 | Feature | F-01 Sign-in, sign-out, current user and roles |
 | Sprint | 1 |
 | Issue | #14 (contract), #17 (implementation) |
-| Version | 1.4 |
+| Version | 1.5 |
 | Status | Proposed (becomes Agreed when merged into `staging`, before #17 starts) |
-| Date | 2026-11-06 |
+| Date | 2026-11-07 |
 | Authors | Teerakarn Noiruksa (67070501062) |
 | Baseline | [SRS v1.2](../../srs.md), [System-Level SDS v1.1](../../system-sds.md), [Feature inventory](../../features.md) section 4.1, [Sprint plan v1.2](../plan.md) |
 
@@ -22,6 +22,7 @@
 | 1.2 | 2026-11-06 | Teerakarn Noiruksa | STS (8): every API test signs in and out through one shared helper that sends `Content-Type: application/json` on every `POST`, including logout, so setup steps do not get `415` | Note in the PR #27 re-review |
 | 1.3 | 2026-11-06 | Teerakarn Noiruksa | `415` message in 4.1 is "Request body must be JSON (Content-Type: application/json)." | The `requireJson` middleware from #13 returns this message for every endpoint, so F-01 uses it instead of its own text (#17) |
 | 1.4 | 2026-11-06 | Teerakarn Noiruksa | After sign-in (5): the page that sent the user to `/login` is skipped when it belongs to the other role | Review of PR #31 |
+| 1.5 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | The session-lifetime row (3.2) and AC-04 (7) cite decision D-18 instead of the open question Q-01. Wording only: the behavior is unchanged (8 hours, no renewal, `SESSION_TTL_HOURS` default 8) and no AC or TEST changes | Q-01 resolved as D-18 in SRS v1.3 (#36) |
 
 A change after this version is merged gets a new row here, and an AC or TEST change is also recorded in `docs/traceability.md` section 5.
 
@@ -92,7 +93,7 @@ sequenceDiagram
 | Unknown username or wrong password | Same `401 INVALID_CREDENTIALS` and message "Username or password is incorrect."; `bcrypt.compare` runs in both cases so the time is similar | FR-01, SDS 8.2 |
 | Password longer than 72 bytes | Accepted by validation and compared normally; bcrypt compares only the first 72 bytes (SDS 8.1). The seed rejects longer passwords, so a stored password never depends on bytes after the 72nd | SDS 8.1 |
 | Signing in while already signed in | The old session in the cookie is deleted and a new one is created | SDS 8.2 |
-| Session lifetime | Absolute `SESSION_TTL_HOURS` (default 8) from sign-in; no renewal | NFR-04, Q-01 |
+| Session lifetime | Absolute `SESSION_TTL_HOURS` (default 8) from sign-in; no renewal | NFR-04, D-18 |
 | Expired session | Rejected as `401 UNAUTHENTICATED` at once; the row is deleted at the next sign-in by any user | SDS 8.3 |
 | Sign-out | Deletes the session row and clears the cookie; `204` even with no session or an expired one | FR-02, SDS 8.5 |
 | Several browsers | Each sign-in has its own session; signing out in one does not end the others | SDS 8.3 |
@@ -185,7 +186,7 @@ Adopted from `docs/features.md` section 4.1 without change.
 | AC-01 | A seeded user signs in with a valid username and password; a session starts and the current-user call returns their display name and role | FR-01, FR-03 |
 | AC-02 | Sign-in with an unknown username or a wrong password is rejected with the same generic message, and no session starts | FR-01 |
 | AC-03 | After sign-out, a request that reuses the old session is treated as not signed in | FR-02, NFR-04 |
-| AC-04 | A new session expires 8 hours after sign-in (Proposed, Q-01), and a request that carries a session whose expiry has passed is rejected as not signed in and returns no data. The test stores a session with its expiry in the past, so no clock control is needed | NFR-04 |
+| AC-04 | A new session expires 8 hours after sign-in (D-18), and a request that carries a session whose expiry has passed is rejected as not signed in and returns no data. The test stores a session with its expiry in the past, so no clock control is needed | NFR-04 |
 | AC-05 | A protected operation called without a valid session is rejected and returns no private data | NFR-01 |
 | AC-06 | A Borrower who calls a Custodian-only operation (record checkout, list the units of an item type) is rejected and nothing changes | NFR-02 |
 | AC-07 | Stored passwords are salted hashes from an adaptive algorithm: no value equals its plain text, the value shows the algorithm and cost, and two accounts with the same password have different values | NFR-03 |

@@ -2,9 +2,9 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.4 |
-| Date | 2026-11-06 |
-| Source requirements | `docs/srs.md` v1.2 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
+| Version | 1.5 |
+| Date | 2026-11-07 |
+| Source requirements | `docs/srs.md` v1.3 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
 | Traceability | `docs/traceability.md` |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 
@@ -31,7 +31,7 @@
 | F-08 | Returns: return all and early return | Return all units of a request with a condition per unit, or return one unit early; damaged units go to maintenance | FR-20, FR-21 | BR-11, BR-16 | NFR-09 | F-07 | 2 |
 | F-09 | Catalog management | Manage categories, item types and their limits, add units, repair and retire units | FR-23, FR-24, FR-25, FR-26 | BR-07, BR-08, BR-11, BR-12, BR-16 | NFR-02 | F-02 | 2 |
 | F-10 | Reservation and expiry of approved requests | Approved requests reserve their quantities and expire 48 hours after approval if not picked up | FR-15 | BR-01 (reserved units), BR-13, BR-16 | NFR-05, NFR-09 | F-06, F-07; Q-07, Q-09 settled | 3 |
-| F-11 | Overdue status and borrowing limits | Overdue status and list; 5-unit limit per Borrower; overdue Borrowers cannot request | FR-22 | BR-14, BR-15 | - | F-07, F-08; Q-08 settled | 3 |
+| F-11 | Overdue status and borrowing limits | Overdue status and list; 5-unit limit per Borrower; overdue Borrowers cannot request | FR-22 | BR-14, BR-15 | - | F-07, F-08; D-20 | 3 |
 | F-12 | Search and filter the catalog | Search item types by name and filter by category and availability | FR-06 | - | NFR-11 | F-02 | 3 |
 | F-13 | History per unit and per Borrower | History per unit for Custodians; history per Borrower for the Borrower and for Custodians | FR-27, FR-28 | BR-05, BR-16 | NFR-02 | F-08, F-09 | 3 |
 | F-14 | Inventory summary report | Unit counts per state, active loans and overdue requests per item type | FR-29 | - | NFR-11 | F-09, F-11 | 3 |
@@ -68,7 +68,7 @@ Test levels: **Unit** (domain logic), **API** (HTTP + database), **Integration**
 | AC-01 | A seeded user signs in with a valid username and password; a session starts and the current-user call returns their display name and role | FR-01, FR-03 | TEST-01 | API |
 | AC-02 | Sign-in with an unknown username or a wrong password is rejected with the same generic message, and no session starts | FR-01 | TEST-02 | API |
 | AC-03 | After sign-out, a request that reuses the old session is treated as not signed in | FR-02, NFR-04 | TEST-03 | API |
-| AC-04 | A new session expires 8 hours after sign-in (Proposed, Q-01), and a request that carries a session whose expiry has passed is rejected as not signed in and returns no data. The test stores a session with its expiry in the past, so no clock control is needed | NFR-04 | TEST-04 | API |
+| AC-04 | A new session expires 8 hours after sign-in (D-18), and a request that carries a session whose expiry has passed is rejected as not signed in and returns no data. The test stores a session with its expiry in the past, so no clock control is needed | NFR-04 | TEST-04 | API |
 | AC-05 | A protected operation called without a valid session is rejected and returns no private data | NFR-01 | TEST-05 | API |
 | AC-06 | A Borrower who calls a Custodian-only operation (record checkout, list the units of an item type) is rejected and nothing changes | NFR-02 | TEST-06 | API |
 | AC-07 | Stored passwords are salted hashes from an adaptive algorithm: no value equals its plain text, the value shows the algorithm and cost, and two accounts with the same password have different values | NFR-03 | TEST-07 | Unit |
