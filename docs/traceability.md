@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.6 |
-| Date | 2026-11-06 |
-| Source requirements | `docs/srs.md` v1.2 |
-| Features and AC/TEST definitions | `docs/features.md` v1.4 |
+| Version | 1.7 |
+| Date | 2026-11-07 |
+| Source requirements | `docs/srs.md` v1.3 |
+| Features and AC/TEST definitions | `docs/features.md` v1.5 |
 | Feature and SR IDs | Same as `docs/sprints/plan.md` section 3 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 
@@ -88,13 +88,13 @@ A rule enforced by several features is listed once, with the sprint that first e
 | NFR-01 | Unauthenticated requests rejected without data | F-01; F-02 endpoints in AC-33; F-03 endpoints in AC-41; re-verified by SR-03 | 1 | AC-05, AC-33, AC-41 | TEST-05, TEST-33, TEST-41 | Verified (TEST-05 on `7828473`, TEST-33 on `dd36f2e`, TEST-41 on `1891aa0`) |
 | NFR-02 | Cross-Borrower and cross-role access rejected | F-01, F-02, F-03 (cross-cutting rule); kept by F-06, F-09, F-13; re-verified by SR-03 | 1 | AC-06, AC-14, AC-15 | TEST-06, TEST-14, TEST-15, TEST-32, TEST-41 | Specified; F-01 part (TEST-06) verified on `7828473`, F-02 part (TEST-14, TEST-15) on `dd36f2e`, F-03 part (TEST-41) on `1891aa0`, TEST-32 (E2E, #20) to come |
 | NFR-03 | Adaptive salted password hashing | F-01 | 1 | AC-07 | TEST-07 | Verified (`7828473`) |
-| NFR-04 | Sign-out invalidates the session; 8-hour expiry (Proposed) | F-01 | 1 | AC-03, AC-04 | TEST-03, TEST-04 | Verified (`7828473`) |
+| NFR-04 | Sign-out invalidates the session; 8-hour expiry (D-18) | F-01 | 1 | AC-03, AC-04 | TEST-03, TEST-04 | Verified (`7828473`) |
 | NFR-05 | Concurrent checkouts give one active loan | F-03; kept by F-07, F-10 | 1 | AC-22 | TEST-22, TEST-52 | Verified (`1891aa0`) |
 | NFR-06 | Data survives restart and redeploy | SR-01 (restart); SR-02 (redeploy, from Lab 5) | 1 | - | TEST-27; redeploy check in Lab 5 | Planned (restart half: TEST-27 passes on `ef7cd71`, PR #29; redeploy check pending) |
 | NFR-07 | All settings from environment; no real secret in the repository | SR-01; SR-02 (Secret Manager) | 1 | - | TEST-28; manual clean-clone check | Verified (`ef7cd71`, PR #29) |
 | NFR-08 | Consistent JSON errors, no stack trace | SR-01; re-verified by SR-03 | 1 | - | TEST-29 | Verified (`ef7cd71`, PR #29) |
 | NFR-09 | History entry for every state change and request edit | F-02, F-03 (cross-cutting rule); kept by F-05, F-06, F-08, F-10 | 1 | AC-16, AC-23 | TEST-16, TEST-23 | Verified (TEST-16 on `dd36f2e`, TEST-23 on `1891aa0`) |
-| NFR-10 | Request within 3 clicks from the catalog (Proposed) | F-04 | 2 | Contract F-04 | - | Planned |
+| NFR-10 | Request within 3 clicks from the catalog (D-19) | F-04 | 2 | Contract F-04 | - | Planned |
 | NFR-11 | Lists within 2 seconds with 500 units (Proposed) | SR-03; applies to F-12, F-14 | 3 | - | Measured in Sprint 3 if Q-03 confirms | Planned |
 | NFR-12 | Loading, empty and error states in every list | F-02, F-03 (cross-cutting rule) | 1 | AC-17, AC-25 | TEST-17, TEST-25 | Verified (TEST-17 on `dd36f2e`, TEST-25 on `1891aa0`) |
 
@@ -102,9 +102,9 @@ A rule enforced by several features is listed once, with the sprint that first e
 
 ### 5.1 Uncovered requirements
 
-None. Two rows depend on open questions:
+None. Notes on three rows:
 
-- NFR-04 expiry target and NFR-10 depend on Q-01 and Q-02. If the team changes the targets, the rows stay and their AC change.
+- NFR-04 expiry target and NFR-10 follow decisions D-18 and D-19 (Q-01 and Q-02 resolved). If the team changes the targets, the rows stay and their AC change.
 - NFR-11 is kept only if Q-03 confirms the team can measure it; if not, it is removed through an SRS revision and recorded below.
 
 ### 5.2 Approved changes
@@ -120,3 +120,4 @@ None. Two rows depend on open questions:
 | 2026-11-06 | FR-04, BR-01, BR-05 and BR-17 move to Verified: all their tests pass on `dd36f2e`. FR-07, FR-08, BR-04, BR-16, NFR-01, NFR-02, NFR-09 and NFR-12 stay Specified, with the F-02 part noted, because they also depend on tests from #19 and #20 | F-02 implemented (#18) | PR #32 |
 | 2026-11-06 | FR-09, BR-02, BR-03, BR-16, NFR-01, NFR-05, NFR-09 and NFR-12 move to Verified: all their tests pass on `1891aa0` (server 160 passed, client 39 passed, 0 skipped). FR-08, FR-16 and NFR-02 stay Specified, with the F-03 part noted, because they also depend on the E2E tests TEST-30 and TEST-32 (#20). AC-to-test results are in `docs/features.md` 4.3.1 | F-03 implemented (#19); contract F-03 section 9, DoD item 6 | PR #33 |
 | 2026-11-06 | SR-04 UI polish added to Sprint 1 (`docs/sprints/plan.md` v1.3, `docs/features.md` v1.4): one shared visual style for every Sprint 1 screen, recorded as "Visual style" in SDS 5.3 (v1.2). No requirement, AC, test or status changes: no routes, API calls, guards, server code or contract-specified text change, and all 39 client and 160 server tests pass without editing an assertion. The manual test guide was re-run and its screenshots replaced | The plain Bootstrap look would carry into the Deliverable 1 screenshots, the Lab 6 UAT and the demo video; the team chose the design from image mockups first | #34, PR #35 |
+| 2026-11-07 | Resolved Q-01, Q-02 and Q-08 as D-18 to D-20; no requirement added or removed; no AC behavior changed. NFR-04, NFR-10 and BR-14 cite the decisions; AC-04 cites D-18 (`docs/features.md` v1.5, F-01 contract v1.5); SDS v1.3 and plan v1.4 follow. F-01 (v1.5) and F-02 (v1.2) contract status lines read "Agreed", as F-03 does. Manual test guide: no-borrowing-limit limitation, loan lengths per D-08, requests named by item type and Borrower, MT-14 example. No row in this document changes status | Team decision; PR #37 review | #36, PR #37, SRS v1.3 |

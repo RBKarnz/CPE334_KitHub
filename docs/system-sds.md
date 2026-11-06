@@ -6,10 +6,10 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part C |
-| Version | 1.2 |
-| Date | 2026-11-06 |
+| Version | 1.3 |
+| Date | 2026-11-07 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
-| Baseline | [SRS v1.2](srs.md) |
+| Baseline | [SRS v1.3](srs.md) |
 | Related | [Three-sprint plan](sprints/plan.md), feature contracts in `docs/sprints/sprint-N/` |
 
 ### Revision history
@@ -19,6 +19,7 @@
 | 1.0 | 2026-11-06 | Methipat Mansap | First baseline for the whole product (Sprints 1 to 3) |
 | 1.1 | 2026-11-06 | Methipat Mansap | Review of PR #25: a wrong sign-in, or a first visit with no session, no longer shows "session has ended" (5.3); checkout checks that each `lineId` belongs to the request (4.7, 6.4); sign-in deletes every expired session (8.2, 8.3); note on the CI trigger for `staging` (9.6) |
 | 1.2 | 2026-11-06 | Methipat Mansap | Issue #34 (SR-04): "Visual style" row in 5.3; `PageHeader`, `MessagePage`, `Logo` and `styles/` in the code layout (3.6). No behavior or API change |
+| 1.3 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | Issue #36: baseline SRS v1.3. Session lifetime (8.3) and `SESSION_TTL_HOURS` (9.1) cite D-18; the BR-14 query (4.5) cites D-20; Q-01 and Q-08 marked resolved in section 13. No behavior, API or schema change |
 
 ## 2. Introduction
 
@@ -397,7 +398,7 @@ These values are calculated by queries when they are needed and are never stored
 | Available units of an item type | Count of its units in `AVAILABLE`. From Sprint 3, minus the quantities on lines of `APPROVED` requests for that item type (BR-13, D-15) | 1; 3 |
 | Due date of a request | The `dueAt` shared by its loans | 1 |
 | Overdue request | Status is `CHECKED_OUT` and at least one of its loans is `ACTIVE` with `dueAt` < now | 3 |
-| Units held by a Borrower (BR-14) | `ACTIVE` loans + quantities on lines of the Borrower's open requests (Q-08) | 3 |
+| Units held by a Borrower (BR-14) | `ACTIVE` loans + quantities on lines of the Borrower's open requests (D-20) | 3 |
 
 Due dates add whole days as 24-hour periods. Asia/Bangkok has no daylight saving time, so this equals the calendar day at the same clock time.
 
@@ -773,7 +774,7 @@ Each contract's STS includes, for every protected endpoint it adds: one call wit
 | Token | 32 random bytes from `crypto.randomBytes`, encoded as base64url |
 | Storage | `sessions` table stores the SHA-256 hash of the token as the ID, with `userId` and `expiresAt`. A database leak does not give usable tokens |
 | Cookie | `kithub_session=<token>`; `HttpOnly` (not readable by JavaScript), `SameSite=Lax`, `Path=/`, `Secure` when `COOKIE_SECURE` is true (default in production), `Max-Age` equal to the session lifetime |
-| Lifetime | Absolute: `SESSION_TTL_HOURS` (default 8, Proposed in Q-01) after sign-in. No sliding renewal. The value is configuration, so a different answer to Q-01 changes no code |
+| Lifetime | Absolute: `SESSION_TTL_HOURS` (default 8, D-18) after sign-in. No sliding renewal. The value is configuration, so changing it changes no code |
 | Check on each call | `authenticate` hashes the cookie token and loads the session where `expiresAt > now()`, together with its user. One indexed query per call |
 | Several sessions | A user may be signed in on several browsers. Each has its own session |
 | Clean-up | An expired session is rejected at once and its row is deleted at the next sign-in by any user, so expired rows do not pile up |
@@ -808,7 +809,7 @@ Server (`server/.env`):
 | `PORT` | No | `3000` | No | HTTP port. The server binds `0.0.0.0`, not only localhost | Set by Cloud Run |
 | `DATABASE_URL` | Yes | - | Yes (contains the database password) | PostgreSQL connection string for Prisma | Secret Manager `kithub-database-url` |
 | `TEST_DATABASE_URL` | For tests | - | Local value only | Separate test database; must differ from `DATABASE_URL` and end in `_test` (section 4.8) | Not used on GCP; CI sets a throwaway value |
-| `SESSION_TTL_HOURS` | No | `8` | No | Session lifetime (NFR-04, Q-01) | Default |
+| `SESSION_TTL_HOURS` | No | `8` | No | Session lifetime (NFR-04, D-18) | Default |
 | `COOKIE_SECURE` | No | `true` in production, else `false` | No | `Secure` flag of the session cookie | Default |
 | `BCRYPT_COST` | No | `12` | No | bcrypt cost factor (NFR-03). Tests may lower it for speed | Default |
 | `SEED_CUSTODIAN_PASSWORD` | For the seed | - | Yes | Initial password of the seeded Custodian accounts | Secret Manager `kithub-custodian-password`, given to the migration job only |
@@ -979,8 +980,8 @@ Commands (exact scripts in #13): `npm test` in `server/` and in `client/`; `npm 
 
 | Item | Effect on the design | When it is settled |
 | --- | --- | --- |
-| Q-01 session lifetime (8 hours, Proposed) | None: `SESSION_TTL_HOURS` is configuration | Before the F-01 contract is final; the default stays 8 |
+| Q-01 session lifetime | None: `SESSION_TTL_HOURS` is configuration | Resolved by D-18: 8 hours, the default stays 8 |
 | D-15: no reservation before Sprint 3 | A Sprint 2 checkout of an approved request can be rejected if no unit is left (accepted) | Sprint 3 (section 4.7, Reservations) |
 | Q-07 and Q-09: how expiry is triggered | Two options. A: check and expire on every read or action that touches approved requests, needing no extra GCP component. B: a scheduled Cloud Run job or Cloud Scheduler call. Either records the System actor | Before the Sprint 3 contract for F-10 |
-| Q-08: which requests count toward the 5-unit limit | Changes only the BR-14 query in 4.5 | Before the Sprint 3 contract for F-11 |
+| Q-08: which requests count toward the 5-unit limit | Changes only the BR-14 query in 4.5 | Resolved by D-20: only `ACTIVE` loans and open requests count, as 4.5 already assumed |
 | No limit on repeated sign-in attempts | Not required by the SRS | Candidate Sprint 3 hardening item; would need an SRS change first |

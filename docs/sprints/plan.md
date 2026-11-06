@@ -6,10 +6,10 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part D |
-| Version | 1.3 |
-| Date | 2026-11-06 |
+| Version | 1.4 |
+| Date | 2026-11-07 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
-| Baseline | [SRS v1.2](../srs.md), [System-Level SDS v1.2](../system-sds.md) |
+| Baseline | [SRS v1.3](../srs.md), [System-Level SDS v1.3](../system-sds.md) |
 
 ### Revision history
 
@@ -19,6 +19,7 @@
 | 1.1 | 2026-11-06 | Methipat Mansap | Review of PR #25: baseline link updated to SDS v1.1 |
 | 1.2 | 2026-11-06 | Teerakarn Noiruksa | Review of PR #26: F-03 also verifies NFR-12 (pending requests list states, AC-25) |
 | 1.3 | 2026-11-06 | Methipat Mansap | Issue #34: SR-04 UI polish added to Sprint 1 (sections 2, 3.2 and 4.3), so the Deliverable 1 screenshots, the Lab 6 UAT and the demo use one finished look. Visual only: no feature, requirement or sprint moves |
+| 1.4 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | Issue #36: baseline SRS v1.3 and SDS v1.3. Q-08 is resolved as D-20, so the F-11 dependency (3.1) cites D-20, and the 25 Nov milestone (6.3), the Sprint 3 dependencies (6.4) and the open-questions risk (8) list only Q-07 and Q-09. No feature, requirement or sprint moves |
 
 ## 2. Overview
 
@@ -57,7 +58,7 @@ Feature IDs are stable. [`docs/features.md`](../features.md) (Part B, #11) descr
 | F-08 | Returns: return all and early return | FR-20, FR-21 | BR-11, BR-16 | NFR-09 | F-07 | 2 |
 | F-09 | Catalog management | FR-23, FR-24, FR-25, FR-26 | BR-07, BR-08, BR-11, BR-12, BR-16 | NFR-02 | F-02 | 2 |
 | F-10 | Reservation and expiry of approved requests | FR-15 | BR-01 (reserved units), BR-13, BR-16 | NFR-05, NFR-09 | F-06, F-07; Q-07, Q-09 settled | 3 |
-| F-11 | Overdue status and borrowing limits | FR-22 | BR-14, BR-15 | - | F-07, F-08; Q-08 settled | 3 |
+| F-11 | Overdue status and borrowing limits | FR-22 | BR-14, BR-15 | - | F-07, F-08; D-20 | 3 |
 | F-12 | Search and filter the catalog | FR-06 | - | NFR-11 | F-02 | 3 |
 | F-13 | History per unit and per Borrower | FR-27, FR-28 | BR-05, BR-16 | NFR-02 | F-08, F-09 | 3 |
 | F-14 | Inventory summary report | FR-29 | - | NFR-11 | F-09, F-11 | 3 |
@@ -222,17 +223,17 @@ F-10, F-11, F-12, F-13, F-14 and SR-03 (section 3). They cover FR-06, FR-15, FR-
 
 | Dates | Work |
 | --- | --- |
-| By 25 Nov | Settle the open questions that block Sprint 3 contracts: Q-07 and Q-09 (expiry, for F-10) and Q-08 (limit counting, for F-11). Record each as an SRS decision |
+| By 25 Nov | Settle the open questions that block Sprint 3 contracts: Q-07 and Q-09 (expiry, for F-10). Record each as an SRS decision. Q-08 (limit counting, for F-11) is already settled as D-20 |
 | 23 to 29 Nov | Contracts for F-10 to F-14. Implement and test F-11 (overdue and borrowing limits), so that the Deliverable 2 candidate contains a meaningful, tested Sprint 3 rule (BR-14, BR-15) |
 | 30 Nov to 6 Dec | F-10 and F-13. Kept small because of the examination period |
 | 7 to 13 Dec | F-12, F-14 and SR-03; final release `v1.0.0`; final report and demonstration video |
 
-F-11 goes first because it is a real business rule, depends only on Sprint 2 features, and needs one decision (Q-08). F-10 is the largest Sprint 3 change (it alters availability for every request), so it waits until its two questions are settled and Sprint 2 is stable.
+F-11 goes first because it is a real business rule, depends only on Sprint 2 features, and its one decision is already made (D-20). F-10 is the largest Sprint 3 change (it alters availability for every request), so it waits until its two questions are settled and Sprint 2 is stable.
 
 ### 6.4 Dependencies
 
 - Sprint 2 complete (`v0.2.0`).
-- Q-07, Q-08 and Q-09 settled before the matching contracts.
+- Q-07 and Q-09 settled before the matching contracts.
 - The expiry trigger chosen in Q-09 may add a GCP component (SDS section 13, option B).
 
 ### 6.5 Completion outcome
@@ -291,7 +292,7 @@ Every NFR is established, and first verified, in a planned sprint:
 | --- | --- | --- |
 | Labs 5 to 7 share the Sprint 2 weeks | Less time for Sprint 2 features | Week 1 is reserved for Lab 5 and contracts; features are ordered by dependency so a late feature does not block the others |
 | Examinations from 1 to 11 Dec | Little time for Sprint 3 after 29 Nov | Sprint 3 contracts and F-11 are done by 29 Nov; the remaining Sprint 3 features are read-only views (F-12, F-13, F-14) except F-10 |
-| Open questions Q-07, Q-08, Q-09 | Sprint 3 contracts cannot be final | Deadline of 25 Nov to settle them as SRS decisions |
+| Open questions Q-07, Q-09 | Sprint 3 contracts cannot be final | Deadline of 25 Nov to settle them as SRS decisions |
 | A schema change breaks rollback | Lab 5 rollback restores an image that does not match the schema | Additive migrations only (SDS DD-14) |
 | Regression in Sprint 1 behavior | Deliverable 2 requires the Sprint 1 journey to keep working | The Sprint 1 API and E2E tests run on every PR through CI from Lab 5 |
 

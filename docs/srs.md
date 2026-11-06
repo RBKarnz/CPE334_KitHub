@@ -6,8 +6,8 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part A |
-| Version | 1.2 |
-| Date | 2026-11-06 |
+| Version | 1.3 |
+| Date | 2026-11-07 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Theme | 2. Inventory and Borrowing System |
 
@@ -18,6 +18,7 @@
 | 1.0 | 2026-11-06 | Teerakarn Noiruksa | First baseline for the whole product (Sprints 1 to 3) |
 | 1.1 | 2026-11-06 | Teerakarn Noiruksa | Review of PR #10: added FR-30, BR-17, NFR-12, permissions table and Q-09; history covers edits and system actions; clarified availability before Sprint 3; fixed rule links and examples |
 | 1.2 | 2026-11-06 | Teerakarn Noiruksa | Resolved Q-04, Q-05 and Q-06 as decisions D-15, D-16 and D-17; A-04 and A-05 now point to them |
+| 1.3 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | Resolved Q-01, Q-02 and Q-08 as D-18, D-19 and D-20; NFR-04, NFR-10 and BR-14 now point to them; Q-03 status reads "Open; settle before the Sprint 3 measurement (SR-03)" |
 
 ## 2. Introduction
 
@@ -190,7 +191,7 @@ FRs are grouped by feature area. "Related BR" lists the rules the FR must enforc
 | BR-11 | Units are normally returned together with a condition per unit that defaults to good. A single unit may be returned early as an exception. A unit returned damaged goes to `MAINTENANCE` and cannot be checked out until it is set back to `AVAILABLE` | A Custodian records a unit's return as damaged but asks to set the unit to `AVAILABLE`. The return is rejected; a damaged unit can only go to `MAINTENANCE` | 2 |
 | BR-12 | A unit on loan cannot be retired, and a retired unit cannot be checked out | A Custodian retires a unit that is `ON_LOAN`. The action is rejected and the unit stays `ON_LOAN` | 2 |
 | BR-13 | An approved request reserves its quantities. If it is not checked out within 48 hours of approval, it becomes `EXPIRED` and the reservation is released | A Custodian checks out a request that expired. The checkout is rejected | 3 |
-| BR-14 | A Borrower may hold at most 5 units in total across active loans and open requests. A kit counts as one unit. A Borrower under the limit may request at any time without returning earlier loans | A Borrower with 4 units on loan creates a request for 2 more units. The request is rejected | 3 |
+| BR-14 | A Borrower may hold at most 5 units in total across active loans and open requests. A kit counts as one unit. A Borrower under the limit may request at any time without returning earlier loans. Units of `CANCELLED`, `REJECTED`, `EXPIRED` and `RETURNED` requests do not count (D-20) | A Borrower with 4 units on loan creates a request for 2 more units. The request is rejected | 3 |
 | BR-15 | A Borrower with an overdue request cannot create a new request until every unit of that request is returned | A Borrower with one unit overdue creates a new request. The request is rejected | 3 |
 | BR-16 | Every state change of a request, unit or loan, and every edit of a request, is recorded with its actor and the time. The actor is the signed-in user who acted, or the System actor for automatic changes such as expiry. History entries are never edited or deleted | No operation exists to edit or delete a history entry, and the data layer rejects any update or delete of one | 1 |
 | BR-17 | Only Borrowers create, edit or cancel requests. A Custodian cannot create, edit or cancel a request, for themselves or for a Borrower | A Custodian submits a new request or cancels a Borrower's request. The action is rejected and nothing changes | 1 |
@@ -202,13 +203,13 @@ FRs are grouped by feature area. "Related BR" lists the rules the FR must enforc
 | NFR-01 | Authentication | A request to any protected operation without a valid session is rejected and returns no private data | API test | 1 |
 | NFR-02 | Authorization | A Borrower who requests another Borrower's request or loan is rejected and receives none of its fields. A Borrower who calls a Custodian operation, or a Custodian who calls a Borrower-only operation (create, edit or cancel a request), is rejected and nothing changes | API test | 1 |
 | NFR-03 | Password storage | Every stored password value is a salted hash from an adaptive algorithm with a configurable cost (for example bcrypt or Argon2), not a plain digest. Pass when: no stored value equals its plain-text password, the stored value identifies the adaptive algorithm and its cost, and two accounts with the same password have different stored values | Database/unit test | 1 |
-| NFR-04 | Session lifecycle | Sign-out invalidates the session immediately. Sessions expire 8 hours after sign-in (Proposed, Q-01) | API test | 1 |
+| NFR-04 | Session lifecycle | Sign-out invalidates the session immediately. Sessions expire 8 hours after sign-in (D-18) | API test | 1 |
 | NFR-05 | Data integrity under concurrency | Two simultaneous checkouts of the same unit produce exactly one `ACTIVE` loan | Integration test | 1 |
 | NFR-06 | Persistence | A record created before an application restart is still present after it. From Lab 5, the same holds after a redeployment | Integration test (Sprint 1); deployment check (Lab 5) | 1 |
 | NFR-07 | Configuration and secrets | Every setting is read from environment variables. `.env.example` lists all of them with placeholder values only, and no real secret is in the repository | Review + clean-clone build | 1 |
 | NFR-08 | Error handling | Every error response uses one JSON shape with an error code and a message, and never contains a stack trace or internal details | API test | 1 |
 | NFR-09 | Auditability | Every state change listed in section 8 and every request edit creates a history entry with its actor (signed-in user or System actor) and a timestamp | Integration test | 1 |
-| NFR-10 | Usability | A Borrower can submit a request within 3 clicks from the catalog (Proposed, Q-02) | Manual check + UI test | 2 |
+| NFR-10 | Usability | A Borrower can submit a request within 3 clicks from the catalog (D-19) | Manual check + UI test | 2 |
 | NFR-11 | Performance | Catalog and loan lists respond within 2 seconds with 500 units on the deployed service (Proposed, Q-03) | Measurement on the deployed service | 3 |
 | NFR-12 | List states | Every list shows a loading state, an empty state and an error state, starting with the Sprint 1 lists (catalog, my requests, pending requests) | UI test + manual check | 1 |
 
@@ -292,17 +293,20 @@ Invalid examples: `ON_LOAN` → `RETIRED`, `RETIRED` → any state, `MAINTENANCE
 | D-15 | Approved requests reserve units only from Sprint 3, together with the 48-hour expiry (BR-13). In Sprint 2, checkout of an approved request can be rejected if another request took the last unit; this is an accepted limitation | Reserving in Sprint 2 without expiry would let an approved request hold units until its Borrower cancels it | 2026-11-06 |
 | D-16 | In Sprint 1, a loan's due date is checkout time + the item type's maximum loan length. From Sprint 2 it is checkout time + the loan length chosen in the request (BR-08) | Sprint 1 requests have no loan length, but every loan needs a due date for the Sprint 3 overdue rules | 2026-11-06 |
 | D-17 | In Sprint 1, if no unit is available when a Custodian checks out a `PENDING` request, the checkout is rejected and the request stays `PENDING`; this is an accepted limitation until Sprint 2 adds rejection and cancellation. Seed data has several units per item type so the demo does not hit this case | Sprint 1 has no `REJECTED` state or cancel action | 2026-11-06 |
+| D-18 | A session expires 8 hours after sign-in, with no sliding renewal. The value stays configurable as `SESSION_TTL_HOURS` (default 8) | Covers a full day in the hardware room; implemented and tested by F-01 (AC-04) | 2026-11-07 |
+| D-19 | Usability target: a Borrower can submit a request within 3 clicks from the catalog. Measured when NFR-10 is verified in Sprint 2 | Sprint 1 already meets it with one "Request" button per item type; Sprint 2 adds several lines per request, so the target is checked there | 2026-11-07 |
+| D-20 | Only `ACTIVE` loans and units on lines of open requests (`PENDING` or `APPROVED`) count toward the 5-unit limit. `CANCELLED`, `REJECTED`, `EXPIRED` and `RETURNED` requests and returned loans do not count | A finished request holds no device; matches SDS 4.5 | 2026-11-07 |
 
 ## 11. Open questions
 
 | ID | Question | Why it matters | Status |
 | --- | --- | --- | --- |
-| Q-01 | Is an 8-hour session expiry acceptable? | Sets NFR-04 and its test | Open (Proposed default: 8 hours) |
-| Q-02 | Is "submit a request within 3 clicks from the catalog" the usability target we want? | Sets NFR-10 and its check | Open (Proposed) |
-| Q-03 | Can the team measure response time with 500 units on the deployed service in Sprint 3? If not, should NFR-11 be removed? | The course asks not to state targets that cannot be measured | Open (Proposed) |
+| Q-01 | Is an 8-hour session expiry acceptable? | Sets NFR-04 and its test | Resolved: D-18 |
+| Q-02 | Is "submit a request within 3 clicks from the catalog" the usability target we want? | Sets NFR-10 and its check | Resolved: D-19 |
+| Q-03 | Can the team measure response time with 500 units on the deployed service in Sprint 3? If not, should NFR-11 be removed? | The course asks not to state targets that cannot be measured | Open; settle before the Sprint 3 measurement (SR-03) |
 | Q-04 | Should approved requests reserve units from Sprint 2, when approval is introduced, instead of from Sprint 3? | Without a reservation, an approved request may find no unit at checkout | Resolved: D-15 (keep Sprint 3, accepted limitation) |
 | Q-05 | In Sprint 1, is the due date checkout time + the item type's maximum loan length (A-05)? | Sprint 1 requests have no loan length, but loans need a due date for later overdue rules | Resolved: D-16 (yes) |
 | Q-06 | In Sprint 1 there is no `REJECTED` state. What happens to a `PENDING` request when no unit is available at checkout? | Without an answer, the request stays pending with no way to close it until Sprint 2 | Resolved: D-17 (checkout rejected, request stays `PENDING`) |
 | Q-07 | Does the 48-hour pickup window count hours when the hardware room is closed, such as weekends? | Affects BR-13 and its tests | Open; settle before the Sprint 3 contract |
-| Q-08 | Do units in `CANCELLED`, `REJECTED` or `EXPIRED` requests count toward the 5-unit limit? (Assumed: no, only active loans and open requests count) | Affects BR-14 and its tests | Open |
+| Q-08 | Do units in `CANCELLED`, `REJECTED` or `EXPIRED` requests count toward the 5-unit limit? (Assumed: no, only active loans and open requests count) | Affects BR-14 and its tests | Resolved: D-20 |
 | Q-09 | How is expiry triggered: checked whenever a request is read or acted on, or by a scheduled job? | Decides when FR-15 happens, how it is tested, and how the System actor is recorded | Open; settle before the Sprint 3 contract |
