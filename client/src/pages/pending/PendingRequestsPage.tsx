@@ -36,39 +36,40 @@ export function PendingRequestsPage() {
         isEmpty={items.length === 0}
         empty="No pending requests."
       >
-        {/* Below 576 px each row shows as a card (theme.css); data-label names the column there. */}
+        {/* Below 576 px each row shows as a card (theme.css); data-label names the column there.
+            The explicit roles keep the table semantics that some browsers drop with display: block. */}
         <div className="kh-panel">
-          <table className="table align-middle kh-table kh-table-cards">
-            <thead>
-              <tr>
-                <th scope="col">Request</th>
-                <th scope="col">Borrower</th>
-                <th scope="col">Item type</th>
-                <th scope="col">Quantity</th>
-                <th scope="col">Created</th>
-                <th scope="col">Action</th>
+          <table className="table align-middle kh-table kh-table-cards" role="table">
+            <thead role="rowgroup">
+              <tr role="row">
+                <th scope="col" role="columnheader">Request</th>
+                <th scope="col" role="columnheader">Borrower</th>
+                <th scope="col" role="columnheader">Item type</th>
+                <th scope="col" role="columnheader">Quantity</th>
+                <th scope="col" role="columnheader">Created</th>
+                <th scope="col" role="columnheader">Action</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody role="rowgroup">
               {items.map((request) => {
                 // Every Sprint 1 request has exactly one line (BR-01).
                 const line = request.lines[0];
                 return (
-                  <tr key={request.id}>
-                    <td>
+                  <tr key={request.id} role="row">
+                    <td role="cell">
                       <Link className="fw-bold" to={`/requests/${request.id}`}>
                         #{request.id}
                       </Link>
                     </td>
-                    <td data-label="Borrower">
+                    <td role="cell" data-label="Borrower">
                       {request.borrower.displayName} <span className="text-body-secondary">({request.borrower.username})</span>
                     </td>
-                    <td data-label="Item type" className="fw-semibold">
+                    <td role="cell" data-label="Item type" className="fw-semibold">
                       {line?.itemType.name}
                     </td>
-                    <td data-label="Quantity">{line?.quantity}</td>
-                    <td data-label="Created">{formatDateTime(request.createdAt)}</td>
-                    <td>
+                    <td role="cell" data-label="Quantity">{line?.quantity}</td>
+                    <td role="cell" data-label="Created">{formatDateTime(request.createdAt)}</td>
+                    <td role="cell">
                       <button
                         type="button"
                         className="btn btn-primary btn-sm px-3"
