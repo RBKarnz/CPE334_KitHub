@@ -72,21 +72,29 @@ Open the URL Vite prints (`http://localhost:5173`). Vite forwards `/api` calls t
 
 ## 5. Tests and builds
 
+Run each block from the repository root.
+
 ```sh
-cd server && npm test     # unit and API tests; needs kithub_test and TEST_DATABASE_URL
-cd client && npm test     # component tests (jsdom)
+cd server
+npm test       # unit and API tests; needs kithub_test and TEST_DATABASE_URL
+cd ../client
+npm test       # component tests (jsdom)
 ```
 
 `npm test` in `server/` first applies any pending migrations to `kithub_test` (`prisma migrate deploy`), then runs the test files one at a time. API tests empty and refill `kithub_test`; they never touch `kithub`.
 
-Production builds:
+Production build. Build the client first: the server serves the UI only if `client/dist` exists when it starts. With `NODE_ENV=production` the server does not read `server/.env` (in production the platform provides the settings), so export the variables into the shell first:
 
 ```sh
-cd server && npm run build && npm start   # compiles to server/dist
-cd client && npm run build                # compiles to client/dist
+cd client
+npm run build                    # compiles to client/dist
+cd ../server
+npm run build                    # compiles to server/dist
+set -a; . ./.env; set +a         # export the settings from server/.env (POSIX shell, e.g. Git Bash)
+NODE_ENV=production npm start
 ```
 
-With `NODE_ENV=production`, the server also serves the built UI from `client/dist` (one origin for UI and API).
+Open `http://localhost:3000`: the server serves the built UI and the API from one origin.
 
 ## Seeded accounts
 
