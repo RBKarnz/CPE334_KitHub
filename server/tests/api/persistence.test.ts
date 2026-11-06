@@ -5,11 +5,12 @@ import { RequestStatus, type PrismaClient } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "../../src/app.js";
 import { createPrismaClient } from "../../src/core/prisma.js";
+import { TEST_APP_CONFIG } from "../helpers/app.js";
 import { resetDb } from "../helpers/db.js";
 import { createBorrower } from "../helpers/factories.js";
 
 function start(prisma: PrismaClient): Promise<Server> {
-  const app = createApp({ config: { nodeEnv: "test" }, prisma });
+  const app = createApp({ config: TEST_APP_CONFIG, prisma });
   return new Promise((resolve) => {
     const server = app.listen(0, "127.0.0.1", () => resolve(server));
   });
