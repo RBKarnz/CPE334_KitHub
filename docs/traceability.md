@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.0 |
+| Version | 1.1 |
 | Date | 2026-11-06 |
 | Source requirements | `docs/srs.md` v1.2 |
-| Features and AC/TEST definitions | `docs/features.md` v1.0 |
+| Features and AC/TEST definitions | `docs/features.md` v1.1 |
 | Feature and SR IDs | Same as `docs/sprints/plan.md` section 3 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 
@@ -34,14 +34,14 @@ Sprint 1 rows link to planned AC and tests from `docs/features.md`. Sprint 2 and
 | FR-06 | Search and filter item types | F-12 | 3 | Contract F-12 | - | Planned |
 | FR-07 | Borrower requests one unit of one item type | F-02 | 1 | AC-09 | TEST-09, TEST-30 | Planned |
 | FR-08 | Borrower lists and opens own requests | F-02 | 1 | AC-13, AC-26 | TEST-13, TEST-26, TEST-30 | Planned |
-| FR-09 | Custodian lists pending requests | F-03 | 1 | AC-18 | TEST-18 | Planned |
+| FR-09 | Custodian lists pending requests | F-03 | 1 | AC-18, AC-41 | TEST-18, TEST-41 | Specified |
 | FR-10 | Multi-line request with one loan length | F-04 | 2 | Contract F-04 | - | Planned |
 | FR-11 | Borrower edits a pending request | F-05 | 2 | Contract F-05 | - | Planned |
 | FR-12 | Borrower cancels a pending or approved request | F-05 | 2 | Contract F-05 | - | Planned |
 | FR-13 | Custodian approves a whole request | F-06 | 2 | Contract F-06 | - | Planned |
 | FR-14 | Custodian rejects a request with a reason | F-06 | 2 | Contract F-06 | - | Planned |
 | FR-15 | Approved request expires after 48 hours | F-10 | 3 | Contract F-10 | - | Planned |
-| FR-16 | Sprint 1 checkout of a pending request; rejected if no unit is available (D-17) | F-03 | 1 | AC-19, AC-20, AC-26 | TEST-19, TEST-20, TEST-26, TEST-30 | Planned |
+| FR-16 | Sprint 1 checkout of a pending request; rejected if no unit is available (D-17) | F-03 | 1 | AC-19, AC-20, AC-26, AC-42 to AC-49 | TEST-19, TEST-20, TEST-26, TEST-30, TEST-42 to TEST-49 | Specified |
 | FR-17 | Checkout of an approved request, one unit per quantity | F-07 | 2 | Contract F-07 | - | Planned |
 | FR-18 | Borrower sees own active loans | F-07 | 2 | Contract F-07 | - | Planned |
 | FR-19 | Custodian sees all active loans | F-07 | 2 | Contract F-07 | - | Planned |
@@ -64,8 +64,8 @@ A rule enforced by several features is listed once, with the sprint that first e
 | Requirement | Summary | Feature | Sprint | AC | Tests | Status |
 | --- | --- | --- | --- | --- | --- | --- |
 | BR-01 | Request only what is available | F-02; kept by F-04, F-05 (Sprint 2) and F-10 reserved units (Sprint 3) | 1 | AC-10 | TEST-10 | Planned |
-| BR-02 | Checkout only an `AVAILABLE` unit of the line's item type | F-03; kept by F-07 (Sprint 2) | 1 | AC-20, AC-21 | TEST-20, TEST-21 | Planned |
-| BR-03 | At most one active loan per unit, under concurrency | F-03; kept by F-07 (Sprint 2) | 1 | AC-22 | TEST-22 | Planned |
+| BR-02 | Checkout only an `AVAILABLE` unit of the line's item type | F-03; kept by F-07 (Sprint 2) | 1 | AC-20, AC-21, AC-45, AC-46 | TEST-20, TEST-21, TEST-42, TEST-44, TEST-49 | Specified |
+| BR-03 | At most one active loan per unit, under concurrency | F-03; kept by F-07 (Sprint 2) | 1 | AC-22 | TEST-22 | Specified |
 | BR-04 | No two open requests with the same item type | F-02; kept by F-04, F-05 (Sprint 2) | 1 | AC-11 | TEST-11, TEST-31 | Planned |
 | BR-05 | Owner is always the signed-in user; no cross-Borrower access | F-01 (mechanism), F-02; kept by F-13 (Sprint 3) | 1 | AC-09, AC-12, AC-14 | TEST-09, TEST-12, TEST-14 | Planned |
 | BR-06 | Borrower never chooses the unit | F-04, F-07 | 2 | Contract F-04, F-07 | - | Planned |
@@ -85,11 +85,11 @@ A rule enforced by several features is listed once, with the sprint that first e
 
 | Requirement | Summary | Feature or responsibility | Sprint | AC | Tests | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| NFR-01 | Unauthenticated requests rejected without data | F-01; re-verified by SR-03 | 1 | AC-05 | TEST-05 | Planned |
-| NFR-02 | Cross-Borrower and cross-role access rejected | F-01, F-02, F-03 (cross-cutting rule); kept by F-06, F-09, F-13; re-verified by SR-03 | 1 | AC-06, AC-14, AC-15 | TEST-06, TEST-14, TEST-15, TEST-32 | Planned |
+| NFR-01 | Unauthenticated requests rejected without data | F-01; F-03 endpoints in AC-41; re-verified by SR-03 | 1 | AC-05, AC-41 | TEST-05, TEST-41 | Planned |
+| NFR-02 | Cross-Borrower and cross-role access rejected | F-01, F-02, F-03 (cross-cutting rule); kept by F-06, F-09, F-13; re-verified by SR-03 | 1 | AC-06, AC-14, AC-15 | TEST-06, TEST-14, TEST-15, TEST-32, TEST-41 | Planned |
 | NFR-03 | Adaptive salted password hashing | F-01 | 1 | AC-07 | TEST-07 | Planned |
 | NFR-04 | Sign-out invalidates the session; 8-hour expiry (Proposed) | F-01 | 1 | AC-03, AC-04 | TEST-03, TEST-04 | Planned |
-| NFR-05 | Concurrent checkouts give one active loan | F-03; kept by F-07, F-10 | 1 | AC-22 | TEST-22 | Planned |
+| NFR-05 | Concurrent checkouts give one active loan | F-03; kept by F-07, F-10 | 1 | AC-22 | TEST-22 | Specified |
 | NFR-06 | Data survives restart and redeploy | SR-01 (restart); SR-02 (redeploy, from Lab 5) | 1 | - | TEST-27; redeploy check in Lab 5 | Planned |
 | NFR-07 | All settings from environment; no real secret in the repository | SR-01; SR-02 (Secret Manager) | 1 | - | TEST-28 | Planned |
 | NFR-08 | Consistent JSON errors, no stack trace | SR-01; re-verified by SR-03 | 1 | - | TEST-29 | Planned |
@@ -114,3 +114,4 @@ None. Two rows depend on open questions:
 | 2026-11-06 | Added FR-30, BR-17 and NFR-12; widened BR-16 and NFR-09 to cover request edits | Review of the SRS | PR #10, SRS v1.1 |
 | 2026-11-06 | SRS merged, then reverted before its open questions were answered | Q-04 to Q-06 were still open | PR #23 |
 | 2026-11-06 | Resolved Q-04, Q-05 and Q-06 as D-15, D-16 and D-17; Sprint 1 due date and rejected checkout added to FR-16 | Team decision | PR #24, SRS v1.2 |
+| 2026-11-06 | F-03 contract adds AC-41 to AC-49 and TEST-41 to TEST-49; AC-19, AC-20 and AC-43 gain unit tests TEST-48 (due date) and TEST-49 (transitions); TEST-41 also runs the F-03 cases of AC-06. AC-18 to AC-26 are unchanged. FR-09, FR-16, BR-02, BR-03 and NFR-05 move to Specified | Failure cases in the F-03 design (unknown request or unit, request not pending, invalid body, line of another request, same-request race, unit list, checkout dialog) had no AC | #16, F-03 contract v1.0 |
