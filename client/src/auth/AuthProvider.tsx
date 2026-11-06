@@ -21,6 +21,23 @@ const AuthContext = createContext<AuthState | null>(null);
 
 export const landingPath = (role: Role) => (role === "CUSTODIAN" ? "/pending" : "/catalog");
 
+// Routes that only one role may open (SDS 5.1). Keep in step with RequireRole in App.tsx.
+const ROLE_ONLY_ROUTES: { prefix: string; role: Role }[] = [
+  { prefix: "/pending", role: "CUSTODIAN" },
+  { prefix: "/requests", role: "BORROWER" },
+];
+
+/**
+ * Where to go after sign-in: the page that sent the user to /login, unless it belongs to the
+ * other role (for example a Custodian's session ended on /pending and a Borrower signs in).
+ */
+export function afterSignInPath(role: Role, from: string | undefined): string {
+  if (!from) return landingPath(role);
+  const path = from.split(/[?#]/)[0];
+  const owner = ROLE_ONLY_ROUTES.find((r) => path === r.prefix || path.startsWith(`${r.prefix}/`));
+  return owner && owner.role !== role ? landingPath(role) : from;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const [notice, setNotice] = useState<string | null>(null);

@@ -110,6 +110,29 @@ describe("F-01 UI", () => {
     expect(screen.getByText("Custodian")).toBeInTheDocument();
   });
 
+  it("sign-in returns to the page that sent the user to /login", async () => {
+    reply("GET /api/auth/me", unauthenticated);
+    reply("POST /api/auth/login", { status: 200, body: { user: borrower } });
+    renderAt("/requests");
+    await screen.findByRole("heading", { name: "Sign in to KitHub" });
+
+    submitLogin("borrower1", "right");
+
+    expect(await screen.findByRole("heading", { name: "My requests" })).toBeInTheDocument();
+  });
+
+  it("a Borrower sent to /login from a Custodian route lands on the Catalog, not the Forbidden page", async () => {
+    reply("GET /api/auth/me", unauthenticated);
+    reply("POST /api/auth/login", { status: 200, body: { user: borrower } });
+    renderAt("/pending");
+    await screen.findByRole("heading", { name: "Sign in to KitHub" });
+
+    submitLogin("borrower1", "right");
+
+    expect(await screen.findByRole("heading", { name: "Catalog" })).toBeInTheDocument();
+    expect(screen.queryByText("You do not have permission to do this.")).not.toBeInTheDocument();
+  });
+
   it("a Borrower opening a Custodian route sees the Forbidden page", async () => {
     reply("GET /api/auth/me", { status: 200, body: { user: borrower } });
     renderAt("/pending");

@@ -2,7 +2,7 @@
 import { useState, type FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { ApiError } from "../api/client";
-import { landingPath, useAuth } from "../auth/AuthProvider";
+import { afterSignInPath, useAuth } from "../auth/AuthProvider";
 
 interface FieldErrors {
   username?: string;
@@ -21,7 +21,7 @@ export function LoginPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  if (user) return <Navigate to={from ?? landingPath(user.role)} replace />;
+  if (user) return <Navigate to={afterSignInPath(user.role, from)} replace />;
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -35,7 +35,7 @@ export function LoginPage() {
     setSubmitting(true);
     try {
       const signedIn = await signIn(username, password);
-      navigate(from ?? landingPath(signedIn.role), { replace: true });
+      navigate(afterSignInPath(signedIn.role, from), { replace: true });
     } catch (err) {
       // Wrong sign-in keeps the username and clears the password (SDS 5.3).
       setPassword("");

@@ -7,7 +7,7 @@
 | Feature | F-01 Sign-in, sign-out, current user and roles |
 | Sprint | 1 |
 | Issue | #14 (contract), #17 (implementation) |
-| Version | 1.3 |
+| Version | 1.4 |
 | Status | Proposed (becomes Agreed when merged into `staging`, before #17 starts) |
 | Date | 2026-11-06 |
 | Authors | Teerakarn Noiruksa (67070501062) |
@@ -21,6 +21,7 @@
 | 1.1 | 2026-11-06 | Teerakarn Noiruksa | TEST-06 covers only the test-app route; the real-endpoint cases of AC-06 are TEST-41 (b) in contract F-03 (8, 8.1). Every `POST`, including logout, needs `Content-Type: application/json` (4, 4.2, 5, TEST-03). Corrected the 72-byte note (3.2), the sign-in field limits (4.1), how TEST-07 gets cost 12, and the link to the product Definition of Done (9) | Review of PR #27 |
 | 1.2 | 2026-11-06 | Teerakarn Noiruksa | STS (8): every API test signs in and out through one shared helper that sends `Content-Type: application/json` on every `POST`, including logout, so setup steps do not get `415` | Note in the PR #27 re-review |
 | 1.3 | 2026-11-06 | Teerakarn Noiruksa | `415` message in 4.1 is "Request body must be JSON (Content-Type: application/json)." | The `requireJson` middleware from #13 returns this message for every endpoint, so F-01 uses it instead of its own text (#17) |
+| 1.4 | 2026-11-06 | Teerakarn Noiruksa | After sign-in (5): the page that sent the user to `/login` is skipped when it belongs to the other role | Review of PR #31 |
 
 A change after this version is merged gets a new row here, and an AC or TEST change is also recorded in `docs/traceability.md` section 5.
 
@@ -156,7 +157,7 @@ The request body of this route is never logged (SDS 8.1).
 | --- | --- |
 | Sign-in page `/login` | Labelled Username and Password fields and a Sign in button. No pre-filled values and no user picker (SDS 8.6). Empty fields show "Enter your username." or "Enter your password." under the field without calling the API. While the call runs the button is disabled with a spinner |
 | Wrong sign-in | The form stays open, keeps the username, clears the password and shows "Username or password is incorrect." (SDS 5.3) |
-| After sign-in | Borrower goes to `/catalog`, Custodian to `/pending`, or to the page that sent them to `/login` (SDS 5.2) |
+| After sign-in | Borrower goes to `/catalog`, Custodian to `/pending`, or to the page that sent them to `/login` (SDS 5.2), unless that page is for the other role (`/pending` for a Borrower, `/requests` for a Custodian); then the role's landing page is used, so a Borrower who signs in after a Custodian's session ended on `/pending` does not land on the Forbidden page |
 | App load | Shows "Loading…" while `GET /api/auth/me` runs, so the sign-in page does not flash. `401` on a first visit opens `/login` with no message |
 | Navigation bar | KitHub name, the role's links, display name with a role badge ("Borrower" or "Custodian") (FR-03), Sign out button |
 | Sign out | Calls `POST /api/auth/logout` with `Content-Type: application/json`, clears the current user and opens `/login` with no message |
