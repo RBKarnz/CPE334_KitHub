@@ -48,8 +48,8 @@ export class ForbiddenError extends AppError {
 
 /** 404: the record does not exist or is outside the caller's scope (DD-06). */
 export class NotFoundError extends AppError {
-  constructor(message = "The requested resource was not found.") {
-    super(404, "NOT_FOUND", message);
+  constructor(message = "The requested resource was not found.", details?: ErrorDetail[]) {
+    super(404, "NOT_FOUND", message, details);
   }
 }
 
