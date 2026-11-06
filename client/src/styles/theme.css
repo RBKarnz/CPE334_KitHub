@@ -394,6 +394,12 @@ a.kh-row:focus-visible {
 .kh-table tbody tr:last-child td {
   border-bottom: 0;
 }
+/* Safety net around the Pending requests table (issue #38): if the table is wider than its panel, the panel
+   scrolls sideways. position: relative keeps absolutely positioned children (the visually-hidden button text,
+   the hidden thead of the card layout) inside the scroller, so they cannot widen the page. */
+.kh-panel > .table-responsive {
+  position: relative;
+}
 
 /* loading, empty and error states (AsyncState) */
 .kh-state {
@@ -532,8 +538,10 @@ fieldset:disabled .kh-chip {
   opacity: 0.6;
 }
 
-/* ---------- phone width ---------- */
-@media (max-width: 575.98px) {
+/* ---------- phone and small tablet width (below 768 px) ----------
+   Bootstrap caps .container at 540 px from 576 to 767 px, which is too narrow for the one-row nav bar
+   and the 6-column Pending requests table (issue #38), so the narrow layout applies up to 768 px. */
+@media (max-width: 767.98px) {
   .kh-nav-inner {
     grid-template-columns: auto 1fr auto;
     grid-template-areas:
