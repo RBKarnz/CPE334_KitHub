@@ -501,6 +501,8 @@ a.kh-row:focus-visible {
   bottom: -7px;
 }
 .kh-chip .form-check-input {
+  position: relative;
+  z-index: 1; /* above the label's click area, so the radio itself also takes clicks */
   margin: 0;
   flex-shrink: 0;
   background-color: #3a3e48;
