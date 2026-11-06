@@ -6,7 +6,7 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part C |
-| Version | 1.1 |
+| Version | 1.2 |
 | Date | 2026-11-06 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Baseline | [SRS v1.2](srs.md) |
@@ -18,6 +18,7 @@
 | --- | --- | --- | --- |
 | 1.0 | 2026-11-06 | Methipat Mansap | First baseline for the whole product (Sprints 1 to 3) |
 | 1.1 | 2026-11-06 | Methipat Mansap | Review of PR #25: a wrong sign-in, or a first visit with no session, no longer shows "session has ended" (5.3); checkout checks that each `lineId` belongs to the request (4.7, 6.4); sign-in deletes every expired session (8.2, 8.3); note on the CI trigger for `staging` (9.6) |
+| 1.2 | 2026-11-06 | Methipat Mansap | Issue #34 (SR-04): "Visual style" row in 5.3; `PageHeader`, `MessagePage`, `Logo` and `styles/` in the code layout (3.6). No behavior or API change |
 
 ## 2. Introduction
 
@@ -109,7 +110,9 @@ client/
   src/
     api/          fetch wrapper (JSON, credentials, error parsing) and one module per feature
     auth/         AuthProvider (current user), RequireAuth, RequireRole route guards
-    components/   NavBar, AsyncState (loading/empty/error), FormField, StatusBadge, ConfirmDialog
+    components/   NavBar, AsyncState (loading/empty/error), FormField, StatusBadge, ConfirmDialog,
+                  PageHeader, MessagePage (Forbidden, Not found), Logo
+    styles/       theme.css: the visual style on Bootstrap 5 CSS variables (section 5.3)
     pages/        one folder per screen (section 5.1)
   tests/          component tests
 server/
@@ -584,6 +587,7 @@ Search and filter (FR-06) are added to the Catalog screen in Sprint 3.
 | Confirmation | Checkout, cancel, reject and retire ask for confirmation in a dialog that names the request or unit |
 | States and times | States are shown as a badge with the state's text, never by color alone. Times use the format "6 Nov 2026, 14:30" in Asia/Bangkok time |
 | Accessibility | Every input has a label; dialogs can be used and closed with the keyboard |
+| Visual style | "Anti-static" (SR-04, #34), chosen by the team from image mockups. Bootstrap 5 stays the base; `client/src/styles/theme.css` sets its CSS variables and adds `kh-*` classes: charcoal `#23262e` text and navigation bar, silver `#e9ebee` page, white panels, pink anti-static foam `#f2a7c3` as the one texture (under the navigation bar, behind the sign-in card and the units in the checkout dialog), and `#c2255c` for primary buttons and selection. One self-hosted font, Chakra Petch (`@fontsource/chakra-petch`), and `bootstrap-icons`, both from npm and bundled by Vite: no runtime CDN. The logo and favicon are original SVGs. Text meets WCAG AA contrast (lowest pair 4.6:1); icons are decorative (`aria-hidden`) and never replace text. Buttons have clipped corners, so their focus ring is drawn inside the button. Below 576 px the navigation bar uses two rows and the Pending requests table shows each row as a card, with the column name before each value |
 
 One shared `AsyncState` component renders the loading, empty and error states, so every list behaves the same way. The UI's API client decides what to do from `error.code`, not from the HTTP status alone (DD-10).
 

@@ -6,10 +6,10 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part D |
-| Version | 1.2 |
+| Version | 1.3 |
 | Date | 2026-11-06 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
-| Baseline | [SRS v1.2](../srs.md), [System-Level SDS v1.1](../system-sds.md) |
+| Baseline | [SRS v1.2](../srs.md), [System-Level SDS v1.2](../system-sds.md) |
 
 ### Revision history
 
@@ -18,12 +18,13 @@
 | 1.0 | 2026-11-06 | Methipat Mansap | First plan for Sprints 1 to 3 |
 | 1.1 | 2026-11-06 | Methipat Mansap | Review of PR #25: baseline link updated to SDS v1.1 |
 | 1.2 | 2026-11-06 | Teerakarn Noiruksa | Review of PR #26: F-03 also verifies NFR-12 (pending requests list states, AC-25) |
+| 1.3 | 2026-11-06 | Methipat Mansap | Issue #34: SR-04 UI polish added to Sprint 1 (sections 2, 3.2 and 4.3), so the Deliverable 1 screenshots, the Lab 6 UAT and the demo use one finished look. Visual only: no feature, requirement or sprint moves |
 
 ## 2. Overview
 
 | Sprint | Dates | Checkpoint | Goal | Features | Release |
 | --- | --- | --- | --- | --- | --- |
-| 1 | 2026-11-03 to 2026-11-08 | Deliverable 1, 8 Nov | A small working borrowing slice with authentication, server-side permissions and persistence | F-01, F-02, F-03 | `v0.1.0` |
+| 1 | 2026-11-03 to 2026-11-08 | Deliverable 1, 8 Nov | A small working borrowing slice with authentication, server-side permissions and persistence | F-01, F-02, F-03, SR-04 | `v0.1.0` |
 | 2 | 2026-11-09 to 2026-11-29 | Deliverable 2, 29 Nov | The complete borrowing cycle (request, approve, check out, return) and catalog management, under contracts | F-04 to F-09 | `v0.2.0` |
 | 3 | 2026-11-23 to 2026-12-13 (contracts and F-11 overlap the last week of Sprint 2) | Progress at 29 Nov; final product 13 Dec | Remaining features, integration and hardening | F-10 to F-14, SR-03 | `v1.0.0` |
 
@@ -70,6 +71,7 @@ Some requirements are not one feature's job. They are built once and then kept t
 | SR-01 | Platform foundation: project skeleton, configuration, JSON error handling, health and readiness, migrations and seed (SDS sections 4.8, 6.5, 6.7, 9.1) | NFR-06, NFR-07, NFR-08 | #13 | 1 |
 | SR-02 | Delivery: Docker image, CI on PRs, deployment to GCP, persistence across redeploys (SDS sections 9.5 to 9.7) | NFR-06 (redeploy), NFR-07 (Secret Manager) | #1 to #9 (Lab 5) | 2 (by 15 Nov) |
 | SR-03 | Hardening: performance measurement, permission and error regression suite, UAT and maintenance defects | NFR-11; re-verifies NFR-01, NFR-02, NFR-08 | Created in Sprint 3 | 3 |
+| SR-04 | UI polish: one shared visual style (theme on Bootstrap 5 CSS variables, one self-hosted font, icons, logo) for every Sprint 1 screen at 375, 768 and 1280 px; visual only, no behavior, API or contract text change (SDS 5.3 "Visual style") | None new; keeps NFR-12 and the SDS 5.3 accessibility rules | #34 | 1 |
 
 ### 3.3 Dependencies between features
 
@@ -162,7 +164,8 @@ Contracts (Part E) are merged into `staging` before their implementation starts,
 | 5 | #18 | F-02 implementation | F | #15, #17 |
 | 6 | #19 | F-03 implementation | F | #16, #18 |
 | 7 | #20 | End-to-end journey test | F | #17, #18, #19 |
-| 8 | #21 | Release `v0.1.0` and the Deliverable 1 PDF | F | #11 to #20 |
+| 7 | #34 | UI polish (SR-04): shared visual style for every Sprint 1 screen | F | #19 |
+| 8 | #21 | Release `v0.1.0` and the Deliverable 1 PDF | F | #11 to #20, #34 |
 
 ### 4.4 Completion outcome
 
