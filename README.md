@@ -122,6 +122,20 @@ What the command does:
 - Applies the migrations to `kithub_test` and empties its tables. Each test empties them again and creates its own users, catalog and units with a test-only password, so the demo seed is not needed.
 - Builds `client/` and `server/`, then starts the server with `NODE_ENV=production` on port 3100, so it serves the built UI as the deployed app does. Port 3100 must be free; a dev server on 3000 can keep running.
 
+Do not run the server tests (`npm test` in `server/`) at the same time as `npm run test:e2e`. Both empty and refill `kithub_test`, so running them together makes both fail at random.
+
+Playwright strips the TypeScript types without checking them. To type-check `e2e/` and `playwright.config.ts`, including the server test helpers they import, run:
+
+```sh
+npm run typecheck:e2e
+```
+
+To save the evidence screenshots of the main steps as PNG files (the set for Deliverable 1 Part F is in [`docs/sprints/sprint-1/img/e2e/`](docs/sprints/sprint-1/img/e2e/)), set `E2E_EVIDENCE_DIR` for one run:
+
+```sh
+E2E_EVIDENCE_DIR=docs/sprints/sprint-1/img/e2e npm run test:e2e
+```
+
 The HTML report is written to `playwright-report/`; open it with `npm run test:e2e:report`. It includes screenshots of the main steps. Traces, screenshots and videos of a failed test go to `test-results/`. Both folders are ignored by Git; never commit them, because a trace can contain session cookies.
 
 ## Seeded accounts

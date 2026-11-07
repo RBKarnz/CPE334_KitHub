@@ -30,7 +30,7 @@ test("TEST-32: a Borrower sees the Forbidden page at /pending and the API refuse
   const expectForbidden = async (response: Awaited<ReturnType<typeof page.request.get>>) => {
     expect(response.status()).toBe(403);
     expect(response.headers()["content-type"]).toMatch(/^application\/json/);
-    const body = await response.json();
+    const body = (await response.json()) as Record<string, unknown>;
     expect(Object.keys(body)).toEqual(["error"]); // only the error object, no request, unit or loan data
     expect(body.error).toEqual({
       code: "FORBIDDEN",

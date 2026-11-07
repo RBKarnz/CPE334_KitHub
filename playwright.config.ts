@@ -34,6 +34,11 @@ export default defineConfig({
     timeout: 240_000,
     stdout: "ignore",
     stderr: "pipe",
+    // NODE_ENV=production makes the session cookie Secure (COOKIE_SECURE defaults to true, SDS 9.1),
+    // as on Cloud Run. Chromium still stores and sends a Secure cookie over plain http because it
+    // treats localhost as a secure context. That exception is browser-specific: before adding a
+    // Firefox or WebKit project, or a base URL that is not localhost or 127.0.0.1, check that
+    // sign-in still works, or set COOKIE_SECURE: "false" here.
     env: {
       NODE_ENV: "production",
       PORT: String(E2E_PORT),

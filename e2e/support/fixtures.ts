@@ -1,5 +1,7 @@
 // The `test` used by every E2E file. Each test starts from empty tables and creates its own
 // users, catalog and units, so the tests do not depend on each other's order or data.
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { test as base, expect, type Page, type TestInfo } from "@playwright/test";
 import { connectTestDb, resetDb, TEST_PASSWORD, type Db } from "./db.js";
 
@@ -62,9 +64,19 @@ const DATE_TIME = new Intl.DateTimeFormat("en-GB", {
 export const formatDateTime = (date: Date) => DATE_TIME.format(date);
 
 /**
- * Attaches a full-page screenshot to the HTML report, as evidence for Deliverable 1 Part F.
- * Report attachments only: nothing is written into the repository.
+ * Evidence for Deliverable 1 Part F: a full-page screenshot of a main step, attached to the HTML
+ * report. When E2E_EVIDENCE_DIR is set (README section 6), it is also saved there as
+ * `<name as a slug>.png`, for example "TEST-30 1 catalog" → test-30-1-catalog.png. The committed
+ * set is in docs/sprints/sprint-1/img/e2e/. Screens only: no cookie, header or password is captured,
+ * and no screenshot is taken while a password field is filled.
  */
 export async function evidence(page: Page, testInfo: TestInfo, name: string): Promise<void> {
-  await testInfo.attach(name, { body: await page.screenshot({ fullPage: true }), contentType: "image/png" });
+  const body = await page.screenshot({ fullPage: true });
+  await testInfo.attach(name, { body, contentType: "image/png" });
+  const dir = process.env.E2E_EVIDENCE_DIR;
+  if (dir) {
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    await mkdir(dir, { recursive: true });
+    await writeFile(path.join(dir, `${slug}.png`), body);
+  }
 }
