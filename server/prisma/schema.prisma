@@ -1,0 +1,224 @@
+// KitHub data model, Sprint 1 columns (SDS 4.2).
+// CHECK constraints, the partial unique index on loans and the append-only trigger on
+// history_entries cannot be written in Prisma; they are raw SQL in the migration (SDS 4.3).
+// Columns marked Sprint 2 or 3 in the SDS are added by later additive migrations (DD-14).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Every enum has all of its SRS values from the first migration (SDS 4.2).
+
+enum Role {
+  BORROWER
+  CUSTODIAN
+}
+
+enum UnitStatus {
+  AVAILABLE
+  ON_LOAN
+  MAINTENANCE
+  RETIRED
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  CHECKED_OUT
+  RETURNED
+  EXPIRED
+}
+
+enum LoanStatus {
+  ACTIVE
+  RETURNED
+}
+
+enum ReturnCondition {
+  GOOD
+  DAMAGED
+}
+
+enum ActorType {
+  USER
+  SYSTEM
+}
+
+enum HistoryEntity {
+  REQUEST
+  UNIT
+  LOAN
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  /// Lowercase; 3 to 32 characters from a-z 0-9 . _ -
+  username     String   @unique
+  displayName  String
+  role         Role
+  /// bcrypt hash. Never selected into an API response.
+  passwordHash String
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
+
+  sessions        Session[]
+  borrowRequests  BorrowRequest[] @relation("RequestBorrower")
+  checkedOutLoans Loan[]          @relation("LoanCheckedOutBy")
+  historyEntries  HistoryEntry[]  @relation("HistoryActor")
+
+  @@map("users")
+}
+
+model Session {
+  /// SHA-256 hex digest of the session token; the token itself is never stored.
+  id        String   @id
+  userId    Int
+  expiresAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model Category {
+  id                 Int      @id @default(autoincrement())
+  name               String   @unique
+  description        String?
+  defaultMaxLoanDays Int
+  defaultMaxQuantity Int
+  createdAt          DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime @updatedAt @db.Timestamptz(3)
+
+  itemTypes ItemType[]
+
+  @@map("categories")
+}
+
+model ItemType {
+  id                    Int      @id @default(autoincrement())
+  categoryId            Int
+  name                  String   @unique
+  description           String
+  maxLoanDays           Int
+  maxQuantityPerRequest Int
+  isKit                 Boolean  @default(false)
+  createdAt             DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime @updatedAt @db.Timestamptz(3)
+
+  category     Category      @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  units        Unit[]
+  requestLines RequestLine[]
+
+  @@index([categoryId])
+  @@map("item_types")
+}
+
+model Unit {
+  id         Int        @id @default(autoincrement())
+  itemTypeId Int
+  /// Uppercase, KH-<CODE>-<NNNN>; unique across all item types (A-07)
+  assetTag   String     @unique
+  status     UnitStatus @default(AVAILABLE)
+  createdAt  DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime   @updatedAt @db.Timestamptz(3)
+
+  itemType       ItemType       @relation(fields: [itemTypeId], references: [id], onDelete: Restrict)
+  loans          Loan[]
+  historyEntries HistoryEntry[]
+
+  @@index([itemTypeId, status])
+  @@map("units")
+}
+
+/// Called BorrowRequest in code so it does not clash with the HTTP request type.
+model BorrowRequest {
+  id         Int           @id @default(autoincrement())
+  /// Owner: always the signed-in Borrower; never changes (BR-05)
+  borrowerId Int
+  status     RequestStatus @default(PENDING)
+  createdAt  DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime      @updatedAt @db.Timestamptz(3)
+
+  borrower       User           @relation("RequestBorrower", fields: [borrowerId], references: [id], onDelete: Restrict)
+  lines          RequestLine[]
+  historyEntries HistoryEntry[]
+
+  @@index([status, createdAt])
+  @@index([borrowerId, status])
+  @@map("borrow_requests")
+}
+
+model RequestLine {
+  id         Int      @id @default(autoincrement())
+  requestId  Int
+  itemTypeId Int
+  quantity   Int
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(3)
+
+  request  BorrowRequest @relation(fields: [requestId], references: [id], onDelete: Restrict)
+  itemType ItemType      @relation(fields: [itemTypeId], references: [id], onDelete: Restrict)
+  loans    Loan[]
+
+  @@unique([requestId, itemTypeId])
+  @@index([itemTypeId])
+  @@map("request_lines")
+}
+
+model Loan {
+  id             Int        @id @default(autoincrement())
+  requestLineId  Int
+  /// At most one ACTIVE loan per unit: partial unique index in the migration (BR-03)
+  unitId         Int
+  status         LoanStatus @default(ACTIVE)
+  checkedOutAt   DateTime   @db.Timestamptz(3)
+  checkedOutById Int
+  dueAt          DateTime   @db.Timestamptz(3)
+  createdAt      DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime   @updatedAt @db.Timestamptz(3)
+
+  requestLine    RequestLine    @relation(fields: [requestLineId], references: [id], onDelete: Restrict)
+  unit           Unit           @relation(fields: [unitId], references: [id], onDelete: Restrict)
+  checkedOutBy   User           @relation("LoanCheckedOutBy", fields: [checkedOutById], references: [id], onDelete: Restrict)
+  historyEntries HistoryEntry[]
+
+  @@index([status, dueAt])
+  @@map("loans")
+}
+
+/// Append-only (BR-16): a trigger in the migration rejects every UPDATE and DELETE.
+model HistoryEntry {
+  id          Int           @id @default(autoincrement())
+  occurredAt  DateTime      @default(now()) @db.Timestamptz(3)
+  actorType   ActorType
+  /// Set exactly when actorType is USER (CHECK in the migration)
+  actorUserId Int?
+  entityType  HistoryEntity
+  requestId   Int?
+  unitId      Int?
+  loanId      Int?
+  /// CREATED, STATUS_CHANGED or EDITED
+  action      String
+  fromStatus  String?
+  toStatus    String?
+  details     Json?
+
+  actorUser User?          @relation("HistoryActor", fields: [actorUserId], references: [id], onDelete: Restrict)
+  request   BorrowRequest? @relation(fields: [requestId], references: [id], onDelete: Restrict)
+  unit      Unit?          @relation(fields: [unitId], references: [id], onDelete: Restrict)
+  loan      Loan?          @relation(fields: [loanId], references: [id], onDelete: Restrict)
+
+  @@index([requestId, occurredAt])
+  @@index([unitId, occurredAt])
+  @@map("history_entries")
+}
