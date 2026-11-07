@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.7 |
+| Version | 1.8 |
 | Date | 2026-11-07 |
 | Source requirements | `docs/srs.md` v1.3 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
 | Traceability | `docs/traceability.md` |
@@ -187,3 +187,85 @@ Evidence screenshots for Deliverable 1 Part F, saved by run 1 on `16fdb7f` with 
 | Business-rule rejection | TEST-31 | [Duplicate request refused](sprints/sprint-1/img/e2e/test-31-duplicate-request-refused.png) |
 | Forbidden role operation | TEST-32 | [Forbidden page](sprints/sprint-1/img/e2e/test-32-forbidden-page.png); the API `403` is asserted in the test, not shown on screen |
 | Narrow screens (SR-04) | TEST-53 | [640 px dialog](sprints/sprint-1/img/e2e/test-53-640-px-checkout-dialog.png), [760 px dialog](sprints/sprint-1/img/e2e/test-53-760-px-checkout-dialog.png), [600 px navigation bar](sprints/sprint-1/img/e2e/test-53-600-px-navigation-bar.png) |
+
+### 4.5 Sprint 1 results on the release candidate (#21)
+
+This section is the result for the Sprint 1 release. Sections 4.3.1 and 4.4.1 keep the results from when each feature was merged.
+
+**Tested commit:** `b864ecd2b6c744f8ef39e5d4773d6086c27afaf8` on `staging` (after PR #40), 2026-11-07. Every Sprint 1 Issue (#11 to #20, #22, #34, #36, #38) is merged at this commit.
+
+**Environment:** Windows 11, Node.js 22.19.0, npm 11.11.0, PostgreSQL 16 in Docker, Chromium from Playwright 1.64.1. The README names Node.js 24, the version of the Lab 5 Docker image; this run used 22.19.0.
+
+**Commands**, after `npm ci` in the repository root, `server/` and `client/`:
+
+| Command | Result |
+| --- | --- |
+| `npm run build` in `client/` (`tsc --noEmit && vite build`) | Exit 0 |
+| `npm run typecheck` and `npm run build` in `server/` | Exit 0, no errors |
+| `npm run typecheck:e2e` | Exit 0, no errors |
+| `npm test -- --reporter=default --reporter=json --outputFile.json=<file>` in `server/` (against `kithub_test`) | 26 files; 160 passed, 0 failed, 0 skipped |
+| `npm test -- --reporter=default --reporter=json --outputFile.json=<file>` in `client/` | 5 files; 39 passed, 0 failed, 0 skipped |
+| `npx playwright test --reporter=list,json` (Chromium, against `kithub_test`) | 4 passed, 0 failed, 0 skipped, 0 flaky |
+
+These are `npm test` and `npm run test:e2e` with a JSON report added; the reporters do not change which tests run. The counts and the table below come from those reports. No test is disabled, skipped or marked as todo.
+
+**Automated results for every Sprint 1 AC.** Test levels are those of sections 4.1 to 4.3. Counts are the test cases in the file that carry the TEST ID.
+
+| AC | Planned test | Test file | Test names | Result on `b864ecd` |
+| --- | --- | --- | --- | --- |
+| AC-01 | TEST-01; TEST-30 | `server/tests/api/auth.test.ts`; `e2e/journey.spec.ts` | "TEST-01: borrower1 signs in", "TEST-01: custodian1 signs in", "TEST-01: Borrower1 signs in"; "TEST-30" | Pass (3 + 1) |
+| AC-02 | TEST-02 | `server/tests/api/auth.test.ts` | "TEST-02: unknown username and wrong password give the same 401 and no session", "… empty password …", "… unknown field …" | Pass (3) |
+| AC-03 | TEST-03 | `server/tests/api/auth.test.ts` | "TEST-03 (a): logout without Content-Type is 415 …", "TEST-03 (b, c): logout deletes the session, the old cookie is rejected …" | Pass (2) |
+| AC-04 | TEST-04 | `server/tests/api/auth.test.ts` | "TEST-04 (a): a new session expires 8 hours after sign-in", "TEST-04 (b): a session whose expiry has passed is rejected …" | Pass (2) |
+| AC-05 | TEST-05 | `server/tests/api/auth.test.ts` | "TEST-05: /api/auth/me with no cookie is 401 …", "… with an unknown token …", "TEST-05: health and sign-in stay reachable without a cookie" | Pass (3) |
+| AC-06 | TEST-06; TEST-41 (b); TEST-32 | `server/tests/api/auth.test.ts`; `server/tests/api/checkout-access.test.ts`; `e2e/forbidden.spec.ts` | "TEST-06: a Borrower gets 403 and nothing is written; a Custodian passes"; "TEST-41 (b)" (unit list, checkout); "TEST-32" | Pass (1 + 2 + 1) |
+| AC-07 | TEST-07 | `server/tests/unit/password.test.ts` | "TEST-07 (a): cost 12 hashes differ from the plain text and from each other", "TEST-07 (b): the default cost is 12 …" | Pass (2) |
+| AC-08 | TEST-08 | `server/tests/api/catalog.test.ts` | "TEST-08: both roles get categories and item types … with AVAILABLE counts and no unit data", "TEST-08: any query parameter is rejected …" | Pass (2) |
+| AC-09 | TEST-09; TEST-30 | `server/tests/api/requests-create.test.ts`; `e2e/journey.spec.ts` | "TEST-09: 201 PENDING, owned by the signed-in Borrower, units unchanged"; "TEST-30" | Pass (1 + 1) |
+| AC-10 | TEST-10 | `server/tests/api/requests-create.test.ts`, `server/tests/unit/request-rules.test.ts` | "TEST-10: 409 ITEM_TYPE_UNAVAILABLE and nothing stored", "TEST-10 (unit)" | Pass (2) |
+| AC-11 | TEST-11; TEST-31 | `server/tests/api/requests-create.test.ts`, `server/tests/unit/request-rules.test.ts`; `e2e/rejection.spec.ts` | "TEST-11: an existing PENDING request …", "… APPROVED request …", "TEST-11 (unit)"; "TEST-31" | Pass (3 + 1) |
+| AC-12 | TEST-12 | `server/tests/api/requests-create.test.ts` | "TEST-12: a body with borrowerId is 400 …", "… with role …" | Pass (2) |
+| AC-13 | TEST-13 | `server/tests/api/requests-read.test.ts` | "TEST-13: the list has only their requests, and each detail matches its list entry" | Pass (1) |
+| AC-14 | TEST-14 | `server/tests/api/requests-access.test.ts` | "TEST-14: 404 with only the error object and none of the request's fields" | Pass (1) |
+| AC-15 | TEST-15 | `server/tests/api/requests-access.test.ts` | "TEST-15: 403 FORBIDDEN and nothing stored" | Pass (1) |
+| AC-16 | TEST-16 | `server/tests/api/requests-history.test.ts` | "TEST-16: exactly one CREATED entry with the Borrower as actor …" | Pass (1) |
+| AC-17 | TEST-17 | `client/tests/catalog.test.tsx`, `client/tests/my-requests.test.tsx` | "TEST-17: shows Loading… …", "… empty …", "… an error shows the API message, and Try again …" (catalog and My requests) | Pass (6) |
+| AC-18 | TEST-18 | `server/tests/api/pending-requests.test.ts` | "TEST-18: lists every Borrower's PENDING requests oldest first …" | Pass (1) |
+| AC-19 | TEST-19, TEST-50, TEST-51 (a); TEST-30 | `server/tests/api/checkout.test.ts`, `server/tests/unit/due-date.test.ts`, `server/tests/unit/transitions.test.ts`; `e2e/journey.spec.ts` | "TEST-19" (14-day and 3-day due dates); "TEST-50 (a)" to "(e)"; "TEST-51 (a)"; "TEST-30" | Pass (2 + 8 + 3 + 1) |
+| AC-20 | TEST-20, TEST-51 (b) | `server/tests/api/checkout.test.ts`, `server/tests/unit/transitions.test.ts` | "TEST-20 (a)", "(b)", "(c)"; "TEST-51 (b)" | Pass (3 + 6) |
+| AC-21 | TEST-21 | `server/tests/api/checkout.test.ts` | "TEST-21 (a)", "TEST-21 (b)" | Pass (2) |
+| AC-22 | TEST-22, TEST-52 | `server/tests/api/checkout-concurrency.test.ts`, `server/tests/unit/checkout-errors.test.ts` | "TEST-22 (a)" (5 rounds), "TEST-22 (b)"; "TEST-52 (a)" to "(c)" | Pass (2 + 3) |
+| AC-23 | TEST-23 | `server/tests/api/checkout-history.test.ts` | "TEST-23: exactly three entries …" | Pass (1) |
+| AC-24 | TEST-24 | `server/tests/api/checkout-history.test.ts` | "TEST-24 (a)", "(b)", "TEST-24: patch …", "TEST-24: delete …" | Pass (4) |
+| AC-25 | TEST-25 | `client/tests/PendingRequestsPage.test.tsx` | "TEST-25 (a)" to "(d)", "TEST-25: rows keep the API order" | Pass (5) |
+| AC-26 | TEST-26; TEST-30 | `server/tests/api/checkout.test.ts`; `e2e/journey.spec.ts` | "TEST-26: Borrower sees CHECKED_OUT …"; "TEST-30" | Pass (1 + 1) |
+| AC-33 | TEST-33 | `server/tests/api/requests-access.test.ts` | "TEST-33: no cookie gives 401 on every endpoint", "TEST-33: a signed-out session gives 401 on every endpoint" | Pass (2) |
+| AC-34 | TEST-34 | `server/tests/api/requests-create.test.ts` | "TEST-34: no lines …", "empty lines", "two lines", "quantity 2", "itemTypeId 0", "string itemTypeId", "extra loanDays", "unknown field in a line" | Pass (8) |
+| AC-35 | TEST-35 | `server/tests/api/requests-create.test.ts` | "TEST-35: 404 NOT_FOUND naming lines[0].itemTypeId" | Pass (1) |
+| AC-36 | TEST-36 | `server/tests/api/requests-create.test.ts` | "TEST-36: other item types, closed requests and other Borrowers do not block; the same item type does" | Pass (1) |
+| AC-37 | TEST-37 | `server/tests/api/requests-concurrency.test.ts` | "TEST-37: two parallel creates store one request, 20 runs" | Pass (1) |
+| AC-38 | TEST-38 | `server/tests/api/requests-create.test.ts`, `server/tests/unit/request-rules.test.ts` | "TEST-38: open request and 0 available gives 409 DUPLICATE_OPEN_REQUEST …", "TEST-38 (unit)" | Pass (2) |
+| AC-39 | TEST-39 | `server/tests/api/requests-read.test.ts` | "TEST-39: Borrower lists are newest first …", "… does not exist is 404 …", and three `400` cases | Pass (5) |
+| AC-40 | TEST-40 | `client/tests/catalog.test.tsx` | "TEST-40: a 0-available item type has a disabled button …", "… a double press sends one request …", "… a 409 shows the API message …", "… a Custodian sees the catalog without Request buttons" | Pass (4) |
+| AC-41 | TEST-41 (a) | `server/tests/api/checkout-access.test.ts` | "TEST-41 (a)": no cookie and signed-out cookie, 3 endpoints each | Pass (6) |
+| AC-42 | TEST-42 | `server/tests/api/checkout.test.ts` | "TEST-42 (a)", "TEST-42 (b)" | Pass (2) |
+| AC-43 | TEST-43, TEST-51 (b) | `server/tests/api/checkout.test.ts`, `server/tests/unit/transitions.test.ts` | "TEST-43: checking out a CHECKED_OUT request again …"; "TEST-51 (b)" | Pass (1 + 6) |
+| AC-44 | TEST-44 | `server/tests/api/checkout.test.ts` | "TEST-44 (a)" to "(h)" | Pass (9) |
+| AC-45 | TEST-45 | `server/tests/api/checkout.test.ts` | "TEST-45 (a)", "TEST-45 (b)" | Pass (2) |
+| AC-46 | TEST-46 | `server/tests/api/checkout.test.ts` | "TEST-46 (a)", "TEST-46 (b)" | Pass (2) |
+| AC-47 | TEST-47 | `server/tests/api/checkout-concurrency.test.ts` | "TEST-47: two simultaneous checkouts of one request …" (5 rounds) | Pass (1) |
+| AC-48 | TEST-48 | `server/tests/api/units.test.ts` | "TEST-48 (a)" to "(f)" | Pass (6) |
+| AC-49 | TEST-49 | `client/tests/CheckoutDialog.test.tsx` | "TEST-49 (a)" to "(e)" | Pass (6) |
+
+All 43 Sprint 1 AC pass. TEST-51 (a) and (b) are listed under every AC they serve, so the counts in a column do not add up to the suite totals.
+
+**System checks without an AC of their own:**
+
+| Test | Requirement | Test file | Result on `b864ecd` |
+| --- | --- | --- | --- |
+| TEST-27 | NFR-06 | `server/tests/api/persistence.test.ts` | Pass (1). NFR-06 stays Planned until the Lab 5 redeploy check (`docs/traceability.md`) |
+| TEST-28 | NFR-07 | `server/tests/unit/config.test.ts` | Pass (5) |
+| TEST-29 | NFR-08 | `server/tests/api/errors.test.ts` | Pass (5) |
+| TEST-53 | SR-04 | `e2e/narrow-screens.spec.ts` | Pass (1) |
+
+Another 50 server and client tests carry no TEST ID: health and readiness, the migration's constraints, the seed, the error handler and validation middleware, the test-database guard, the F-01 sign-in screens, and extra cases for the checkout dialog and the request detail. All of them pass. The manual checks MT-01 to MT-17 in `docs/sprints/sprint-1/manual-test-guide.md` are manual and are not counted here.
