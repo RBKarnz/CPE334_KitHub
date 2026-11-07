@@ -136,6 +136,12 @@ To save the evidence screenshots of the main steps as PNG files (the set for Del
 E2E_EVIDENCE_DIR=docs/sprints/sprint-1/img/e2e npm run test:e2e
 ```
 
+In PowerShell, set the variable, run, then remove it so later runs do not overwrite the committed screenshots:
+
+```powershell
+$env:E2E_EVIDENCE_DIR = "docs/sprints/sprint-1/img/e2e"; npm run test:e2e; Remove-Item Env:E2E_EVIDENCE_DIR
+```
+
 The HTML report is written to `playwright-report/`; open it with `npm run test:e2e:report`. It includes screenshots of the main steps. Traces, screenshots and videos of a failed test go to `test-results/`. Both folders are ignored by Git; never commit them, because a trace can contain session cookies.
 
 ## Seeded accounts
