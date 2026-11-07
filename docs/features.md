@@ -209,9 +209,9 @@ This section is the result for the Sprint 1 release. Sections 4.3.1 and 4.4.1 ke
 
 These are `npm test` and `npm run test:e2e` with a JSON report added; the reporters do not change which tests run. The counts and the table below come from those reports. No test is disabled, skipped or marked as todo.
 
-**Automated results for every Sprint 1 AC.** Test levels are those of sections 4.1 to 4.3. Counts are the test cases in the file that carry the TEST ID.
+**Automated results for every Sprint 1 AC.** Test levels are those of sections 4.1 to 4.3. Counts are the test cases in the file that carry the TEST ID. In the Tests column, the part before `;` is the planned test from the Test column of sections 4.1 to 4.3. The part after `;` lists further tests that also cover the AC: the E2E checks from section 4.4, and for AC-06 the F-03 cases TEST-41 (b) (section 4.3 and contract F-01 section 8.1). A letter such as TEST-41 (b) or TEST-51 (a) names the cases of that test that serve this AC, as contract F-03 section 8.2 assigns them.
 
-| AC | Planned test | Test file | Test names | Result on `b864ecd` |
+| AC | Tests | Test file | Test names | Result on `b864ecd` |
 | --- | --- | --- | --- | --- |
 | AC-01 | TEST-01; TEST-30 | `server/tests/api/auth.test.ts`; `e2e/journey.spec.ts` | "TEST-01: borrower1 signs in", "TEST-01: custodian1 signs in", "TEST-01: Borrower1 signs in"; "TEST-30" | Pass (3 + 1) |
 | AC-02 | TEST-02 | `server/tests/api/auth.test.ts` | "TEST-02: unknown username and wrong password give the same 401 and no session", "… empty password …", "… unknown field …" | Pass (3) |
