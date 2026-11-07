@@ -167,11 +167,23 @@ TEST-53 takes the next free number above the highest AC or TEST on `staging` (52
 
 #### 4.4.1 E2E results (#20)
 
-Tested commit `c5a432f` on 2026-11-07. `npm run test:e2e` at the repository root (Playwright 1.64.1, Chromium) builds `client/` and `server/`, starts the server with `NODE_ENV=production` on port 3100 so it serves the built UI (DD-01), and points it at `kithub_test` only. The global setup applies migrations and empties every table; each test empties the tables again and creates its own users, catalog and units with the server test factories, never the demo seed (SDS 4.8). Result: 4 passed, 0 failed, 0 skipped, 0 flaky, in each of 3 runs in a row. On the same commit `npm test` in `server/` gave 160 passed (26 files) and in `client/` 39 passed (5 files), 0 failed, 0 skipped. TEST-53 fails against the client from before the #38 fix (`91157da`), so it catches that defect.
+Tested commit `16fdb7f` on 2026-11-07. `npm run test:e2e` at the repository root (Playwright 1.64.1, Chromium) builds `client/` and `server/`, starts the server with `NODE_ENV=production` on port 3100 so it serves the built UI (DD-01), and points it at `kithub_test` only. The global setup applies migrations and empties every table; each test empties the tables again and creates its own users, catalog and units with the server test factories, never the demo seed (SDS 4.8). Result: 4 passed, 0 failed, 0 skipped, 0 flaky, in each of 3 runs in a row. On the same commit `npm run typecheck:e2e` (`tsc` over `e2e/`, `playwright.config.ts` and the server test helpers they import) reported no errors, `npm test` in `server/` gave 160 passed (26 files) and in `client/` 39 passed (5 files), 0 failed, 0 skipped. TEST-53 fails against the client from before the #38 fix (`91157da`), so it catches that defect (checked on `16fdb7f` with `client/src` from `91157da`: 99 px of page-level sideways scroll at 640 px).
 
-| Test | AC | Test file | Test name | Backend check | Result on `c5a432f` |
+| Test | AC | Test file | Test name | Backend check | Result on `16fdb7f` |
 | --- | --- | --- | --- | --- | --- |
 | TEST-30 | AC-01, AC-09, AC-19, AC-26 | `e2e/journey.spec.ts` | "TEST-30: Borrower requests, Custodian checks out, Borrower sees Checked out" | After the UI journey, the database holds one `ACTIVE` loan for the request, unit `KH-ARD-0001` is `ON_LOAN`, the request is `CHECKED_OUT`, and the due date is the checkout time + 14 days; the Custodian's success message and the Borrower's detail page show the stored times | Pass (1 test, 3 of 3 runs) |
 | TEST-31 | AC-11 | `e2e/rejection.spec.ts` | "TEST-31: a second request for an item type with an open request is refused with the BR-04 message" | The alert reads "You already have an open request for Arduino Uno R3 (Request #n)."; the database still holds exactly one open request for that item type and no other request | Pass (1 test, 3 of 3 runs) |
 | TEST-32 | AC-06 | `e2e/forbidden.spec.ts` | "TEST-32: a Borrower sees the Forbidden page at /pending and the API refuses checkout with 403" | From the same signed-in browser context, `POST /api/requests/:id/checkout` and `GET /api/item-types/:id/units` return `403 FORBIDDEN` with only the `error` object; loans, history entries, request and unit states are unchanged | Pass (1 test, 3 of 3 runs) |
 | TEST-53 | None (SR-04) | `e2e/narrow-screens.spec.ts` | "TEST-53: Check out is reachable at 640 and 760 px and Sign out is visible at 600 px" | No loan is created by opening and cancelling the dialogs | Pass (1 test, 3 of 3 runs) |
+
+Evidence screenshots for Deliverable 1 Part F, saved by run 1 on `16fdb7f` with `E2E_EVIDENCE_DIR` (README section 6). Each is a full-page screenshot of the screen at that step of the test: no cookie, token or password is visible, and the sign-in fields are empty.
+
+| Part F item | Test | Screenshot |
+| --- | --- | --- |
+| Sign-in (name and role badge) | TEST-30 | [Catalog as Borrower One](sprints/sprint-1/img/e2e/test-30-1-catalog-as-borrower-one.png) |
+| Normal journey | TEST-30 | [My requests shows Pending](sprints/sprint-1/img/e2e/test-30-2-my-requests-shows-pending.png), [checkout dialog](sprints/sprint-1/img/e2e/test-30-4-checkout-dialog.png), [checkout success](sprints/sprint-1/img/e2e/test-30-5-checkout-success.png) |
+| Sign-out | TEST-30 | [Signed out](sprints/sprint-1/img/e2e/test-30-3-signed-out.png) |
+| Retrieval of the saved result | TEST-30 | [Borrower sees Checked out, the unit and the due date](sprints/sprint-1/img/e2e/test-30-6-borrower-sees-checked-out.png) |
+| Business-rule rejection | TEST-31 | [Duplicate request refused](sprints/sprint-1/img/e2e/test-31-duplicate-request-refused.png) |
+| Forbidden role operation | TEST-32 | [Forbidden page](sprints/sprint-1/img/e2e/test-32-forbidden-page.png); the API `403` is asserted in the test, not shown on screen |
+| Narrow screens (SR-04) | TEST-53 | [640 px dialog](sprints/sprint-1/img/e2e/test-53-640-px-checkout-dialog.png), [760 px dialog](sprints/sprint-1/img/e2e/test-53-760-px-checkout-dialog.png), [600 px navigation bar](sprints/sprint-1/img/e2e/test-53-600-px-navigation-bar.png) |

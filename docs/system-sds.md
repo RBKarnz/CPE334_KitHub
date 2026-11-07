@@ -6,7 +6,7 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part C |
-| Version | 1.4 |
+| Version | 1.5 |
 | Date | 2026-11-07 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Baseline | [SRS v1.3](srs.md) |
@@ -21,6 +21,7 @@
 | 1.2 | 2026-11-06 | Methipat Mansap | Issue #34 (SR-04): "Visual style" row in 5.3; `PageHeader`, `MessagePage`, `Logo` and `styles/` in the code layout (3.6). No behavior or API change |
 | 1.3 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | Issue #36: baseline SRS v1.3. Session lifetime (8.3) and `SESSION_TTL_HOURS` (9.1) cite D-18; the BR-14 query (4.5) cites D-20; Q-01 and Q-08 marked resolved in section 13. No behavior, API or schema change |
 | 1.4 | 2026-11-07 | Methipat Mansap | Issue #38 (SR-04 defect fix): "Visual style" in 5.3 moves the narrow layout from below 576 px to below 768 px and adds the horizontal-scroll safety net around the Pending requests table. No behavior or API change |
+| 1.5 | 2026-11-07 | Methipat Mansap | Issue #20 (PR #40 review): the End-to-end row in section 10 says how `kithub_test` is prepared (emptied before the run and before each test, data created by each test) instead of "refilled before the run". No behavior or API change |
 
 ## 2. Introduction
 
@@ -937,7 +938,7 @@ Contracts plan each test; this section fixes the levels and tools so every contr
 | Unit | Vitest | Pure rules in `server/src/domain/`: the transition table against SRS section 8, due-date calculation, availability formulas; zod schemas | None |
 | API and database integration | Vitest + Supertest | HTTP → Express → Prisma → PostgreSQL: business rules, permissions and ownership (NFR-01, NFR-02), constraints, history entries, concurrency (NFR-05), persistence (NFR-06), error shape (NFR-08) | `kithub_test`, emptied with `TRUNCATE` before each test file; files run one at a time |
 | UI component | Vitest + Testing Library (jsdom) | Loading, empty and error states (NFR-12), form validation messages, role-based navigation | None; API calls are mocked |
-| End-to-end | Playwright | Critical journeys through the built UI, API and database (#20) | `kithub_test`, refilled before the run |
+| End-to-end | Playwright | Critical journeys through the built UI, API and database (#20) | `kithub_test`, emptied before the run and again before each test; each test creates its own users, catalog and units with the test factories (no seed). Tests run one at a time; do not run the server tests at the same time |
 
 Commands (exact scripts in #13): `npm test` in `server/` and in `client/`; `npm run test:e2e` at the repository root.
 
