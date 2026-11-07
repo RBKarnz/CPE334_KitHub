@@ -1,0 +1,17 @@
+{
+  // Type-checks the E2E tests and the Playwright config (npm run typecheck:e2e). Playwright only
+  // strips types when it runs them. Same settings as server/tsconfig.json; the server files that
+  // e2e/ imports (test helpers, config loader) are checked with them.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node"]
+  },
+  "include": ["e2e", "playwright.config.ts"]
+}
