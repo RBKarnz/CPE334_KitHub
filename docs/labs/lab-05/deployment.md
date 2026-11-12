@@ -148,7 +148,7 @@ No password or secret is in any `ARG` or `ENV`. The only password in `docker-com
 | A record survives a restart | Request #1 (PENDING, Arduino Uno R3) created, then `down` and `up`: still there with the same `createdAt`. The second seed run created nothing |
 | Images | No `.env` in any image; image ENV holds only `NODE_ENV`, `TZ`, `PORT`; the server runs as `node`, PID 1 is `node dist/index.js` |
 | Root `Dockerfile` | Builds; with `PORT=8080` it listens on 8080, serves the UI and the API from one container, `/api/ready` 200 |
-| Fresh clone (C-03) | See the pull request for #3: clone, copy `server/.env.example` to `server/.env` with only the placeholders filled in, `docker compose up --build -d` |
+| Fresh clone (C-03) | New clone on Windows, `server/.env` copied from `server/.env.example` with only the placeholders filled in, `docker compose build --no-cache` then `up -d`: `migrate` `Exited (0)`, health and ready 200, borrower1 signs in, a new request survives `down` and `up`. The entrypoint stays LF in the clone |
 
 ## 5. Still to record
 
