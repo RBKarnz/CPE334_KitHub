@@ -4,17 +4,18 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Lab 5: GCP deployment and CI/CD |
-| Version | 0.1 |
+| Version | 0.2 |
 | Date | 2026-11-12 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
-| Design | [SDS v1.6](../../system-sds.md), sections 9.1 to 9.7 |
-| Status | Started in #2 (stack, environment variables, cloud readiness). GCP names, URLs and evidence are added in #5 to #9 |
+| Design | [SDS v1.7](../../system-sds.md), sections 9.1 to 9.7 |
+| Status | Started in #2 (stack, environment variables, cloud readiness); Docker added in #3. GCP names, URLs and evidence are added in #5 to #9 |
 
 ## Revision history
 
 | Version | Date | Author | Change |
 | --- | --- | --- | --- |
 | 0.1 | 2026-11-12 | Teerakarn Noiruksa | First version (#2): stack, every environment variable, cloud-readiness check |
+| 0.2 | 2026-11-12 | Teerakarn Noiruksa | Section 4 Docker (#3): the files, how to run them locally, what differs from the Starter Kit, and what was checked |
 
 ## 1. Stack
 
@@ -83,11 +84,76 @@ Readiness check:
 | Reachable | `200 {"status":"ready","db":"connected"}` |
 | Unreachable | `503` with `error.code` `NOT_READY` |
 
-## 4. Still to record
+## 4. Docker
+
+Added in #3 from the Lab 5 Starter Kit and adapted to KitHub. Nothing here is deployed; the root `Dockerfile` is the image that CI (#4) and Cloud Run (#5) use.
+
+### 4.1 Files
+
+| File | Used by | What it does |
+| --- | --- | --- |
+| `Dockerfile` | CI and Cloud Run | Three stages: build the UI, build the server and generate the Prisma Client, then a `node:24-alpine` runtime that serves the API and the built UI on `PORT` as the non-root `node` user |
+| `.dockerignore` | Root `Dockerfile` | Keeps `node_modules`, `dist`, `.env` and test reports out of the build |
+| `docker-compose.yml` | Local run only | Starts the four services in section 4.2 |
+| `server/Dockerfile` | Compose `migrate` and `server` | API image: installs, generates the Prisma Client, builds `dist/` |
+| `server/docker-entrypoint.sh` | Both server images | `exec "$@"`, so `node dist/index.js` is PID 1 and receives `SIGTERM` |
+| `server/.dockerignore` | `server/Dockerfile` | Keeps `node_modules`, `dist`, `.env` and tests out of the build |
+| `client/Dockerfile` | Compose `client` | Builds the UI with Vite and serves it with nginx |
+| `client/nginx.conf` | Compose `client` | Serves the UI, sends `/api` to `server:3000`, and returns `index.html` for client routes |
+| `client/.dockerignore` | `client/Dockerfile` | Keeps the host's `node_modules`, `dist` and `.env` out of the build |
+| `.gitattributes` | Git | Keeps `*.sh` files in LF on every checkout, so the entrypoint also runs when the repository is cloned on Windows |
+
+### 4.2 Run it locally
+
+Ports 3000 and 5173 must be free. The database publishes no host port, so a local PostgreSQL on 5432 or the `kithub-pg` container does not get in the way.
+
+1. Copy `server/.env.example` to `server/.env` and choose the two seed passwords (README section 2). The `migrate` service reads `SEED_CUSTODIAN_PASSWORD`, `SEED_BORROWER_PASSWORD` and `SEED_DEMO_DATA` from that file; Compose sets `NODE_ENV` and `DATABASE_URL` itself.
+2. Build and start: `docker compose up --build -d`.
+3. Check: `docker compose ps -a`. `db`, `server` and `client` are running; `migrate` shows `Exited (0)`.
+4. Check the API: `curl --fail http://localhost:3000/api/health` and `curl --fail http://localhost:3000/api/ready` (on Windows PowerShell, `curl.exe`).
+5. Open `http://localhost:5173` and sign in with a seeded account.
+6. Stop and keep the data: `docker compose down`. Start again: `docker compose up -d`. Delete the data too: `docker compose down -v`.
+
+| Service | Container | Port | Role |
+| --- | --- | --- | --- |
+| `db` | `kithub-db` | none on the host | PostgreSQL 16, data in the `postgres_data` volume |
+| `migrate` | `kithub-migrate` | none | `prisma migrate deploy`, then the insert-if-missing seed; runs once on every `up`, then exits |
+| `server` | `kithub-server` | 3000 | The API (`NODE_ENV=production`); starts only after `migrate` succeeds |
+| `client` | `kithub-client` | 5173 | nginx with the built UI; proxies `/api` to `server` |
+
+With `NODE_ENV=production` the session cookie is `Secure`. Chrome, Edge and Firefox accept it on `http://localhost`; use one of them for the local run.
+
+### 4.3 Changes from the Starter Kit
+
+| Kit file | Change | Why |
+| --- | --- | --- |
+| `docker-compose.yml` | `migrate` reads `server/.env` instead of `ADMIN_PASSWORD` and `DEMO_USER_PASSWORD` with fallbacks | KitHub's seed reads `SEED_CUSTODIAN_PASSWORD` and `SEED_BORROWER_PASSWORD`; without them `migrate` exits 1 and the server never starts. Seed passwords are never written in Git (SDS 9.3) |
+| `docker-compose.yml` | No host port for `db` | Only `migrate` and `server` use it, over the Compose network; avoids a clash with a local PostgreSQL |
+| `docker-compose.yml` | Names `kithub-*`; `db` is `kithub-db` | `kithub-pg` is already the development database container (README) |
+| `server/Dockerfile` | Copies `tsconfig.build.json` too | `npm run build` runs `tsc -p tsconfig.build.json`; without it the build fails |
+| new `client/.dockerignore`, `server/.dockerignore` | Added | The root `.dockerignore` applies only to builds from the root. Without them, `COPY . .` in `client/Dockerfile` copies the host's `node_modules` over the Linux ones |
+| new `.gitattributes` | `*.sh text eol=lf` | With `core.autocrlf=true` on Windows, the entrypoint would get CRLF and the container would not start |
+| All files | Comments name KitHub | The kit comments name TokTickIT |
+
+No password or secret is in any `ARG` or `ENV`. The only password in `docker-compose.yml` is the fallback `kithub` for the local database container.
+
+### 4.4 Checked (#3)
+
+| Check | Result |
+| --- | --- |
+| `docker compose up --build -d` | All images built, no error; `migrate` `Exited (0)`: migrations applied, seed created 6 categories, 9 item types, 38 units and 4 accounts |
+| `/api/health`, `/api/ready` on port 3000 and through nginx on 5173 | `200 {"status":"ok"}`, `200 {"status":"ready","db":"connected"}` |
+| UI on 5173 | `/` and a deep link such as `/requests/1` return the app |
+| Sign-in | borrower1 signs in through nginx and in Chromium; the cookie is `HttpOnly`, `Secure`, `SameSite=Lax` |
+| A record survives a restart | Request #1 (PENDING, Arduino Uno R3) created, then `down` and `up`: still there with the same `createdAt`. The second seed run created nothing |
+| Images | No `.env` in any image; image ENV holds only `NODE_ENV`, `TZ`, `PORT`; the server runs as `node`, PID 1 is `node dist/index.js` |
+| Root `Dockerfile` | Builds; with `PORT=8080` it listens on 8080, serves the UI and the API from one container, `/api/ready` 200 |
+| Fresh clone (C-03) | See the pull request for #3: clone, copy `server/.env.example` to `server/.env` with only the placeholders filled in, `docker compose up --build -d` |
+
+## 5. Still to record
 
 | Section | Issue |
 | --- | --- |
-| Docker files and local `docker compose` run | #3 |
 | CI on pull requests | #4 |
 | GCP project, final resource names, service URL | #5 |
 | GitHub to GCP connection and merge gate | #6 |
