@@ -7,6 +7,11 @@ set -euo pipefail
 # Usage:
 #   ./deploy/deploy.sh [--demo]
 #
+#   KitHub runs it WITH --demo:  bash deploy/deploy.sh --demo
+#   --demo sets SEED_DEMO_DATA=true, so the seed also creates the demo Borrower
+#   accounts (borrower1, borrower2) that Lab 6 UAT needs. Without --demo only
+#   the Custodian accounts (custodian1, custodian2) are seeded.
+#
 # Environment Variables (Optional):
 #   PROJECT_ID   GCP Project ID (defaults to active gcloud config project)
 #   REGION       GCP Region (default: asia-southeast1)
@@ -15,8 +20,9 @@ set -euo pipefail
 # WHAT THIS SCRIPT DOES  (one-time / manual first setup; safe to re-run)
 #   Creates every cloud resource the app needs and does the first deployment:
 #   1 enable APIs     2 Artifact Registry  3 Cloud SQL instance  4 database
-#   5 runtime SA+IAM  6 DB user + secret   7 admin password      8 demo password
+#   5 runtime SA+IAM  6 DB user + secret   7 Custodian password  8 Borrower password
 #   (secret access)   9 build image        10 migrate+seed job   11 Cloud Run service
+#   Step 8 runs only with --demo.
 #   After this, routine releases are done by GitHub Actions (deploy.yml ->
 #   deploy/release.sh), which only UPDATES these resources.
 #
@@ -100,9 +106,9 @@ fi
 
 # ------------------------------------------------------------------------------
 # Resource names
-# ⚠️ The lab guide refers to these names (kithub, kithub-pg,
-#    kithub-runner, ...) and deploy.yml / release.sh / teardown.sh use the
-#    same ones. Keep them unless the guide says otherwise.
+# ⚠️ These are the KitHub names from SDS 9.6 (the kit's toktickit-* names with
+#    toktickit replaced by kithub). deploy.yml / release.sh / teardown.sh and
+#    the offline tests use the same ones; keep them in sync.
 # CHANGE ME: rename only if your group uses its own naming (then rename it in
 #            deploy.yml, release.sh, teardown.sh and the tests too).
 # ------------------------------------------------------------------------------
@@ -118,12 +124,14 @@ SQL_CONN_NAME="${PROJECT_ID}:${REGION}:${SQL_INSTANCE}"
 IMAGE_URI="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${SERVICE_NAME}:latest"
 
 # Secret Manager secret names (values are never stored in this repo).
+# The two seed passwords are read by server/prisma/seed.ts as
+# SEED_CUSTODIAN_PASSWORD and SEED_BORROWER_PASSWORD (server/src/core/config.ts).
 SECRET_DB_URL="kithub-database-url"
-SECRET_ADMIN_PASS="toktickit-admin-password"
-SECRET_DEMO_PASS="toktickit-demo-password"
+SECRET_CUSTODIAN_PASS="kithub-custodian-password"
+SECRET_BORROWER_PASS="kithub-borrower-password"
 
-GENERATED_ADMIN_PASSWORD=""
-GENERATED_DEMO_PASSWORD=""
+GENERATED_CUSTODIAN_PASSWORD=""
+GENERATED_BORROWER_PASSWORD=""
 
 echo "=================================================================="
 echo "KitHub Cloud Run Deployment"
@@ -168,11 +176,14 @@ fi
 #       db-f1-micro and asserted by deploy/tests/test_deploy_stub.sh.
 #       Creating the instance takes several minutes and costs money until
 #       deploy/teardown.sh is run.
+#    KitHub: `--no-storage-auto-increase` keeps the disk at a fixed 10 GB from
+#       the start (SDS 9.6). A disk that has grown cannot shrink, so this
+#       replaces the separate `gcloud sql instances patch` of guide step 5.4.
 #    CHANGE ME: --database-version / --tier for a different database.
 # ==============================================================================
 if [ "$DRY_RUN" = "1" ]; then
   run_cmd gcloud sql instances describe "$SQL_INSTANCE" --project "$PROJECT_ID"
-  run_cmd gcloud sql instances create "$SQL_INSTANCE" --database-version=POSTGRES_16 --edition=enterprise --tier=db-f1-micro --region="$REGION" --storage-size=10GB --storage-type=SSD --backup-start-time=03:00 --project "$PROJECT_ID"
+  run_cmd gcloud sql instances create "$SQL_INSTANCE" --database-version=POSTGRES_16 --edition=enterprise --tier=db-f1-micro --region="$REGION" --storage-size=10GB --storage-type=SSD --no-storage-auto-increase --backup-start-time=03:00 --project "$PROJECT_ID"
 else
   if ! gcloud sql instances describe "$SQL_INSTANCE" --project "$PROJECT_ID" >/dev/null 2>&1; then
     run_cmd gcloud sql instances create "$SQL_INSTANCE" \
@@ -182,6 +193,7 @@ else
       --region="$REGION" \
       --storage-size=10GB \
       --storage-type=SSD \
+      --no-storage-auto-increase \
       --backup-start-time=03:00 \
       --project "$PROJECT_ID"
   fi
@@ -250,39 +262,42 @@ else
 fi
 
 # ==============================================================================
-# 7. Create ADMIN_PASSWORD in Secret Manager (only if secret does not exist yet)
+# 7. Create the Custodian seed password in Secret Manager (only if the secret
+#    does not exist yet). Given to the migration job as SEED_CUSTODIAN_PASSWORD.
+#    18 characters, well under the 72-byte bcrypt limit checked in config.ts.
 #    Read it later with: gcloud secrets versions access latest --secret=<name>
 # ==============================================================================
 if [ "$DRY_RUN" = "1" ]; then
-  run_cmd gcloud secrets describe "$SECRET_ADMIN_PASS" --project "$PROJECT_ID"
-  run_cmd gcloud secrets create "$SECRET_ADMIN_PASS" --replication-policy="automatic" --project "$PROJECT_ID"
-  run_cmd gcloud secrets versions add "$SECRET_ADMIN_PASS" --data-file=- --project "$PROJECT_ID"
+  run_cmd gcloud secrets describe "$SECRET_CUSTODIAN_PASS" --project "$PROJECT_ID"
+  run_cmd gcloud secrets create "$SECRET_CUSTODIAN_PASS" --replication-policy="automatic" --project "$PROJECT_ID"
+  run_cmd gcloud secrets versions add "$SECRET_CUSTODIAN_PASS" --data-file=- --project "$PROJECT_ID"
 else
-  if ! gcloud secrets describe "$SECRET_ADMIN_PASS" --project "$PROJECT_ID" >/dev/null 2>&1; then
-    GENERATED_ADMIN_PASSWORD="$(openssl rand -base64 16 | tr -d '/+=' | cut -c1-14)Aa1!"
-    run_cmd gcloud secrets create "$SECRET_ADMIN_PASS" --replication-policy="automatic" --project "$PROJECT_ID"
-    printf "%s" "$GENERATED_ADMIN_PASSWORD" | gcloud secrets versions add "$SECRET_ADMIN_PASS" --data-file=- --project "$PROJECT_ID"
+  if ! gcloud secrets describe "$SECRET_CUSTODIAN_PASS" --project "$PROJECT_ID" >/dev/null 2>&1; then
+    GENERATED_CUSTODIAN_PASSWORD="$(openssl rand -base64 16 | tr -d '/+=' | cut -c1-14)Aa1!"
+    run_cmd gcloud secrets create "$SECRET_CUSTODIAN_PASS" --replication-policy="automatic" --project "$PROJECT_ID"
+    printf "%s" "$GENERATED_CUSTODIAN_PASSWORD" | gcloud secrets versions add "$SECRET_CUSTODIAN_PASS" --data-file=- --project "$PROJECT_ID"
   fi
 fi
 
 # ==============================================================================
-# 8. Optional Demo Password in Secret Manager when --demo is passed
-#    Only used to seed demo users (./deploy/deploy.sh --demo).
+# 8. Demo Borrower seed password in Secret Manager, only when --demo is passed
+#    Given to the migration job as SEED_BORROWER_PASSWORD; the seed needs it
+#    only when SEED_DEMO_DATA=true. Same 18-character format as step 7.
 # ==============================================================================
-JOB_SECRETS="DATABASE_URL=${SECRET_DB_URL}:latest,ADMIN_PASSWORD=${SECRET_ADMIN_PASS}:latest"
+JOB_SECRETS="DATABASE_URL=${SECRET_DB_URL}:latest,SEED_CUSTODIAN_PASSWORD=${SECRET_CUSTODIAN_PASS}:latest"
 if [ "$SEED_DEMO_DATA" = "true" ]; then
   if [ "$DRY_RUN" = "1" ]; then
-    run_cmd gcloud secrets describe "$SECRET_DEMO_PASS" --project "$PROJECT_ID"
-    run_cmd gcloud secrets create "$SECRET_DEMO_PASS" --replication-policy="automatic" --project "$PROJECT_ID"
-    run_cmd gcloud secrets versions add "$SECRET_DEMO_PASS" --data-file=- --project "$PROJECT_ID"
+    run_cmd gcloud secrets describe "$SECRET_BORROWER_PASS" --project "$PROJECT_ID"
+    run_cmd gcloud secrets create "$SECRET_BORROWER_PASS" --replication-policy="automatic" --project "$PROJECT_ID"
+    run_cmd gcloud secrets versions add "$SECRET_BORROWER_PASS" --data-file=- --project "$PROJECT_ID"
   else
-    if ! gcloud secrets describe "$SECRET_DEMO_PASS" --project "$PROJECT_ID" >/dev/null 2>&1; then
-      GENERATED_DEMO_PASSWORD="$(openssl rand -base64 16 | tr -d '/+=' | cut -c1-14)Dd1!"
-      run_cmd gcloud secrets create "$SECRET_DEMO_PASS" --replication-policy="automatic" --project "$PROJECT_ID"
-      printf "%s" "$GENERATED_DEMO_PASSWORD" | gcloud secrets versions add "$SECRET_DEMO_PASS" --data-file=- --project "$PROJECT_ID"
+    if ! gcloud secrets describe "$SECRET_BORROWER_PASS" --project "$PROJECT_ID" >/dev/null 2>&1; then
+      GENERATED_BORROWER_PASSWORD="$(openssl rand -base64 16 | tr -d '/+=' | cut -c1-14)Dd1!"
+      run_cmd gcloud secrets create "$SECRET_BORROWER_PASS" --replication-policy="automatic" --project "$PROJECT_ID"
+      printf "%s" "$GENERATED_BORROWER_PASSWORD" | gcloud secrets versions add "$SECRET_BORROWER_PASS" --data-file=- --project "$PROJECT_ID"
     fi
   fi
-  JOB_SECRETS="${JOB_SECRETS},DEMO_USER_PASSWORD=${SECRET_DEMO_PASS}:latest"
+  JOB_SECRETS="${JOB_SECRETS},SEED_BORROWER_PASSWORD=${SECRET_BORROWER_PASS}:latest"
 fi
 
 # ------------------------------------------------------------------------------
@@ -290,10 +305,12 @@ fi
 # ⭐ IMPORTANT: test_deploy_stub.sh fails if a project-wide secretAccessor
 #    binding is added — keep access limited to this app's own secrets.
 # ------------------------------------------------------------------------------
-# Grant access only to this app's secrets, after they exist.
-RUNTIME_SECRETS=("$SECRET_DB_URL" "$SECRET_ADMIN_PASS")
+# Grant access only to this app's secrets, after they exist. The service and
+# the migration job both run as this account; the service itself is given only
+# DATABASE_URL (step 11), the seed passwords go to the job only (step 10).
+RUNTIME_SECRETS=("$SECRET_DB_URL" "$SECRET_CUSTODIAN_PASS")
 if [ "$SEED_DEMO_DATA" = "true" ]; then
-  RUNTIME_SECRETS+=("$SECRET_DEMO_PASS")
+  RUNTIME_SECRETS+=("$SECRET_BORROWER_PASS")
 fi
 for secret in "${RUNTIME_SECRETS[@]}"; do
   run_cmd gcloud secrets add-iam-policy-binding "$secret" \
@@ -317,6 +334,7 @@ run_cmd gcloud builds submit \
 #        service, so a broken migration never reaches users.
 #     CHANGE ME: `--args` (prisma migrate deploy && npm run prisma:seed) is
 #        Prisma/npm specific — use your stack's migrate/seed command.
+#     KitHub's seed is insert-if-missing (SDS 4.8), so re-running it is safe.
 #     deploy.yml / release.sh later re-run this same job (name: kithub-migrate).
 # ==============================================================================
 run_cmd gcloud run jobs deploy "$MIGRATE_JOB_NAME" \
@@ -346,7 +364,10 @@ fi
 # 11. Deploy Cloud Run Service
 #     CHANGE ME: --port must equal the port in the Dockerfile (3000); tune
 #                --memory / --cpu / --max-instances for your app.
-#     ⚠️ --allow-unauthenticated makes the service public (needed for the demo).
+#     ⚠️ --allow-unauthenticated makes the service public (needed for the demo);
+#        the app itself enforces sign-in (SDS 9.6).
+#     KitHub: COOKIE_SECURE is not set; it defaults to true when
+#        NODE_ENV=production, and Cloud Run serves HTTPS.
 # ==============================================================================
 run_cmd gcloud run deploy "$SERVICE_NAME" \
   --image "$IMAGE_URI" \
@@ -379,9 +400,8 @@ printf '%s\n' "Deployment Completed!"
 printf '%s\n' "Service URL    : ${SERVICE_URL}"
 printf '%s\n' "Health Check   : ${SERVICE_URL}/api/health"
 printf '%s\n' "Readiness Check: ${SERVICE_URL}/api/ready"
-printf '%s\n' "Admin Email    : john.smith@example.com (mustChangePassword: true)"
-printf '%s\n' "Admin Password : Stored in Secret Manager: ${SECRET_ADMIN_PASS} (not printed)."
+printf '%s\n' "Custodian accounts: custodian1, custodian2 (password in Secret Manager: ${SECRET_CUSTODIAN_PASS}, not printed)"
 if [ "$SEED_DEMO_DATA" = "true" ]; then
-  printf '%s\n' "Demo Password  : Stored in Secret Manager: ${SECRET_DEMO_PASS} (not printed)."
+  printf '%s\n' "Demo Borrower accounts: borrower1, borrower2 (${SECRET_BORROWER_PASS}, not printed)"
 fi
 printf '%s\n' "=================================================================="
