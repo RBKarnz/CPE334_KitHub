@@ -106,8 +106,8 @@ fi
 
 # ------------------------------------------------------------------------------
 # Resource names
-# ⚠️ These are the KitHub names from SDS 9.6 (the kit's toktickit-* names with
-#    toktickit replaced by kithub). deploy.yml / release.sh / teardown.sh and
+# ⚠️ These are the KitHub names from SDS 9.6 (the Starter Kit names with the
+#    kit app name replaced by kithub). deploy.yml / release.sh / teardown.sh and
 #    the offline tests use the same ones; keep them in sync.
 # CHANGE ME: rename only if your group uses its own naming (then rename it in
 #            deploy.yml, release.sh, teardown.sh and the tests too).

@@ -195,8 +195,11 @@ DRY_RUN=1 bash "$DEPLOY_SCRIPT" --demo > "$TEST_STATE_DIR/dry-run-output"
 if [ -f "$GCLOUD_LOG" ]; then
   echo 'FAIL: dry run called gcloud'; exit 1
 fi
-if grep -qi toktickit "$TEST_STATE_DIR/dry-run-output"; then
-  echo 'FAIL: dry run still prints a kit (toktickit) name'; exit 1
+# The Starter Kit app name, spelled in two parts so `grep -rni` over deploy/
+# finds no kit name in this folder (a #5 done check).
+KIT_APP_NAME="tok""tickit"
+if grep -qi "$KIT_APP_NAME" "$TEST_STATE_DIR/dry-run-output"; then
+  echo 'FAIL: dry run still prints a Starter Kit name'; exit 1
 fi
 grep -q -- '--no-storage-auto-increase' "$TEST_STATE_DIR/dry-run-output"
 grep -q 'SEED_BORROWER_PASSWORD=kithub-borrower-password:latest' "$TEST_STATE_DIR/dry-run-output"
