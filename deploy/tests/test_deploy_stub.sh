@@ -18,8 +18,8 @@
 #   CI runs it too (.github/workflows/ci-docker.yml).
 #
 # ⭐ CHANGE ME: if you rename resources in deploy/deploy.sh (e.g. the secret
-#    names toktickit-database-url / -admin-password / -demo-password, the DB
-#    user `toktickit`), update the matching strings below.
+#    names kithub-database-url / -admin-password / -demo-password, the DB
+#    user `kithub`), update the matching strings below.
 # ==============================================================================
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -58,7 +58,7 @@ if [ "${1:-} ${2:-}" = 'config get-value' ]; then
   exit 0
 fi
 if [ "${1:-} ${2:-} ${3:-}" = 'run services describe' ]; then
-  echo https://toktickit-stub.example.invalid
+  echo https://kithub-stub.example.invalid
   exit 0
 fi
 if [ "${1:-} ${2:-} ${3:-}" = 'run jobs execute' ]; then
@@ -73,7 +73,7 @@ if [ "${1:-} ${2:-} ${3:-}" = 'sql users list' ]; then
   if [ "$STUB_MODE" = first_run ]; then
     echo postgres
   else
-    printf 'postgres\ntoktickit\n'
+    printf 'postgres\nkithub\n'
   fi
   exit 0
 fi
@@ -82,7 +82,7 @@ for word in "$@"; do
     case "$STUB_MODE" in
       first_run) exit 1 ;;
       partial)
-        if [ "${1:-} ${3:-}" = 'secrets toktickit-database-url' ]; then
+        if [ "${1:-} ${3:-}" = 'secrets kithub-database-url' ]; then
           exit 1
         fi ;;
     esac
@@ -121,7 +121,7 @@ for MODE in first_run rerun partial job-fail demo; do
   if grep -q '^projects add-iam-policy-binding .*roles/secretmanager.secretAccessor' "$GCLOUD_LOG"; then
     echo 'FAIL: runtime has project-wide secret access'; exit 1
   fi
-  for secret in toktickit-database-url toktickit-admin-password; do
+  for secret in kithub-database-url toktickit-admin-password; do
     grep -q "^secrets add-iam-policy-binding $secret .*roles/secretmanager.secretAccessor" "$GCLOUD_LOG"
   done
   if [ "$MODE" = demo ]; then
@@ -141,9 +141,9 @@ for MODE in first_run rerun partial job-fail demo; do
   esac
   if [ -f "$TEST_STATE_DIR/sql-pass" ]; then
     db_pass="$(cat "$TEST_STATE_DIR/sql-pass")"
-    db_url="$(cat "$TEST_STATE_DIR/payload-toktickit-database-url")"
+    db_url="$(cat "$TEST_STATE_DIR/payload-kithub-database-url")"
     case "$db_url" in
-      "postgresql://toktickit:${db_pass}@"*) ;;
+      "postgresql://kithub:${db_pass}@"*) ;;
       *) echo 'FAIL: DB password differs from secret'; exit 1 ;;
     esac
     if grep -Fq "$db_pass" "$TEST_STATE_DIR/output"; then
