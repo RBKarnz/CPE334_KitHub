@@ -6,7 +6,7 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part C |
-| Version | 1.7 |
+| Version | 1.8 |
 | Date | 2026-11-12 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Baseline | [SRS v1.3](srs.md) |
@@ -24,6 +24,7 @@
 | 1.5 | 2026-11-07 | Methipat Mansap | Issue #20 (PR #40 review): the End-to-end row in section 10 says how `kithub_test` is prepared (emptied before the run and before each test, data created by each test) instead of "refilled before the run". No behavior or API change |
 | 1.6 | 2026-11-12 | Teerakarn Noiruksa | Lab 5 cloud readiness (branch `refactor/2-cloud-ready`): `GET /api/ready` returns `{ "status": "ready", "db": "connected" }` (6.7); both `.env.example` files in 9.2 describe every variable in a comment and list `COOKIE_SECURE` as a commented-out line. No API path, status code or schema change |
 | 1.7 | 2026-11-12 | Teerakarn Noiruksa | Lab 5 Docker files (#3): 9.5 names the four Compose services, the per-folder Dockerfiles for the local run only, and the `.dockerignore` and `.gitattributes` files. No behavior, API or schema change |
+| 1.8 | 2026-11-12 | Teerakarn Noiruksa | Lab 5 CI (#4): 9.6 says what `test-and-docker` runs on PRs into `staging` and `main`, including the backend typecheck and the end-to-end tests. No behavior, API or schema change |
 
 ## 2. Introduction
 
@@ -936,7 +937,7 @@ flowchart LR
   SM -.->|"DATABASE_URL"| RUN
 ```
 
-The kit's `ci-docker.yml` runs only on PRs into `main`. Lab 5 (#4) adds `staging` to its branch list, so feature PRs are checked too.
+The kit's `ci-docker.yml` runs only on PRs into `main`. Lab 5 (#4) adds `staging` to its branch list, so feature PRs are checked too. The job `test-and-docker` runs the offline deploy-script tests, the backend typecheck, migrations, seed and tests, the frontend tests and build, the end-to-end tests against `kithub_test`, and a build of the root `Dockerfile` (`docs/labs/lab-05/deployment.md` section 5).
 
 ### 9.7 Cloud readiness (Lab 5 checklist)
 

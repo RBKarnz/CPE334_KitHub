@@ -4,11 +4,11 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Lab 5: GCP deployment and CI/CD |
-| Version | 0.2 |
+| Version | 0.3 |
 | Date | 2026-11-12 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
-| Design | [SDS v1.7](../../system-sds.md), sections 9.1 to 9.7 |
-| Status | Started in #2 (stack, environment variables, cloud readiness); Docker added in #3. GCP names, URLs and evidence are added in #5 to #9 |
+| Design | [SDS v1.8](../../system-sds.md), sections 9.1 to 9.7 |
+| Status | Started in #2 (stack, environment variables, cloud readiness); Docker added in #3; CI added in #4. GCP names, URLs and evidence are added in #5 to #9 |
 
 ## Revision history
 
@@ -16,6 +16,7 @@
 | --- | --- | --- | --- |
 | 0.1 | 2026-11-12 | Teerakarn Noiruksa | First version (#2): stack, every environment variable, cloud-readiness check |
 | 0.2 | 2026-11-12 | Teerakarn Noiruksa | Section 4 Docker (#3): the files, how to run them locally, what differs from the Starter Kit, and what was checked |
+| 0.3 | 2026-11-12 | Teerakarn Noiruksa | Section 5 CI on pull requests (#4): what the workflow runs, what differs from the Starter Kit, and the local run of every step |
 
 ## 1. Stack
 
@@ -150,11 +151,58 @@ No password or secret is in any `ARG` or `ENV`. The only password in `docker-com
 | Root `Dockerfile` | Builds; with `PORT=8080` it listens on 8080, serves the UI and the API from one container, `/api/ready` 200 |
 | Fresh clone (C-03) | New clone on Windows, `server/.env` copied from `server/.env.example` with only the placeholders filled in, `docker compose build --no-cache` then `up -d`: `migrate` `Exited (0)`, health and ready 200, borrower1 signs in, a new request survives `down` and `up`. The entrypoint stays LF in the clone |
 
-## 5. Still to record
+## 5. CI on pull requests
+
+Added in #4 from the Lab 5 Starter Kit: `.github/workflows/ci-docker.yml` and the `deploy/` folder. The workflow uses no Google Cloud and nothing costs money.
+
+### 5.1 What the workflow runs
+
+Workflow "CI & Docker Build", job `test-and-docker` (the name the merge gate in #6 requires). It starts on every pull request into `staging` or `main`, by hand from the Actions tab (`workflow_dispatch`), and from the deploy workflow in #7 (`workflow_call`). `permissions` is `contents: read` only.
+
+| Step | What it does |
+| --- | --- |
+| Services: `postgres` | A temporary PostgreSQL 16 with the throw-away user, password and database `kithub` |
+| Setup | Node.js 24 and Python 3.14 |
+| Deploy scripts | `bash -n` on `deploy.sh`, `teardown.sh` and `release.sh`, then their offline tests with a fake `gcloud`. No access to GCP |
+| Backend | `npm ci`, `npm run typecheck`, `prisma migrate deploy` on `kithub`, the seed with random passwords for this run only, then `npm test` on `kithub_test` |
+| Frontend | `npm ci`, `npm test`, `npm run build` |
+| End-to-end | Root `npm ci`, Playwright Chromium, `npm run typecheck:e2e`, `npm run test:e2e` against `kithub_test` (TEST-30 to TEST-32, TEST-53) |
+| Docker | `docker build` of the root `Dockerfile`; the image is not pushed |
+
+A failing step fails the job. Concurrency cancels an older run on the same branch when a new commit is pushed.
+
+### 5.2 Changes from the Starter Kit
+
+| Change | Why |
+| --- | --- |
+| `pull_request` branches `[main, staging]` | Every change goes into `staging` first; with `[main]` only, feature pull requests would get no check |
+| Database service `kithub`/`kithub`/`kithub` | KitHub names; throw-away CI values, not secrets |
+| Job-level `DATABASE_URL` and `TEST_DATABASE_URL` (`kithub_test`) | The server tests and E2E refuse to run without a separate `*_test` database (SDS 4.8). `prisma migrate deploy` creates `kithub_test` on the first run |
+| Seed passwords from `openssl rand`, masked in the log | KitHub's seed needs `SEED_CUSTODIAN_PASSWORD` and `SEED_BORROWER_PASSWORD`; generating them keeps every password out of Git (SDS 9.3) |
+| `npm run typecheck` in the backend step | `npm test` does not type-check; the Docker build only type-checks `src/`, not the tests |
+| New end-to-end step | Runs the Playwright tests of SDS 10 on every pull request |
+| Image tag `kithub:ci` | The kit tag names TokTickIT |
+
+`deploy/` is the kit's folder, unchanged. Its scripts still use TokTickIT names; #5 adapts them before the first deployment, and their offline tests change with them.
+
+### 5.3 Checked locally (#4)
+
+Every step was run on a fresh clone with no `.env` and a new PostgreSQL 16 that had only the `kithub` database, as on the runner:
+
+| Step | Result |
+| --- | --- |
+| Deploy scripts | Syntax OK; deploy stub, release stub and 3 smoke-test unit tests pass |
+| Backend | Typecheck OK; migrations applied; seed created 6 categories, 9 item types, 38 units and 4 accounts; `kithub_test` created; 160 tests passed |
+| Frontend | 39 tests passed; build OK |
+| End-to-end | Typecheck OK; 4 passed |
+| Docker | Root image builds |
+
+The first run on GitHub is recorded in the pull request for #4.
+
+## 6. Still to record
 
 | Section | Issue |
 | --- | --- |
-| CI on pull requests | #4 |
 | GCP project, final resource names, service URL | #5 |
 | GitHub to GCP connection and merge gate | #6 |
 | Auto deploy from `main` with smoke test | #7 |
