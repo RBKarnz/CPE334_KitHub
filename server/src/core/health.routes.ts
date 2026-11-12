@@ -15,7 +15,7 @@ export function healthRouter(prisma: PrismaClient): Router {
   router.get("/ready", async (req, res, next) => {
     try {
       await prisma.$queryRaw`SELECT 1`;
-      res.status(200).json({ status: "ready" });
+      res.status(200).json({ status: "ready", db: "connected" });
     } catch (err) {
       const e = err instanceof Error ? err : new Error(String(err));
       console.error(
