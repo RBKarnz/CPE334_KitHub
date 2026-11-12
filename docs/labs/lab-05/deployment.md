@@ -4,11 +4,11 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Lab 5: GCP deployment and CI/CD |
-| Version | 0.3 |
+| Version | 0.4 |
 | Date | 2026-11-12 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Design | [SDS v1.8](../../system-sds.md), sections 9.1 to 9.7 |
-| Status | Started in #2 (stack, environment variables, cloud readiness); Docker added in #3; CI added in #4. GCP names, URLs and evidence are added in #5 to #9 |
+| Status | Started in #2 (stack, environment variables, cloud readiness); Docker added in #3; CI added in #4; `deploy/` adapted for the first GCP deployment in #5 (the deployment itself is not run yet). URLs and evidence are added in #5 to #9 |
 
 ## Revision history
 
@@ -17,6 +17,7 @@
 | 0.1 | 2026-11-12 | Teerakarn Noiruksa | First version (#2): stack, every environment variable, cloud-readiness check |
 | 0.2 | 2026-11-12 | Teerakarn Noiruksa | Section 4 Docker (#3): the files, how to run them locally, what differs from the Starter Kit, and what was checked |
 | 0.3 | 2026-11-12 | Teerakarn Noiruksa | Section 5 CI on pull requests (#4): what the workflow runs, what differs from the Starter Kit, and the local run of every step |
+| 0.4 | 2026-11-12 | Methipat Mansap | Section 6 GCP deployment (#5): project, region, resource names, which secrets go to the service and to the job (and the IAM scope of the shared runtime account), the Cloud Shell commands, the smoke-test checks and the changes to `deploy/`. Notes in 2 and 5.2 updated; "Still to record" is now section 7 |
 
 ## 1. Stack
 
@@ -34,7 +35,7 @@ Exact package versions are pinned in each `package-lock.json`.
 
 ## 2. Environment variables
 
-The app reads every setting from environment variables (SDS 9.1). Locally the values come from `server/.env` and `client/.env`, copied from the `.env.example` files, which hold placeholders only. On GCP, Cloud Run sets them on the service or the job, and secrets come from Secret Manager. The GCP names below are planned (SDS 9.6); #5 records the final ones.
+The app reads every setting from environment variables (SDS 9.1). Locally the values come from `server/.env` and `client/.env`, copied from the `.env.example` files, which hold placeholders only. On GCP, Cloud Run sets them on the service or the job, and secrets come from Secret Manager. The GCP names below are the ones `deploy/deploy.sh` creates (section 6, SDS 9.6).
 
 ### 2.1 Server
 
@@ -51,7 +52,7 @@ The app reads every setting from environment variables (SDS 9.1). Locally the va
 | `SEED_CUSTODIAN_PASSWORD` | Initial password of the seeded Custodian accounts; required to run the seed | Yes | `server/.env`, chosen by each developer | Secret Manager `kithub-custodian-password`, given to the job only |
 | `SEED_BORROWER_PASSWORD` | Password of the demo Borrower accounts; required when `SEED_DEMO_DATA=true` | Yes | `server/.env`, chosen by each developer | Secret Manager `kithub-borrower-password`, given to the job only |
 
-The seed passwords go to the migration job only, because only the seed reads them. The service never needs them.
+The seed passwords are set on the migration job only, because only the seed reads them. The service never needs them. Both run as the same runtime service account, which can read all three secrets (section 6.3).
 
 ### 2.2 Client
 
@@ -183,7 +184,7 @@ A failing step fails the job. Concurrency cancels an older run on the same branc
 | New end-to-end step | Runs the Playwright tests of SDS 10 on every pull request |
 | Image tag `kithub:ci` | The kit tag names TokTickIT |
 
-`deploy/` is the kit's folder, unchanged. Its scripts still use TokTickIT names; #5 adapts them before the first deployment, and their offline tests change with them.
+#4 copied `deploy/` from the kit unchanged. #5 adapts the scripts and their offline tests to KitHub (section 6.5); the CI step that runs them is unchanged.
 
 ### 5.3 Checked locally (#4)
 
@@ -199,11 +200,156 @@ Every step was run on a fresh clone with no `.env` and a new PostgreSQL 16 that 
 
 The first run on GitHub is recorded in the pull request for #4.
 
-## 6. Still to record
+## 6. GCP deployment (#5)
+
+The first deployment is run once, by hand, from Cloud Shell with `deploy/deploy.sh` (Lab 5 guide, Episode 5). #5 first adapts `deploy/` to KitHub; this section says what the script creates and how to run it. Nothing in this section has been created on GCP yet.
+
+### 6.1 Project
+
+| Field | Value |
+| --- | --- |
+| Project ID | `cpe334-th037-free-robux-513814` |
+| Region | `asia-southeast1` (every resource below) |
+| Service URL | *To be filled after the first deploy* |
+
+The Project ID is not a secret. The Project number is not written in this document.
+
+### 6.2 Resources
+
+The names follow SDS 9.6: the Starter Kit names with the kit's app name replaced by `kithub`.
+
+| Resource | Name | Notes |
+| --- | --- | --- |
+| Artifact Registry (Docker) | `kithub`, image `kithub/kithub` | The first deploy pushes the tag `latest`; from #7 every image is tagged with the full commit SHA |
+| Cloud SQL for PostgreSQL 16 | `kithub-pg` | `db-f1-micro`, Enterprise edition, 10 GB SSD, daily backup at 03:00. **Storage auto-increase off at creation** (`--no-storage-auto-increase`) |
+| Database and database user | `kithub` / `kithub` | The user's password is generated and stored only inside the `kithub-database-url` secret |
+| Cloud Run job | `kithub-migrate` | `npx prisma migrate deploy && npm run prisma:seed`, `NODE_ENV=production`, `TZ=Asia/Bangkok`, `SEED_DEMO_DATA=true` with `--demo`. The seed is insert-if-missing (SDS 4.8), so a rerun is safe |
+| Cloud Run service | `kithub` | Port 3000, 0 to 3 instances, 512 MiB, 1 CPU, public URL (`--allow-unauthenticated`; the app enforces sign-in). `COOKIE_SECURE` is not set: it defaults to `true` in production and Cloud Run serves HTTPS |
+| Runtime service account | `kithub-runner` | Runs the service and the job. Cloud SQL Client on the project and Secret Manager Secret Accessor on each of the secrets below only |
+| Secret | `kithub-database-url` | `DATABASE_URL` |
+| Secret | `kithub-custodian-password` | `SEED_CUSTODIAN_PASSWORD`, always created |
+| Secret | `kithub-borrower-password` | `SEED_BORROWER_PASSWORD`, created only with `--demo` |
+
+### 6.3 Which secret goes where
+
+| Secret | Environment variable | Service `kithub` | Job `kithub-migrate` |
+| --- | --- | --- | --- |
+| `kithub-database-url` | `DATABASE_URL` | Yes | Yes |
+| `kithub-custodian-password` | `SEED_CUSTODIAN_PASSWORD` | No | Yes |
+| `kithub-borrower-password` | `SEED_BORROWER_PASSWORD` | No | Yes, with `--demo` |
+
+Only the seed reads the two passwords, so they are set as environment variables on the job only, never on the service (section 2.1).
+
+IAM scope: the service and the job both run as `kithub-runner`, and that account has Secret Accessor on all three secrets, because the job needs them. The service could therefore read the seed passwords through the Secret Manager API, although the app never does. This matches the kit and SDS 9.6. A separate service account for the job, with Secret Accessor on the seed secrets, and the service account limited to `kithub-database-url`, would be stricter; it is a possible follow-up, not part of #5.
+
+Both passwords are generated with `openssl` (18 characters, well under the 72-byte bcrypt limit in `server/src/core/config.ts`), stored only in Secret Manager and never printed; the script logs the database user's password as `<REDACTED>`.
+
+### 6.4 Run it (Cloud Shell)
+
+Before you start: Issue #1 is done (billing on, budget alert set), `main` contains the merged PR for #5, and nobody is watching your screen. Costs start at step 3, mostly Cloud SQL.
+
+1. Prepare Cloud Shell (guide 5.1):
+
+   ```bash
+   gcloud auth list --filter=status:ACTIVE --format='value(account)'
+   export PROJECT_ID=cpe334-th037-free-robux-513814
+   export REGION=asia-southeast1
+   gcloud config set project "$PROJECT_ID"
+   git clone https://github.com/RBKarnz/CPE334_KitHub.git
+   cd CPE334_KitHub
+   git rev-parse --short HEAD   # must match the latest commit on main
+   ```
+
+2. Read the plan; it creates nothing (guide 5.2). Check that every name is `kithub*` and that the Cloud SQL line has `--no-storage-auto-increase`:
+
+   ```bash
+   DRY_RUN=1 PROJECT_ID="$PROJECT_ID" REGION="$REGION" bash deploy/deploy.sh --demo
+   ```
+
+3. Deploy for real, **with `--demo`**, because Lab 6 UAT needs the Borrower accounts (guide 5.3). It takes about 10 to 20 minutes; do not cancel it:
+
+   ```bash
+   PROJECT_ID="$PROJECT_ID" REGION="$REGION" bash deploy/deploy.sh --demo
+   ```
+
+   If it stops at the migration job, read the job log with the command it prints before running it again.
+
+4. Guide step 5.4 is not needed: storage auto-increase is already off. To check it (prints `False`):
+
+   ```bash
+   gcloud sql instances describe kithub-pg --format='value(settings.storageAutoResize)'
+   ```
+
+5. Test the running app (guide 5.5):
+
+   ```bash
+   export SERVICE_URL=$(gcloud run services describe kithub --region "$REGION" --format='value(status.url)')
+   echo "$SERVICE_URL"
+   curl --fail "$SERVICE_URL/api/health"
+   curl --fail "$SERVICE_URL/api/ready"
+   python3 deploy/smoke_test.py "$SERVICE_URL"
+   ```
+
+   Then open the URL in a browser: the sign-in page loads.
+
+6. Sign in (guide 5.6, no screenshot). Read a password privately and never paste it into a chat, a document or an Issue:
+
+   ```bash
+   gcloud secrets versions access latest --secret=kithub-custodian-password
+   gcloud secrets versions access latest --secret=kithub-borrower-password
+   ```
+
+   Custodian accounts: `custodian1`, `custodian2`. Demo Borrower accounts: `borrower1`, `borrower2`.
+
+7. Check in the Console what the script created (guide 5.7) against section 6.2, then comment on Issue #5 with the service URL and the screenshots, with no secret value (guide 5.8). Fill in the Service URL in 6.1.
+
+### 6.5 Changes to `deploy/` from the Starter Kit
+
+| File | Change | Why |
+| --- | --- | --- |
+| `deploy.sh` | Every resource name in 6.2; banner, descriptions and comments name KitHub | SDS 9.6 |
+| `deploy.sh` | Seed secrets `kithub-custodian-password` and `kithub-borrower-password` given to the job as `SEED_CUSTODIAN_PASSWORD` and `SEED_BORROWER_PASSWORD`, instead of `ADMIN_PASSWORD` and `DEMO_USER_PASSWORD` | The names KitHub's seed reads (`server/src/core/config.ts`); without them the job fails |
+| `deploy.sh` | `--no-storage-auto-increase` on `gcloud sql instances create` | SDS 9.6: auto-increase off from the start, instead of patching it afterwards (guide 5.4) |
+| `deploy.sh` | The summary lists the Custodian and Borrower usernames and the secret names, not the kit's admin email | KitHub has no admin account |
+| `release.sh` | Defaults `kithub` and `kithub-migrate`; image and digest path `kithub/kithub` | Same names as `deploy.sh` (used from #7) |
+| `teardown.sh` | Same names; deletes the two KitHub seed secrets | Same names as `deploy.sh` |
+| `smoke_test.py` | `/api/categories` must answer 401 without a session; optional login with `SMOKE_USERNAME` and `SMOKE_PASSWORD` (was `SMOKE_EMAIL`), the `kithub_session` cookie instead of a bearer token, and a JSON `POST` for logout | KitHub has no public data endpoint (SDS 9.7); sign-in takes a username; the session is an `HttpOnly` cookie; the API answers 415 to a `POST` without `Content-Type: application/json` |
+| `tests/*` | Same names; new checks for the job and service secrets with and without `--demo`, the 72-byte limit, the auto-increase flag, a dry run with KitHub names only, and every smoke check | Keeps the CI step "Check deployment scripts without accessing GCP" meaningful |
+
+### 6.6 Smoke test
+
+`python3 deploy/smoke_test.py SERVICE_URL` only reads. Each public check is retried 5 times, 3 seconds apart, for a cold start.
+
+| Check | Passes when |
+| --- | --- |
+| `GET /api/health` | 200 and `status` is `ok` |
+| `GET /api/ready` | 200 and `db` is `connected` |
+| `GET /` | 200 and the page contains `<html` |
+| `GET /api/categories` without a session | 401. Proves the API routes and the auth guard are live; a 200 fails |
+| Optional login, only when both `SMOKE_USERNAME` and `SMOKE_PASSWORD` are set | `POST /api/auth/login` 200, `GET /api/auth/me` 200 and `GET /api/categories` 200 with a non-empty `items` list (migration and seed ran), all with the session cookie; then `POST /api/auth/logout` 204, which is sent even if a check failed |
+
+Without the two values it prints `SKIP login: optional smoke credentials not configured`. Setting only one of them is an error. The script never prints a password, the cookie or a response body. The login check needs the HTTPS URL, because the cookie is `Secure` in production.
+
+For #7: `deploy.yml` must pass `SMOKE_USERNAME` as a variable and `SMOKE_PASSWORD` as a secret of the `demo` environment (the guide's 7.3 says `SMOKE_EMAIL`; KitHub signs in with a username). The account must be a Borrower, never a Custodian.
+
+### 6.7 Checked offline (#5)
+
+Nothing was run against GCP. The CI commands were run locally on the branch for #5:
+
+| Check | Result |
+| --- | --- |
+| `bash -n` on `deploy.sh`, `teardown.sh`, `release.sh` | OK |
+| `bash deploy/tests/test_deploy_stub.sh` | first run, rerun, partial, job failure, `--demo` and both dry runs pass |
+| `bash deploy/tests/test_release_stub.sh` | 5 checks pass |
+| `python3 -m unittest discover -s deploy/tests -p 'test_smoke.py'` | 14 tests pass |
+| `DRY_RUN=1 … bash deploy/deploy.sh --demo` with the Project ID above | Only `kithub*` names; the database password shows as `<REDACTED>`; no generated value |
+| Kit names in `deploy/` | `grep -rni` finds no kit app name, `ADMIN_PASSWORD`, `DEMO_USER_PASSWORD` or `SMOKE_EMAIL` |
+
+## 7. Still to record
 
 | Section | Issue |
 | --- | --- |
-| GCP project, final resource names, service URL | #5 |
+| Service URL and the evidence of the first deployment (6.1, Issue #5 comment) | #5, after the run in 6.4 |
 | GitHub to GCP connection and merge gate | #6 |
 | Auto deploy from `main` with smoke test | #7 |
 | Persistence, rollback and roll forward | #8 |

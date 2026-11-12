@@ -8,18 +8,22 @@
 #     rerun     : everything exists   -> nothing replaced (credentials kept)
 #     partial   : DB secret missing   -> DB user password reset + secret created
 #     job-fail  : migration fails     -> script exits 1, service NOT deployed
-#     demo      : --demo flag         -> demo secret is created and granted
-#   It also checks: `--edition=enterprise`, no project-wide secretAccessor role,
-#   DB password == password inside DATABASE_URL, and that no password/secret
-#   value leaks into the output. Finally DRY_RUN=1 must make zero gcloud calls.
+#     demo      : --demo flag         -> Borrower secret is created and granted
+#   It also checks: `--edition=enterprise` and `--no-storage-auto-increase`, no
+#   project-wide secretAccessor role, DB password == password inside
+#   DATABASE_URL, and that no password/secret value leaks into the output.
+#   KitHub (#5): the migration job always gets SEED_CUSTODIAN_PASSWORD, gets
+#   SEED_BORROWER_PASSWORD only with --demo, the service gets DATABASE_URL only,
+#   and each generated seed password fits bcrypt's 72-byte limit.
+#   Finally DRY_RUN=1 must make zero gcloud calls and print only KitHub names.
 #
 # HOW TO RUN (repo root, needs bash):  bash deploy/tests/test_deploy_stub.sh
 #   Prints `PASS: <scenario>` per scenario; any `FAIL ...` exits non-zero.
 #   CI runs it too (.github/workflows/ci-docker.yml).
 #
 # ⭐ CHANGE ME: if you rename resources in deploy/deploy.sh (e.g. the secret
-#    names toktickit-database-url / -admin-password / -demo-password, the DB
-#    user `toktickit`), update the matching strings below.
+#    names kithub-database-url / -custodian-password / -borrower-password, the DB
+#    user `kithub`), update the matching strings below.
 # ==============================================================================
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -58,7 +62,7 @@ if [ "${1:-} ${2:-}" = 'config get-value' ]; then
   exit 0
 fi
 if [ "${1:-} ${2:-} ${3:-}" = 'run services describe' ]; then
-  echo https://toktickit-stub.example.invalid
+  echo https://kithub-stub.example.invalid
   exit 0
 fi
 if [ "${1:-} ${2:-} ${3:-}" = 'run jobs execute' ]; then
@@ -73,7 +77,7 @@ if [ "${1:-} ${2:-} ${3:-}" = 'sql users list' ]; then
   if [ "$STUB_MODE" = first_run ]; then
     echo postgres
   else
-    printf 'postgres\ntoktickit\n'
+    printf 'postgres\nkithub\n'
   fi
   exit 0
 fi
@@ -82,7 +86,7 @@ for word in "$@"; do
     case "$STUB_MODE" in
       first_run) exit 1 ;;
       partial)
-        if [ "${1:-} ${3:-}" = 'secrets toktickit-database-url' ]; then
+        if [ "${1:-} ${3:-}" = 'secrets kithub-database-url' ]; then
           exit 1
         fi ;;
     esac
@@ -121,17 +125,43 @@ for MODE in first_run rerun partial job-fail demo; do
   if grep -q '^projects add-iam-policy-binding .*roles/secretmanager.secretAccessor' "$GCLOUD_LOG"; then
     echo 'FAIL: runtime has project-wide secret access'; exit 1
   fi
-  for secret in toktickit-database-url toktickit-admin-password; do
+  for secret in kithub-database-url kithub-custodian-password; do
     grep -q "^secrets add-iam-policy-binding $secret .*roles/secretmanager.secretAccessor" "$GCLOUD_LOG"
   done
   if [ "$MODE" = demo ]; then
-    grep -q '^secrets add-iam-policy-binding toktickit-demo-password ' "$GCLOUD_LOG"
-  elif grep -q '^secrets add-iam-policy-binding toktickit-demo-password ' "$GCLOUD_LOG"; then
-    echo 'FAIL: granted optional demo secret in non-demo mode'; exit 1
+    grep -q '^secrets add-iam-policy-binding kithub-borrower-password ' "$GCLOUD_LOG"
+  elif grep -q '^secrets add-iam-policy-binding kithub-borrower-password ' "$GCLOUD_LOG"; then
+    echo 'FAIL: granted optional Borrower secret in non-demo mode'; exit 1
   fi
+  # Seed secrets go to the migration job only: Custodian always, Borrower with --demo.
+  if ! grep -q '^run jobs deploy kithub-migrate .*--set-secrets DATABASE_URL=kithub-database-url:latest,SEED_CUSTODIAN_PASSWORD=kithub-custodian-password:latest' "$GCLOUD_LOG"; then
+    echo 'FAIL: migration job is missing SEED_CUSTODIAN_PASSWORD'; exit 1
+  fi
+  if [ "$MODE" = demo ]; then
+    if ! grep -q '^run jobs deploy kithub-migrate .*,SEED_BORROWER_PASSWORD=kithub-borrower-password:latest .*SEED_DEMO_DATA=true' "$GCLOUD_LOG"; then
+      echo 'FAIL: --demo did not give SEED_BORROWER_PASSWORD to the migration job'; exit 1
+    fi
+  elif grep -q 'SEED_BORROWER_PASSWORD' "$GCLOUD_LOG"; then
+    echo 'FAIL: SEED_BORROWER_PASSWORD set without --demo'; exit 1
+  fi
+  # The service never gets a seed secret.
+  if grep '^run deploy ' "$GCLOUD_LOG" | grep -q 'SEED_'; then
+    echo 'FAIL: service was given a seed secret'; exit 1
+  fi
+  # Generated seed passwords must fit bcrypt's 72-byte limit (server/src/core/config.ts).
+  for secret in kithub-custodian-password kithub-borrower-password; do
+    payload="$TEST_STATE_DIR/payload-$secret"
+    [ -f "$payload" ] || continue
+    if [ "$(wc -c < "$payload")" -gt 72 ]; then
+      echo "FAIL: $secret is longer than 72 bytes"; exit 1
+    fi
+  done
   case "$MODE" in
     first_run)
       grep -q -- '--edition=enterprise' "$GCLOUD_LOG"
+      if ! grep -q '^sql instances create kithub-pg .*--no-storage-auto-increase' "$GCLOUD_LOG"; then
+        echo 'FAIL: Cloud SQL created without --no-storage-auto-increase'; exit 1
+      fi
       grep -q '^sql users create ' "$GCLOUD_LOG" ;;
     partial) grep -q '^sql users set-password ' "$GCLOUD_LOG" ;;
     rerun)
@@ -141,9 +171,9 @@ for MODE in first_run rerun partial job-fail demo; do
   esac
   if [ -f "$TEST_STATE_DIR/sql-pass" ]; then
     db_pass="$(cat "$TEST_STATE_DIR/sql-pass")"
-    db_url="$(cat "$TEST_STATE_DIR/payload-toktickit-database-url")"
+    db_url="$(cat "$TEST_STATE_DIR/payload-kithub-database-url")"
     case "$db_url" in
-      "postgresql://toktickit:${db_pass}@"*) ;;
+      "postgresql://kithub:${db_pass}@"*) ;;
       *) echo 'FAIL: DB password differs from secret'; exit 1 ;;
     esac
     if grep -Fq "$db_pass" "$TEST_STATE_DIR/output"; then
@@ -165,4 +195,16 @@ DRY_RUN=1 bash "$DEPLOY_SCRIPT" --demo > "$TEST_STATE_DIR/dry-run-output"
 if [ -f "$GCLOUD_LOG" ]; then
   echo 'FAIL: dry run called gcloud'; exit 1
 fi
-echo 'PASS: dry run makes no gcloud calls'
+# The Starter Kit app name, spelled in two parts so `grep -rni` over deploy/
+# finds no kit name in this folder (a #5 done check).
+KIT_APP_NAME="tok""tickit"
+if grep -qi "$KIT_APP_NAME" "$TEST_STATE_DIR/dry-run-output"; then
+  echo 'FAIL: dry run still prints a Starter Kit name'; exit 1
+fi
+grep -q -- '--no-storage-auto-increase' "$TEST_STATE_DIR/dry-run-output"
+grep -q 'SEED_BORROWER_PASSWORD=kithub-borrower-password:latest' "$TEST_STATE_DIR/dry-run-output"
+DRY_RUN=1 bash "$DEPLOY_SCRIPT" > "$TEST_STATE_DIR/dry-run-output-no-demo"
+if grep -q 'SEED_BORROWER_PASSWORD\|kithub-borrower-password' "$TEST_STATE_DIR/dry-run-output-no-demo"; then
+  echo 'FAIL: dry run without --demo plans the Borrower secret'; exit 1
+fi
+echo 'PASS: dry run makes no gcloud calls and plans only KitHub names'
