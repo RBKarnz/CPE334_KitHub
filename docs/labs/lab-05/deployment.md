@@ -4,11 +4,11 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Lab 5: GCP deployment and CI/CD |
-| Version | 0.4 |
-| Date | 2026-11-12 |
+| Version | 0.5 |
+| Date | 2026-11-13 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Design | [SDS v1.8](../../system-sds.md), sections 9.1 to 9.7 |
-| Status | Started in #2 (stack, environment variables, cloud readiness); Docker added in #3; CI added in #4; `deploy/` adapted for the first GCP deployment in #5 (the deployment itself is not run yet). URLs and evidence are added in #5 to #9 |
+| Status | Started in #2 (stack, environment variables, cloud readiness); Docker added in #3; CI added in #4; `deploy/` adapted and the first GCP deployment run in #5 (Service URL in 6.1). Evidence for #6 to #9 is added later |
 
 ## Revision history
 
@@ -18,6 +18,7 @@
 | 0.2 | 2026-11-12 | Teerakarn Noiruksa | Section 4 Docker (#3): the files, how to run them locally, what differs from the Starter Kit, and what was checked |
 | 0.3 | 2026-11-12 | Teerakarn Noiruksa | Section 5 CI on pull requests (#4): what the workflow runs, what differs from the Starter Kit, and the local run of every step |
 | 0.4 | 2026-11-12 | Methipat Mansap | Section 6 GCP deployment (#5): project, region, resource names, which secrets go to the service and to the job (and the IAM scope of the shared runtime account), the Cloud Shell commands, the smoke-test checks and the changes to `deploy/`. Notes in 2 and 5.2 updated; "Still to record" is now section 7 |
+| 0.5 | 2026-11-13 | Teerakarn Noiruksa | First deployment done (#5): Service URL in 6.1, new 6.8 with the run, the checks on the public URL and the Console check; #5 removed from section 7 |
 
 ## 1. Stack
 
@@ -202,7 +203,7 @@ The first run on GitHub is recorded in the pull request for #4.
 
 ## 6. GCP deployment (#5)
 
-The first deployment is run once, by hand, from Cloud Shell with `deploy/deploy.sh` (Lab 5 guide, Episode 5). #5 first adapts `deploy/` to KitHub; this section says what the script creates and how to run it. Nothing in this section has been created on GCP yet.
+The first deployment is run once, by hand, from Cloud Shell with `deploy/deploy.sh` (Lab 5 guide, Episode 5). #5 first adapts `deploy/` to KitHub; this section says what the script creates and how to run it. The first deployment was run on 2026-11-12 (6.8).
 
 ### 6.1 Project
 
@@ -210,7 +211,7 @@ The first deployment is run once, by hand, from Cloud Shell with `deploy/deploy.
 | --- | --- |
 | Project ID | `cpe334-th037-free-robux-513814` |
 | Region | `asia-southeast1` (every resource below) |
-| Service URL | *To be filled after the first deploy* |
+| Service URL | <https://kithub-itgltxbgxa-as.a.run.app> |
 
 The Project ID is not a secret. The Project number is not written in this document.
 
@@ -334,7 +335,7 @@ For #7: `deploy.yml` must pass `SMOKE_USERNAME` as a variable and `SMOKE_PASSWOR
 
 ### 6.7 Checked offline (#5)
 
-Nothing was run against GCP. The CI commands were run locally on the branch for #5:
+Before the first deployment, with no GCP access, the CI commands were run locally on the branch for #5:
 
 | Check | Result |
 | --- | --- |
@@ -345,11 +346,37 @@ Nothing was run against GCP. The CI commands were run locally on the branch for 
 | `DRY_RUN=1 … bash deploy/deploy.sh --demo` with the Project ID above | Only `kithub*` names; the database password shows as `<REDACTED>`; no generated value |
 | Kit names in `deploy/` | `grep -rni` finds no kit app name, `ADMIN_PASSWORD`, `DEMO_USER_PASSWORD` or `SMOKE_EMAIL` |
 
+### 6.8 First deployment (#5)
+
+Run on 2026-11-12 from Cloud Shell, following 6.4, with `main` at `bc3611c` (the merge of #48). The screenshots are in the [Issue #5 comment](https://github.com/RBKarnz/CPE334_KitHub/issues/5#issuecomment-6831199270), with emails and the Project number hidden. No password or secret value is in them.
+
+| Step | Result |
+| --- | --- |
+| Dry run (`DRY_RUN=1 … deploy.sh --demo`) | Only `kithub*` names; Cloud SQL line has `--no-storage-auto-increase`; the database password shows as `<REDACTED>` |
+| `deploy.sh --demo` | Every step finished: APIs, Artifact Registry, Cloud SQL (status `RUNNABLE`), database, `kithub-runner`, database user, the three secrets and their Secret Accessor bindings |
+| Image build (Cloud Build) | `SUCCESS` in 1m50s; `kithub/kithub:latest` pushed |
+| Migration job `kithub-migrate` | Execution completed (migrations and seed) |
+| Service `kithub` | Revision `kithub-00001-zbh` serves 100% of traffic |
+| Storage auto-increase | `settings.storageAutoResize` is `False`; guide 5.4 not needed |
+| `/api/health`, `/api/ready` | `{"status":"ok"}` and `{"status":"ready","db":"connected"}` |
+| `python3 deploy/smoke_test.py "$SERVICE_URL"` | `/api/health`, `/api/ready`, `/` and `/api/categories` (401 without a session) pass; login skipped (no smoke credentials) |
+| Browser | The sign-in page loads from the public internet, with no Google sign-in |
+| Console (guide 5.7) | Matches 6.2: the six APIs enabled; `kithub-runner` has only Cloud SQL Client on the project and Secret Accessor on each of the three secrets; `kithub-pg` PostgreSQL 16, database `kithub`, 10 GB SSD, automatic storage increase off; the service has `NODE_ENV` and `TZ` as plain values and `DATABASE_URL` from Secret Manager, port 3000, 0 to 3 instances; image `kithub` tag `latest` |
+
+Domain workflow on the public URL (C-04):
+
+| Check | Result |
+| --- | --- |
+| Sign-in | `borrower1` signs in and the catalog opens |
+| Main action | Request #1 (USB-A to USB-B cable × 1) submitted; My requests shows it as Pending |
+| Access restriction | `borrower1` opening `/pending`, a Custodian page, gets Forbidden |
+
+Two URLs reach the same service: Cloud Run also shows `https://kithub-<project number>.asia-southeast1.run.app`. This document and the Issues use the `status.url` above, which does not contain the Project number.
+
 ## 7. Still to record
 
 | Section | Issue |
 | --- | --- |
-| Service URL and the evidence of the first deployment (6.1, Issue #5 comment) | #5, after the run in 6.4 |
 | GitHub to GCP connection and merge gate | #6 |
 | Auto deploy from `main` with smoke test | #7 |
 | Persistence, rollback and roll forward | #8 |
