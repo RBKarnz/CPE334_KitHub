@@ -6,8 +6,8 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part C |
-| Version | 1.5 |
-| Date | 2026-11-07 |
+| Version | 1.6 |
+| Date | 2026-11-12 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Baseline | [SRS v1.3](srs.md) |
 | Related | [Three-sprint plan](sprints/plan.md), feature contracts in `docs/sprints/sprint-N/` |
@@ -22,6 +22,7 @@
 | 1.3 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | Issue #36: baseline SRS v1.3. Session lifetime (8.3) and `SESSION_TTL_HOURS` (9.1) cite D-18; the BR-14 query (4.5) cites D-20; Q-01 and Q-08 marked resolved in section 13. No behavior, API or schema change |
 | 1.4 | 2026-11-07 | Methipat Mansap | Issue #38 (SR-04 defect fix): "Visual style" in 5.3 moves the narrow layout from below 576 px to below 768 px and adds the horizontal-scroll safety net around the Pending requests table. No behavior or API change |
 | 1.5 | 2026-11-07 | Methipat Mansap | Issue #20 (PR #40 review): the End-to-end row in section 10 says how `kithub_test` is prepared (emptied before the run and before each test, data created by each test) instead of "refilled before the run". No behavior or API change |
+| 1.6 | 2026-11-12 | Teerakarn Noiruksa | Lab 5 cloud readiness (branch `refactor/2-cloud-ready`): `GET /api/ready` returns `{ "status": "ready", "db": "connected" }` (6.7); both `.env.example` files in 9.2 describe every variable in a comment and list `COOKIE_SECURE` as a commented-out line. No API path, status code or schema change |
 
 ## 2. Introduction
 
@@ -708,7 +709,7 @@ The contracts give the bodies. "Signed in" means either role.
 ### 6.7 Health and readiness
 
 - `GET /api/health` returns `200 { "status": "ok" }` while the process runs. It does not touch the database.
-- `GET /api/ready` runs `SELECT 1` through Prisma. It returns `200 { "status": "ready" }`, or `503` with code `NOT_READY` if the database cannot be reached.
+- `GET /api/ready` runs `SELECT 1` through Prisma. It returns `200 { "status": "ready", "db": "connected" }` (the body in the Lab 5 guide), or `503` with code `NOT_READY` if the database cannot be reached.
 - Neither needs a session or returns private data. The Lab 5 smoke test and Cloud Run use them.
 
 ## 7. Access control
@@ -834,14 +835,36 @@ The project skeleton (#13) commits these two files with placeholders only. Each 
 
 ```dotenv
 # Copy to server/.env and fill in your own local values. Never commit .env.
+# On Cloud Run these come from the service settings and Secret Manager (SDS 9.1).
+
+# Runtime mode: development, test or production. The cloud uses production. Default: development.
 NODE_ENV=development
+
+# HTTP port. Cloud Run sets PORT itself; the server binds 0.0.0.0. Default: 3000.
 PORT=3000
+
+# PostgreSQL connection string for Prisma. Secret: it contains the database password. Required.
 DATABASE_URL="postgresql://kithub:<local-db-password>@localhost:5432/kithub?schema=public"
+
+# Separate database for the automated tests. Must differ from DATABASE_URL and end in _test. Not used on GCP.
 TEST_DATABASE_URL="postgresql://kithub:<local-db-password>@localhost:5432/kithub_test?schema=public"
+
+# Session lifetime in hours, 1 to 720 (D-18). Default: 8.
 SESSION_TTL_HOURS=8
+
+# Send the session cookie over HTTPS only. Default: true when NODE_ENV=production, else false.
+# COOKIE_SECURE=false
+
+# bcrypt cost factor, 4 to 31 (NFR-03). Tests may use a lower value for speed. Default: 12.
 BCRYPT_COST=12
+
+# true also seeds the demo Borrower accounts (needed for UAT). Default: false.
 SEED_DEMO_DATA=true
+
+# Initial password of the seeded Custodian accounts. Secret. Required to run the seed.
 SEED_CUSTODIAN_PASSWORD="<choose-a-local-password>"
+
+# Password of the demo Borrower accounts. Secret. Required when SEED_DEMO_DATA=true.
 SEED_BORROWER_PASSWORD="<choose-a-local-password>"
 ```
 
@@ -849,6 +872,9 @@ SEED_BORROWER_PASSWORD="<choose-a-local-password>"
 
 ```dotenv
 # Copy to client/.env. Values here are public: never put a secret in a VITE_ variable.
+
+# Base URL of the API. Empty means the same origin: the Vite proxy in development
+# and the same container in production. Default: empty.
 VITE_API_URL=""
 ```
 
