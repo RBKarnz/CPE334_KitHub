@@ -1,0 +1,9 @@
+# Build context of client/Dockerfile (docker-compose.yml). The root .dockerignore
+# applies only to builds from the repository root. Without this file, `COPY . .`
+# would copy the host's node_modules over the ones `npm ci` installed in Linux.
+node_modules
+dist
+.env
+.env.*
+!.env.example
+*.log

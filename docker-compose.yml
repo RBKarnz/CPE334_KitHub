@@ -1,0 +1,80 @@
+# KitHub: local production-like run (Lab 5, #3). Not used by CI or Cloud Run.
+#   docker compose up --build -d   then open http://localhost:5173
+# Before the first run: copy server/.env.example to server/.env and fill in the
+# seed passwords (README section 2). The migrate service reads them from that file.
+# The database password below is a fallback for your own computer only; on GCP every
+# secret comes from Secret Manager (Episode 5).
+services:
+  db:
+    image: postgres:16-alpine
+    # Not "kithub-pg": that name is the development database container (README).
+    container_name: kithub-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-kithub}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kithub}
+      POSTGRES_DB: ${POSTGRES_DB:-kithub}
+    # No host port: only migrate and server reach the database, on the Compose
+    # network. This also avoids a clash with a local PostgreSQL on 5432 or 5433.
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kithub} -d ${POSTGRES_DB:-kithub}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: kithub-migrate
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    # SEED_CUSTODIAN_PASSWORD, SEED_BORROWER_PASSWORD and SEED_DEMO_DATA (SDS 9.1).
+    # Seed passwords are never written in this file (SDS 9.3).
+    env_file:
+      - ./server/.env
+    # These override the values in server/.env.
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-kithub}:${POSTGRES_PASSWORD:-kithub}@db:5432/${POSTGRES_DB:-kithub}?schema=public
+    # Applies the migrations, then the insert-if-missing seed, so it is safe on every up.
+    command: ["sh", "-c", "npx prisma migrate deploy && npm run prisma:seed"]
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: kithub-server
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      NODE_ENV: production
+      TZ: Asia/Bangkok
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-kithub}:${POSTGRES_PASSWORD:-kithub}@db:5432/${POSTGRES_DB:-kithub}?schema=public
+    ports:
+      - "3000:3000"
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ""
+    container_name: kithub-client
+    restart: unless-stopped
+    depends_on:
+      - server
+    ports:
+      - "5173:80"
+
+volumes:
+  postgres_data:

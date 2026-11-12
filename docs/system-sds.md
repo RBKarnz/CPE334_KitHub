@@ -6,7 +6,7 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part C |
-| Version | 1.6 |
+| Version | 1.7 |
 | Date | 2026-11-12 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Baseline | [SRS v1.3](srs.md) |
@@ -23,6 +23,7 @@
 | 1.4 | 2026-11-07 | Methipat Mansap | Issue #38 (SR-04 defect fix): "Visual style" in 5.3 moves the narrow layout from below 576 px to below 768 px and adds the horizontal-scroll safety net around the Pending requests table. No behavior or API change |
 | 1.5 | 2026-11-07 | Methipat Mansap | Issue #20 (PR #40 review): the End-to-end row in section 10 says how `kithub_test` is prepared (emptied before the run and before each test, data created by each test) instead of "refilled before the run". No behavior or API change |
 | 1.6 | 2026-11-12 | Teerakarn Noiruksa | Lab 5 cloud readiness (branch `refactor/2-cloud-ready`): `GET /api/ready` returns `{ "status": "ready", "db": "connected" }` (6.7); both `.env.example` files in 9.2 describe every variable in a comment and list `COOKIE_SECURE` as a commented-out line. No API path, status code or schema change |
+| 1.7 | 2026-11-12 | Teerakarn Noiruksa | Lab 5 Docker files (#3): 9.5 names the four Compose services, the per-folder Dockerfiles for the local run only, and the `.dockerignore` and `.gitattributes` files. No behavior, API or schema change |
 
 ## 2. Introduction
 
@@ -900,9 +901,10 @@ VITE_API_URL=""
 - A root `Dockerfile` with three stages, adapted from the Lab 5 kit: build the UI, build the server and generate the Prisma Client, then a small `node:24-alpine` runtime image that runs as the non-root `node` user.
 - The runtime image contains the server build, `prisma/` (schema, migrations, seed) and the built UI. Express serves the UI's static files and `index.html` for client routes, and the API under `/api` (DD-01).
 - The container is stateless: it reads every setting from the environment, listens on `PORT` and keeps no data on its file system.
-- A `docker-compose.yml` runs PostgreSQL (with a named volume), a one-off migrate-and-seed service, and the app, for a local production-like run.
+- A `docker-compose.yml` runs four services for a local production-like run: `db` (PostgreSQL 16 with a named volume and no host port), `migrate` (a one-off `prisma migrate deploy` and seed that reads the seed passwords from `server/.env`), `server` (the API on port 3000) and `client` (nginx with the built UI on port 5173, proxying `/api` to `server`). `server/Dockerfile` and `client/Dockerfile` are used only by this file; CI and Cloud Run use the root `Dockerfile`.
+- `.dockerignore` files at the root, in `server/` and in `client/` keep `node_modules`, `dist` and `.env` out of every build. `.gitattributes` keeps `*.sh` in LF so the entrypoint runs from a Windows checkout too.
 
-These files are delivered in Lab 5 (#3). Deliverable 1 only needs the design to allow them.
+These files are delivered in Lab 5 (#3); how to run them and what was checked is in `docs/labs/lab-05/deployment.md` section 4.
 
 ### 9.6 Planned GCP components (Lab 5)
 
