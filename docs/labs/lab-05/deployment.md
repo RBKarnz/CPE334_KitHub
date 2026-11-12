@@ -17,7 +17,7 @@
 | 0.1 | 2026-11-12 | Teerakarn Noiruksa | First version (#2): stack, every environment variable, cloud-readiness check |
 | 0.2 | 2026-11-12 | Teerakarn Noiruksa | Section 4 Docker (#3): the files, how to run them locally, what differs from the Starter Kit, and what was checked |
 | 0.3 | 2026-11-12 | Teerakarn Noiruksa | Section 5 CI on pull requests (#4): what the workflow runs, what differs from the Starter Kit, and the local run of every step |
-| 0.4 | 2026-11-12 | Methipat Mansap | Section 6 GCP deployment (#5): project, region, resource names, which secrets go to the service and to the job, the Cloud Shell commands, the smoke-test checks and the changes to `deploy/`. Notes in 2 and 5.2 updated; "Still to record" is now section 7 |
+| 0.4 | 2026-11-12 | Methipat Mansap | Section 6 GCP deployment (#5): project, region, resource names, which secrets go to the service and to the job (and the IAM scope of the shared runtime account), the Cloud Shell commands, the smoke-test checks and the changes to `deploy/`. Notes in 2 and 5.2 updated; "Still to record" is now section 7 |
 
 ## 1. Stack
 
@@ -52,7 +52,7 @@ The app reads every setting from environment variables (SDS 9.1). Locally the va
 | `SEED_CUSTODIAN_PASSWORD` | Initial password of the seeded Custodian accounts; required to run the seed | Yes | `server/.env`, chosen by each developer | Secret Manager `kithub-custodian-password`, given to the job only |
 | `SEED_BORROWER_PASSWORD` | Password of the demo Borrower accounts; required when `SEED_DEMO_DATA=true` | Yes | `server/.env`, chosen by each developer | Secret Manager `kithub-borrower-password`, given to the job only |
 
-The seed passwords go to the migration job only, because only the seed reads them. The service never needs them.
+The seed passwords are set on the migration job only, because only the seed reads them. The service never needs them. Both run as the same runtime service account, which can read all three secrets (section 6.3).
 
 ### 2.2 Client
 
@@ -238,7 +238,11 @@ The names follow SDS 9.6: the Starter Kit names with the kit's app name replaced
 | `kithub-custodian-password` | `SEED_CUSTODIAN_PASSWORD` | No | Yes |
 | `kithub-borrower-password` | `SEED_BORROWER_PASSWORD` | No | Yes, with `--demo` |
 
-Only the seed reads the two passwords, so the service never gets them (section 2.1). Both passwords are generated with `openssl` (18 characters, well under the 72-byte bcrypt limit in `server/src/core/config.ts`), stored only in Secret Manager and never printed; the script logs the database user's password as `<REDACTED>`.
+Only the seed reads the two passwords, so they are set as environment variables on the job only, never on the service (section 2.1).
+
+IAM scope: the service and the job both run as `kithub-runner`, and that account has Secret Accessor on all three secrets, because the job needs them. The service could therefore read the seed passwords through the Secret Manager API, although the app never does. This matches the kit and SDS 9.6. A separate service account for the job, with Secret Accessor on the seed secrets, and the service account limited to `kithub-database-url`, would be stricter; it is a possible follow-up, not part of #5.
+
+Both passwords are generated with `openssl` (18 characters, well under the 72-byte bcrypt limit in `server/src/core/config.ts`), stored only in Secret Manager and never printed; the script logs the database user's password as `<REDACTED>`.
 
 ### 6.4 Run it (Cloud Shell)
 

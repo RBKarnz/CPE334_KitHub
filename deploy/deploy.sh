@@ -306,8 +306,11 @@ fi
 #    binding is added — keep access limited to this app's own secrets.
 # ------------------------------------------------------------------------------
 # Grant access only to this app's secrets, after they exist. The service and
-# the migration job both run as this account; the service itself is given only
-# DATABASE_URL (step 11), the seed passwords go to the job only (step 10).
+# the migration job both run as this account. As environment variables the
+# service gets only DATABASE_URL (step 11) and the seed passwords go to the job
+# only (step 10), but through IAM the account (and so the service) can read all
+# of these secrets. A separate job account would be stricter
+# (docs/labs/lab-05/deployment.md 6.3).
 RUNTIME_SECRETS=("$SECRET_DB_URL" "$SECRET_CUSTODIAN_PASS")
 if [ "$SEED_DEMO_DATA" = "true" ]; then
   RUNTIME_SECRETS+=("$SECRET_BORROWER_PASS")
