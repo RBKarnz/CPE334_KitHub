@@ -1,0 +1,9 @@
+# Build context of server/Dockerfile (docker-compose.yml). The root .dockerignore
+# applies only to builds from the repository root.
+node_modules
+dist
+.env
+.env.*
+!.env.example
+*.log
+tests

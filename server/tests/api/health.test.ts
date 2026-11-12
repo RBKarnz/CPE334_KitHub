@@ -33,11 +33,11 @@ describe("GET /api/health (SDS 6.7)", () => {
 });
 
 describe("GET /api/ready (SDS 6.7)", () => {
-  it("returns 200 { status: ready } with the test database", async () => {
+  it("returns 200 { status: ready, db: connected } with the test database", async () => {
     const res = await request(createTestApp()).get("/api/ready");
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ status: "ready" });
+    expect(res.body).toEqual({ status: "ready", db: "connected" });
   });
 
   it("returns 503 NOT_READY when the database cannot be reached", async () => {

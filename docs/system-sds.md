@@ -6,8 +6,8 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part C |
-| Version | 1.5 |
-| Date | 2026-11-07 |
+| Version | 1.8 |
+| Date | 2026-11-12 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Baseline | [SRS v1.3](srs.md) |
 | Related | [Three-sprint plan](sprints/plan.md), feature contracts in `docs/sprints/sprint-N/` |
@@ -22,6 +22,9 @@
 | 1.3 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | Issue #36: baseline SRS v1.3. Session lifetime (8.3) and `SESSION_TTL_HOURS` (9.1) cite D-18; the BR-14 query (4.5) cites D-20; Q-01 and Q-08 marked resolved in section 13. No behavior, API or schema change |
 | 1.4 | 2026-11-07 | Methipat Mansap | Issue #38 (SR-04 defect fix): "Visual style" in 5.3 moves the narrow layout from below 576 px to below 768 px and adds the horizontal-scroll safety net around the Pending requests table. No behavior or API change |
 | 1.5 | 2026-11-07 | Methipat Mansap | Issue #20 (PR #40 review): the End-to-end row in section 10 says how `kithub_test` is prepared (emptied before the run and before each test, data created by each test) instead of "refilled before the run". No behavior or API change |
+| 1.6 | 2026-11-12 | Teerakarn Noiruksa | Lab 5 cloud readiness (branch `refactor/2-cloud-ready`): `GET /api/ready` returns `{ "status": "ready", "db": "connected" }` (6.7); both `.env.example` files in 9.2 describe every variable in a comment and list `COOKIE_SECURE` as a commented-out line. No API path, status code or schema change |
+| 1.7 | 2026-11-12 | Teerakarn Noiruksa | Lab 5 Docker files (#3): 9.5 names the four Compose services, the per-folder Dockerfiles for the local run only, and the `.dockerignore` and `.gitattributes` files. No behavior, API or schema change |
+| 1.8 | 2026-11-12 | Teerakarn Noiruksa | Lab 5 CI (#4): 9.6 says what `test-and-docker` runs on PRs into `staging` and `main`, including the backend typecheck and the end-to-end tests. No behavior, API or schema change |
 
 ## 2. Introduction
 
@@ -708,7 +711,7 @@ The contracts give the bodies. "Signed in" means either role.
 ### 6.7 Health and readiness
 
 - `GET /api/health` returns `200 { "status": "ok" }` while the process runs. It does not touch the database.
-- `GET /api/ready` runs `SELECT 1` through Prisma. It returns `200 { "status": "ready" }`, or `503` with code `NOT_READY` if the database cannot be reached.
+- `GET /api/ready` runs `SELECT 1` through Prisma. It returns `200 { "status": "ready", "db": "connected" }` (the body in the Lab 5 guide), or `503` with code `NOT_READY` if the database cannot be reached.
 - Neither needs a session or returns private data. The Lab 5 smoke test and Cloud Run use them.
 
 ## 7. Access control
@@ -834,14 +837,36 @@ The project skeleton (#13) commits these two files with placeholders only. Each 
 
 ```dotenv
 # Copy to server/.env and fill in your own local values. Never commit .env.
+# On Cloud Run these come from the service settings and Secret Manager (SDS 9.1).
+
+# Runtime mode: development, test or production. The cloud uses production. Default: development.
 NODE_ENV=development
+
+# HTTP port. Cloud Run sets PORT itself; the server binds 0.0.0.0. Default: 3000.
 PORT=3000
+
+# PostgreSQL connection string for Prisma. Secret: it contains the database password. Required.
 DATABASE_URL="postgresql://kithub:<local-db-password>@localhost:5432/kithub?schema=public"
+
+# Separate database for the automated tests. Must differ from DATABASE_URL and end in _test. Not used on GCP.
 TEST_DATABASE_URL="postgresql://kithub:<local-db-password>@localhost:5432/kithub_test?schema=public"
+
+# Session lifetime in hours, 1 to 720 (D-18). Default: 8.
 SESSION_TTL_HOURS=8
+
+# Send the session cookie over HTTPS only. Default: true when NODE_ENV=production, else false.
+# COOKIE_SECURE=false
+
+# bcrypt cost factor, 4 to 31 (NFR-03). Tests may use a lower value for speed. Default: 12.
 BCRYPT_COST=12
+
+# true also seeds the demo Borrower accounts (needed for UAT). Default: false.
 SEED_DEMO_DATA=true
+
+# Initial password of the seeded Custodian accounts. Secret. Required to run the seed.
 SEED_CUSTODIAN_PASSWORD="<choose-a-local-password>"
+
+# Password of the demo Borrower accounts. Secret. Required when SEED_DEMO_DATA=true.
 SEED_BORROWER_PASSWORD="<choose-a-local-password>"
 ```
 
@@ -849,6 +874,9 @@ SEED_BORROWER_PASSWORD="<choose-a-local-password>"
 
 ```dotenv
 # Copy to client/.env. Values here are public: never put a secret in a VITE_ variable.
+
+# Base URL of the API. Empty means the same origin: the Vite proxy in development
+# and the same container in production. Default: empty.
 VITE_API_URL=""
 ```
 
@@ -874,9 +902,10 @@ VITE_API_URL=""
 - A root `Dockerfile` with three stages, adapted from the Lab 5 kit: build the UI, build the server and generate the Prisma Client, then a small `node:24-alpine` runtime image that runs as the non-root `node` user.
 - The runtime image contains the server build, `prisma/` (schema, migrations, seed) and the built UI. Express serves the UI's static files and `index.html` for client routes, and the API under `/api` (DD-01).
 - The container is stateless: it reads every setting from the environment, listens on `PORT` and keeps no data on its file system.
-- A `docker-compose.yml` runs PostgreSQL (with a named volume), a one-off migrate-and-seed service, and the app, for a local production-like run.
+- A `docker-compose.yml` runs four services for a local production-like run: `db` (PostgreSQL 16 with a named volume and no host port), `migrate` (a one-off `prisma migrate deploy` and seed that reads the seed passwords from `server/.env`), `server` (the API on port 3000) and `client` (nginx with the built UI on port 5173, proxying `/api` to `server`). `server/Dockerfile` and `client/Dockerfile` are used only by this file; CI and Cloud Run use the root `Dockerfile`.
+- `.dockerignore` files at the root, in `server/` and in `client/` keep `node_modules`, `dist` and `.env` out of every build. `.gitattributes` keeps `*.sh` in LF so the entrypoint runs from a Windows checkout too.
 
-These files are delivered in Lab 5 (#3). Deliverable 1 only needs the design to allow them.
+These files are delivered in Lab 5 (#3); how to run them and what was checked is in `docs/labs/lab-05/deployment.md` section 4.
 
 ### 9.6 Planned GCP components (Lab 5)
 
@@ -908,7 +937,7 @@ flowchart LR
   SM -.->|"DATABASE_URL"| RUN
 ```
 
-The kit's `ci-docker.yml` runs only on PRs into `main`. Lab 5 (#4) adds `staging` to its branch list, so feature PRs are checked too.
+The kit's `ci-docker.yml` runs only on PRs into `main`. Lab 5 (#4) adds `staging` to its branch list, so feature PRs are checked too. The job `test-and-docker` runs the offline deploy-script tests, the backend typecheck, migrations, seed and tests, the frontend tests and build, the end-to-end tests against `kithub_test`, and a build of the root `Dockerfile` (`docs/labs/lab-05/deployment.md` section 5).
 
 ### 9.7 Cloud readiness (Lab 5 checklist)
 
