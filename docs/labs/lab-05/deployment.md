@@ -4,7 +4,7 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Lab 5: GCP deployment and CI/CD |
-| Version | 0.6 |
+| Version | 0.7 |
 | Date | 2026-11-13 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Design | [SDS v1.8](../../system-sds.md), sections 9.1 to 9.7 |
@@ -20,6 +20,7 @@
 | 0.4 | 2026-11-12 | Methipat Mansap | Section 6 GCP deployment (#5): project, region, resource names, which secrets go to the service and to the job (and the IAM scope of the shared runtime account), the Cloud Shell commands, the smoke-test checks and the changes to `deploy/`. Notes in 2 and 5.2 updated; "Still to record" is now section 7 |
 | 0.5 | 2026-11-13 | Teerakarn Noiruksa | First deployment done (#5): Service URL in 6.1, new 6.8 with the run, the checks on the public URL and the Console check; #5 removed from section 7 |
 | 0.6 | 2026-11-13 | Methipat Mansap | Section 7 Release pipeline (#7): how a release happens, how to find the running commit, rollback, why the smoke-test login is skipped, what GitHub provides; 6.6 note for #7 updated; "Still to record" is now section 8 |
+| 0.7 | 2026-11-13 | Teerakarn Noiruksa | 7.2: why the first run showed two different digests and the `--provenance=false` fix in `deploy.yml` (#7) |
 
 ## 1. Stack
 
@@ -406,6 +407,8 @@ Any one of these is enough:
 | Cloud Run, service `kithub`, Revisions | The revision with 100% of traffic; its container image digest equals the Summary's digest |
 | Artifact Registry, `kithub/kithub` | The image whose tag is that commit SHA |
 | `gcloud run services describe kithub --region asia-southeast1 --format='value(spec.template.spec.containers[0].image)'` | The image reference of the running service (read only) |
+
+The digest in the Summary and the digest of the revision in Cloud Run must be the same. In the first automatic run (the build without `--provenance=false`) they were not: BuildKit pushed a manifest list that wraps the image and its provenance attestation, the Summary showed the digest of the list (`sha256:5648...`), and Cloud Run showed the digest of the image inside it (`sha256:faba...`). Both belong to the same build; the run log shows them in the lines `exporting manifest` and `exporting manifest list`. The build step now uses `docker build --provenance=false`, so one manifest is pushed and both places show the same digest. The cost is that the image carries no provenance attestation; the tag is still the full commit SHA, which leads back to the code and the run.
 
 ### 7.3 Rollback
 
