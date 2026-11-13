@@ -4,11 +4,11 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Lab 5: GCP deployment and CI/CD |
-| Version | 0.5 |
+| Version | 0.6 |
 | Date | 2026-11-13 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Design | [SDS v1.8](../../system-sds.md), sections 9.1 to 9.7 |
-| Status | Started in #2 (stack, environment variables, cloud readiness); Docker added in #3; CI added in #4; `deploy/` adapted and the first GCP deployment run in #5 (Service URL in 6.1). Evidence for #6 to #9 is added later |
+| Status | Started in #2 (stack, environment variables, cloud readiness); Docker added in #3; CI added in #4; `deploy/` adapted and the first GCP deployment run in #5 (Service URL in 6.1); release pipeline in #7 (section 7; the first automatic release is recorded in 7.6 after it runs). Evidence for #6, #8 and #9 is added later |
 
 ## Revision history
 
@@ -19,6 +19,7 @@
 | 0.3 | 2026-11-12 | Teerakarn Noiruksa | Section 5 CI on pull requests (#4): what the workflow runs, what differs from the Starter Kit, and the local run of every step |
 | 0.4 | 2026-11-12 | Methipat Mansap | Section 6 GCP deployment (#5): project, region, resource names, which secrets go to the service and to the job (and the IAM scope of the shared runtime account), the Cloud Shell commands, the smoke-test checks and the changes to `deploy/`. Notes in 2 and 5.2 updated; "Still to record" is now section 7 |
 | 0.5 | 2026-11-13 | Teerakarn Noiruksa | First deployment done (#5): Service URL in 6.1, new 6.8 with the run, the checks on the public URL and the Console check; #5 removed from section 7 |
+| 0.6 | 2026-11-13 | Methipat Mansap | Section 7 Release pipeline (#7): how a release happens, how to find the running commit, rollback, why the smoke-test login is skipped, what GitHub provides; 6.6 note for #7 updated; "Still to record" is now section 8 |
 
 ## 1. Stack
 
@@ -331,7 +332,7 @@ Before you start: Issue #1 is done (billing on, budget alert set), `main` contai
 
 Without the two values it prints `SKIP login: optional smoke credentials not configured`. Setting only one of them is an error. The script never prints a password, the cookie or a response body. The login check needs the HTTPS URL, because the cookie is `Secure` in production.
 
-For #7: `deploy.yml` must pass `SMOKE_USERNAME` as a variable and `SMOKE_PASSWORD` as a secret of the `demo` environment (the guide's 7.3 says `SMOKE_EMAIL`; KitHub signs in with a username). The account must be a Borrower, never a Custodian.
+For #7: `deploy.yml` passes `SMOKE_USERNAME` (variable) and `SMOKE_PASSWORD` (secret) of the `demo` environment to the script (the guide's 7.3 says `SMOKE_EMAIL`; KitHub signs in with a username). Neither is created, so the login check is skipped; see 7.4.
 
 ### 6.7 Checked offline (#5)
 
@@ -373,11 +374,64 @@ Domain workflow on the public URL (C-04):
 
 Two URLs reach the same service: Cloud Run also shows `https://kithub-<project number>.asia-southeast1.run.app`. This document and the Issues use the `status.url` above, which does not contain the Project number.
 
-## 7. Still to record
+## 7. Release pipeline (#7)
+
+`.github/workflows/deploy.yml` (workflow name **Deploy demo**) deploys `main` to Cloud Run with no manual command. It is the Starter Kit workflow with only these changes: `SERVICE_NAME: kithub`, `MIGRATE_JOB_NAME: kithub-migrate`, image path `kithub/kithub`, `SMOKE_EMAIL` renamed `SMOKE_USERNAME`, KitHub wording in the run summary and the comments. `environment: demo`, the four `vars.*` names and the action SHAs are unchanged. `ci-docker.yml` is not changed.
+
+### 7.1 How a release happens
+
+| Step | What happens |
+| --- | --- |
+| 1 | A feature branch is merged into `staging` by a reviewed pull request |
+| 2 | `staging` is synced with `main`, so the branch is up to date (the ruleset requires it) |
+| 3 | A release pull request `staging` to `main` runs `test-and-docker` and needs 1 approval |
+| 4 | The merge into `main` starts **Deploy demo**. Runs are queued (`concurrency: deploy-demo`), never cancelled halfway |
+| 5 | Job `test` reuses `ci-docker.yml` (job `test-and-docker`). If it fails, nothing is deployed |
+| 6 | Job `deploy` runs in environment `demo`: validate the settings and that the image tag is a full 40-character SHA |
+| 7 | Sign in to Google Cloud with Workload Identity Federation (no key file) |
+| 8 | Build and push `kithub/kithub:<full commit SHA>` to Artifact Registry |
+| 9 | `deploy/release.sh`: resolve the image digest, update and run `kithub-migrate`, update `kithub`, send 100% of traffic to the latest revision. A failed migration stops before the service is updated |
+| 10 | `deploy/smoke_test.py` checks the public URL (6.6) |
+| 11 | The run Summary records the image tag, the digest, whether it was a rollback, and the URL |
+
+A pull request does not start Deploy demo; only a push to `main` or a manual run does.
+
+### 7.2 How to find the commit that is running
+
+Any one of these is enough:
+
+| Where | What to read |
+| --- | --- |
+| The run page of Deploy demo, Summary | "Commit image tag" is the full commit SHA; "Digest" is the deployed image digest |
+| Cloud Run, service `kithub`, Revisions | The revision with 100% of traffic; its container image digest equals the Summary's digest |
+| Artifact Registry, `kithub/kithub` | The image whose tag is that commit SHA |
+| `gcloud run services describe kithub --region asia-southeast1 --format='value(spec.template.spec.containers[0].image)'` | The image reference of the running service (read only) |
+
+### 7.3 Rollback
+
+Actions, Deploy demo, Run workflow on `main`, with `image_tag` set to the **full 40-character commit SHA** of an image that exists in Artifact Registry. Tests, build and migration are skipped; only the service is pointed back to that image, and the smoke test still runs. A short SHA or a tag that is not a SHA is rejected before any Google Cloud call. The procedure and its proof are recorded in #8.
+
+### 7.4 Smoke-test login is skipped on purpose
+
+`SMOKE_USERNAME` and `SMOKE_PASSWORD` are not created. KitHub has no screen to create users, and the guide forbids reusing the password of a demo account for the pipeline. The smoke step therefore prints `SKIP login: optional smoke credentials not configured` and checks health, readiness, the page and `/api/categories` (401 without a session).
+
+### 7.5 What GitHub provides
+
+| Item | Setting |
+| --- | --- |
+| Environment `demo` | Deployment branch `main` only; variables `GCP_PROJECT_ID`, `GCP_REGION`, `WIF_PROVIDER`, `WIF_SERVICE_ACCOUNT` |
+| Ruleset `protect-main` | Pull request required with 1 approval, required check `test-and-docker`, branch must be up to date |
+| Secrets and keys | No secret and no key file in GitHub; the service account is reached through Workload Identity Federation |
+
+### 7.6 First automatic release
+
+To be filled after the run: run link, commit SHA, revision.
+
+## 8. Still to record
 
 | Section | Issue |
 | --- | --- |
 | GitHub to GCP connection and merge gate | #6 |
-| Auto deploy from `main` with smoke test | #7 |
+| First automatic release run (7.6) | #7 |
 | Persistence, rollback and roll forward | #8 |
 | Final version of this document and the Lab 5 PDF | #9 |
