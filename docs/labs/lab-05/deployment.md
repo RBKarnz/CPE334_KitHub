@@ -534,7 +534,7 @@ Workload Identity Federation lets a GitHub Actions run prove who it is with a sh
 | Attribute mapping | `google.subject = assertion.sub`; `attribute.repository_id = assertion.repository_id` |
 | Impersonation | `kithub-deployer` can be impersonated by the principal set of the pool filtered by `attribute.repository_id = 1447177977` |
 
-The provider accepts a token only if the attribute condition is true. It is one expression, shown here on several lines:
+The provider accepts a token only if the attribute condition is true. It is one expression, shown here on several lines. The repository ID and the owner ID are public (anyone can read them from the GitHub API) and are not secrets, so they are written here in full:
 
 ```text
 assertion.repository_id == '1447177977'
@@ -592,7 +592,7 @@ A pull request that fails `test-and-docker` must not be mergeable. It was shown 
 | CI | [Run 43395402297](https://github.com/RBKarnz/CPE334_KitHub/actions/runs/43395402297) failed |
 | Merge box | Showed the required check as failed and merging as blocked |
 | Clean-up | The pull request was closed **without merging** and the branch deleted |
-| `main` | Unchanged, still `bc3611c` |
+| `main` | Unchanged by the test: at the time of the test it was `bc3611c` (later releases moved it on) |
 
 The screenshots of the failed check and of the blocked merge box are in Issue #6.
 
