@@ -22,7 +22,7 @@
 | 0.6 | 2026-11-13 | Methipat Mansap | Section 7 Release pipeline (#7): how a release happens, how to find the running commit, rollback, why the smoke-test login is skipped, what GitHub provides; 6.6 note for #7 updated; "Still to record" is now section 8 |
 | 0.7 | 2026-11-13 | Teerakarn Noiruksa | 7.2: why the first run showed two different digests and the `--provenance=false` fix in `deploy.yml` (#7) |
 | 0.8 | 2026-11-13 | Methipat Mansap | 7.6 filled with the first two automatic releases; new 7.7 for the second release, a visible change (C-06, #56) (#7) |
-| 0.9 | 2026-11-13 | Methipat Mansap | 7.7 filled: the pull requests, the Deploy demo run, the merge commit, the revision and digest, and the tagline on the public URL (C-06) (#7) |
+| 0.9 | 2026-11-13 | Methipat Mansap | 7.7 filled: the pull requests, the Deploy demo run, the merge commit, the revision and digest, and the tagline on the public URL (C-06) (#7); the row for the first automatic release removed from section 8 (#7) |
 
 ## 1. Stack
 
@@ -459,7 +459,7 @@ One small change that a user can see on the public URL went through the whole pi
 | Release pull request `staging` to `main` | #58 (approved by Teerakarn Noiruksa, `test-and-docker` green), merged as a merge commit |
 | Deploy demo run | [43440432113](https://github.com/RBKarnz/CPE334_KitHub/actions/runs/43440432113), started by the merge of #58; `test / test-and-docker` and `deploy` green |
 | `main` commit (Summary, Commit image tag) | `3889ea47fb421ca8a8d5990197d73182727947c9` |
-| Cloud Run revision | `kithub-00004-hhs`, 100% of traffic |
+| Cloud Run revision | `kithub-00004-hhs`, with 100% of the traffic at the time of the run |
 | Digest | `sha256:98f6265fae3c9b66793e158e783dccf3f0b440820fc2c2c7a057a716cdc421da`; the Summary and the revision show the same digest |
 | Result on the public URL | The tagline is visible under the heading "Sign in to KitHub" on the sign-in page of `https://kithub-itgltxbgxa-as.a.run.app`, after a hard refresh |
 
@@ -468,6 +468,5 @@ One small change that a user can see on the public URL went through the whole pi
 | Section | Issue |
 | --- | --- |
 | GitHub to GCP connection and merge gate | #6 |
-| First automatic release run (7.6) | #7 |
 | Persistence, rollback and roll forward | #8 |
 | Final version of this document and the Lab 5 PDF | #9 |
