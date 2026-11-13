@@ -4,11 +4,11 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Lab 5: GCP deployment and CI/CD |
-| Version | 0.10 |
+| Version | 1.0 |
 | Date | 2026-11-13 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Design | [SDS v1.8](../../system-sds.md), sections 9.1 to 9.7 |
-| Status | Started in #2 (stack, environment variables, cloud readiness); Docker added in #3; CI added in #4; `deploy/` adapted and the first GCP deployment run in #5 (Service URL in 6.1); release pipeline in #7 (section 7; the first two automatic releases are recorded in 7.6, the visible change of C-06 in 7.7). persistence, rollback and roll forward in #8 (section 8). Evidence for #6 and #9 is added later |
+| Status | Complete for Lab 5: stack, environment variables and cloud readiness (#2, sections 1 to 3); Docker (#3, section 4); CI (#4, section 5); GCP deployment (#5, section 6; Service URL in 6.1); release pipeline (#7, section 7); persistence, rollback and roll forward (#8, section 8); GitHub to Google Cloud and the merge gate (#6, section 9); commands at a glance and the issue table (#9, sections 10 and 11) |
 
 ## Revision history
 
@@ -24,6 +24,7 @@
 | 0.8 | 2026-11-13 | Methipat Mansap | 7.6 filled with the first two automatic releases; new 7.7 for the second release, a visible change (C-06, #56) (#7) |
 | 0.9 | 2026-11-13 | Methipat Mansap | 7.7 filled: the pull requests, the Deploy demo run, the merge commit, the revision and digest, and the tagline on the public URL (C-06) (#7); the row for the first automatic release removed from section 8 (#7) |
 | 0.10 | 2026-11-13 | Teerakarn Noiruksa | New section 8 Persistence, rollback and roll forward (#8): the record that was kept, the restart, the rollback to release A and the roll forward to release B with their runs and revisions, why the data survives, and the limits of a rollback; "Still to record" is now section 9 and #8 is removed from it |
+| 1.0 | 2026-11-13 | Methipat Mansap | Final version (#9): new section 9 GitHub to Google Cloud and the merge gate (#6), appended so that no existing section number changes; new section 10 Commands at a glance and section 11 Lab 5 issues instead of "Still to record"; final check against the Lab 5 handout 4.3; nits from #60 (Status row, "Redeploy (no changes)" in 8.2) |
 
 ## 1. Stack
 
@@ -35,9 +36,11 @@
 | Database | PostgreSQL 16: Docker container or local install on a laptop, Cloud SQL for PostgreSQL 16 on GCP |
 | Tests | Vitest and Supertest (server), Vitest and Testing Library (client), Playwright (end-to-end) |
 | Packaging | One Docker image that serves the API under `/api` and the built UI (SDS DD-01), built in #3 |
-| Hosting (planned) | Cloud Run service `kithub` and Cloud Run job `kithub-migrate` in `asia-southeast1` (SDS 9.6) |
+| Hosting | Cloud Run service `kithub` and Cloud Run job `kithub-migrate` in `asia-southeast1` (SDS 9.6) |
 
 Exact package versions are pinned in each `package-lock.json`.
+
+Changes from the Starter Kit (the reference) are listed where they were made: Docker in 4.3, the CI workflow in 5.2, `deploy/` in 6.5 and the deploy workflow in section 7 (its changes are the first paragraph of that section).
 
 ## 2. Environment variables
 
@@ -164,7 +167,7 @@ Added in #4 from the Lab 5 Starter Kit: `.github/workflows/ci-docker.yml` and th
 
 ### 5.1 What the workflow runs
 
-Workflow "CI & Docker Build", job `test-and-docker` (the name the merge gate in #6 requires). It starts on every pull request into `staging` or `main`, by hand from the Actions tab (`workflow_dispatch`), and from the deploy workflow in #7 (`workflow_call`). `permissions` is `contents: read` only.
+Workflow "CI & Docker Build", job `test-and-docker` (the name the merge gate in section 9.4 requires). It starts on every pull request into `staging` or `main`, by hand from the Actions tab (`workflow_dispatch`), and from the deploy workflow in #7 (`workflow_call`). `permissions` is `contents: read` only.
 
 | Step | What it does |
 | --- | --- |
@@ -392,7 +395,7 @@ Two URLs reach the same service: Cloud Run also shows `https://kithub-<project n
 | 4 | The merge into `main` starts **Deploy demo**. Runs are queued (`concurrency: deploy-demo`), never cancelled halfway |
 | 5 | Job `test` reuses `ci-docker.yml` (job `test-and-docker`). If it fails, nothing is deployed |
 | 6 | Job `deploy` runs in environment `demo`: validate the settings and that the image tag is a full 40-character SHA |
-| 7 | Sign in to Google Cloud with Workload Identity Federation (no key file) |
+| 7 | Sign in to Google Cloud with Workload Identity Federation (no key file, section 9.2) |
 | 8 | Build and push `kithub/kithub:<full commit SHA>` to Artifact Registry |
 | 9 | `deploy/release.sh`: resolve the image digest, update and run `kithub-migrate`, update `kithub`, send 100% of traffic to the latest revision. A failed migration stops before the service is updated |
 | 10 | `deploy/smoke_test.py` checks the public URL (6.6) |
@@ -425,8 +428,8 @@ Actions, Deploy demo, Run workflow on `main`, with `image_tag` set to the **full
 
 | Item | Setting |
 | --- | --- |
-| Environment `demo` | Deployment branch `main` only; variables `GCP_PROJECT_ID`, `GCP_REGION`, `WIF_PROVIDER`, `WIF_SERVICE_ACCOUNT` |
-| Ruleset `protect-main` | Pull request required with 1 approval, required check `test-and-docker`, branch must be up to date |
+| Environment `demo` | Deployment branch `main` only; variables `GCP_PROJECT_ID`, `GCP_REGION`, `WIF_PROVIDER`, `WIF_SERVICE_ACCOUNT` (section 9.3) |
+| Ruleset `protect-main` | Pull request required with 1 approval, required check `test-and-docker`, branch must be up to date (section 9.4) |
 | Secrets and keys | No secret and no key file in GitHub; the service account is reached through Workload Identity Federation |
 
 ### 7.6 First automatic release
@@ -484,7 +487,7 @@ A is the image of the second automatic release, not the first (`2adc25b`): the f
 | Step | What was done | Result |
 | --- | --- | --- |
 | 1. Before | `borrower1` signs in and opens My requests | Request #1 is there; the service runs release B on revision `kithub-00004-hhs` |
-| 2. Restart | Cloud Run, service `kithub`, Edit and deploy new revision, nothing changed, Deploy | New revision `kithub-00005-hm9` from the same image has 100% of the traffic; Request #1 is still there |
+| 2. Restart | Cloud Run, service `kithub`, Redeploy (no changes) | New revision `kithub-00005-hm9` from the same image has 100% of the traffic; Request #1 is still there |
 | 3. Rollback to A | Actions, Deploy demo, Run workflow on `main` with `image_tag` set to the full SHA of A ([run 43454238399](https://github.com/RBKarnz/CPE334_KitHub/actions/runs/43454238399)) | Job `test` skipped and step Build and push image skipped; the log says "Rollback: reuse existing image; skip tests, build, migration and seed."; smoke test PASS for the four checks, login SKIP; Summary shows A's tag, `Rollback: true` and A's digest; revision `kithub-00006-tnb` has 100% of the traffic; the sign-in page has no tagline; Request #1 is still there |
 | 4. Roll forward to B | The same with the full SHA of B ([run 43455644798](https://github.com/RBKarnz/CPE334_KitHub/actions/runs/43455644798)) | The same steps skipped and the same smoke test result; Summary shows B's tag and B's digest, equal to the digest of [run 43440432113](https://github.com/RBKarnz/CPE334_KitHub/actions/runs/43440432113); revision `kithub-00007-mcz` has 100% of the traffic; the tagline is back; Request #1 is still there |
 
@@ -501,9 +504,131 @@ The run page of a rollback shows the commit of `main` that holds `deploy.yml` (`
 - A rollback does not undo a database migration. If a release adds a migration, running an older image against the newer schema may fail; that has to be checked before a rollback. It was safe here because A and B have the same schema.
 - Only an image that exists in Artifact Registry can be used, and `image_tag` must be the full 40-character commit SHA; anything else is rejected before any Google Cloud call (7.3).
 
-## 9. Still to record
+## 9. GitHub to Google Cloud and the merge gate (#6)
 
-| Section | Issue |
+#6 lets GitHub deploy to Google Cloud without a key file, and makes the passing check mandatory for `main`. It is set up in the Google Cloud Console and in the GitHub settings; the only file in the repository that uses it is `deploy.yml` (section 7). The screenshots are in [Issue #6](https://github.com/RBKarnz/CPE334_KitHub/issues/6), with emails and the Project number hidden. The Project number is not written in this document, so the `WIF_PROVIDER` value below has a placeholder.
+
+### 9.1 Deployer service account and roles
+
+`kithub-deployer` is the account that GitHub Actions uses to deploy. It is separate from `kithub-runner`, which runs the app (6.2). It has no keys: the Keys tab of the account is empty.
+
+| Role | Granted on | Why |
+| --- | --- | --- |
+| Cloud Run Developer | The project | `deploy/release.sh` updates and runs the job `kithub-migrate`, updates the service `kithub` and moves traffic |
+| Artifact Registry Writer | Repository `kithub` only | The workflow pushes the image `kithub/kithub:<commit SHA>`; it cannot write to any other repository |
+| Service Account User | `kithub-runner` only | A Cloud Run service and job run as `kithub-runner`; deploying them needs the right to act as that account, and no other account |
+
+None of the three roles gives access to the value of a secret. The secrets stay readable only by `kithub-runner` (6.3).
+
+Two APIs are enabled so that the account can be used without a key: the IAM Service Account Credentials API (to impersonate the account) and the Security Token Service API (to exchange the GitHub token for a Google token).
+
+### 9.2 Workload Identity Federation
+
+Workload Identity Federation lets a GitHub Actions run prove who it is with a short-lived OpenID Connect token, and exchange it for a short-lived Google token that acts as `kithub-deployer`. `deploy.yml` asks for the token with `id-token: write` on the `deploy` job only and passes `vars.WIF_PROVIDER` and `vars.WIF_SERVICE_ACCOUNT` to the Google login step.
+
+| Item | Value |
 | --- | --- |
-| GitHub to GCP connection and merge gate | #6 |
-| Final version of this document and the Lab 5 PDF | #9 |
+| Pool | `github-actions` |
+| Provider | `github-main` (OpenID Connect) |
+| Issuer | `https://token.actions.githubusercontent.com/` |
+| Attribute mapping | `google.subject = assertion.sub`; `attribute.repository_id = assertion.repository_id` |
+| Impersonation | `kithub-deployer` can be impersonated by the principal set of the pool filtered by `attribute.repository_id = 1447177977` |
+
+The provider accepts a token only if the attribute condition is true. It is one expression, shown here on several lines. The repository ID and the owner ID are public (anyone can read them from the GitHub API) and are not secrets, so they are written here in full:
+
+```text
+assertion.repository_id == '1447177977'
+&& assertion.repository_owner_id == '153267751'
+&& assertion.ref == 'refs/heads/main'
+&& assertion.workflow_ref == 'RBKarnz/CPE334_KitHub/.github/workflows/deploy.yml@refs/heads/main'
+&& assertion.sub == 'repo:RBKarnz@153267751/CPE334_KitHub@1447177977:environment:demo'
+```
+
+| Part of the condition | What it excludes |
+| --- | --- |
+| `repository_id` and `repository_owner_id` | Any other repository or owner, including a repository that later gets the same name (the numeric IDs do not change when a name is reused) |
+| `ref == 'refs/heads/main'` | A run on any other branch or on a pull request |
+| `workflow_ref` | Any other workflow file, and a copy of `deploy.yml` on another branch |
+| `sub` ending in `environment:demo` | A job that does not run in the GitHub environment `demo` (9.3) |
+
+Why there is no JSON key: a key file is a long-lived secret that can be copied, committed or leaked, and it works from anywhere until someone deletes it. The federated token lives for a single run and is issued only to a run that matches the condition. There is nothing to rotate, and nothing secret is stored in GitHub.
+
+The first Deploy demo run proved the setup end to end (7.6): its first attempt failed because of a typo in `WIF_PROVIDER`, which was fixed in GitHub.
+
+### 9.3 GitHub environment `demo`
+
+| Setting | Value |
+| --- | --- |
+| Deployment branch | `main` only |
+| Variable `GCP_PROJECT_ID` | The Project ID in 6.1 |
+| Variable `GCP_REGION` | `asia-southeast1` |
+| Variable `WIF_PROVIDER` | `projects/<project number>/locations/global/workloadIdentityPools/github-actions/providers/github-main` |
+| Variable `WIF_SERVICE_ACCOUNT` | The email of `kithub-deployer` (not written here) |
+| Environment secrets | None |
+
+All four are variables, not secrets: none of them lets anyone act without a token that the condition in 9.2 accepts. The branch rule means a job on another branch cannot start in `demo`, and the condition in 9.2 checks the same thing again on the Google side.
+
+### 9.4 Ruleset `protect-main`
+
+Status Active, target branch `main`, **empty bypass list**: nobody, including the repository owner, can skip a rule.
+
+| Rule | Why |
+| --- | --- |
+| Restrict deletions | `main` is the release branch and cannot be deleted |
+| Block force pushes | The history of `main` cannot be rewritten (R-10) |
+| Require a pull request, 1 approval | Nothing reaches `main` without a review by someone other than the author |
+| Require status check `test-and-docker`, branches up to date | The job of 5.1 must pass on the exact commit that is merged; a pull request that is behind `main` must be updated first |
+
+Public proof, readable without signing in: <https://api.github.com/repos/RBKarnz/CPE334_KitHub/rules/branches/main>.
+
+### 9.5 The merge gate works (C-02, R-06)
+
+A pull request that fails `test-and-docker` must not be mergeable. It was shown with a failing pull request from a temporary branch, and the released application was never touched.
+
+| Step | Result |
+| --- | --- |
+| Temporary branch | `test/prove-gate`; one server test was broken on purpose (`server/tests/api/health.test.ts`, commit `eb1c7fd`) |
+| Pull request | [#50](https://github.com/RBKarnz/CPE334_KitHub/pull/50) into `main` |
+| CI | [Run 43395402297](https://github.com/RBKarnz/CPE334_KitHub/actions/runs/43395402297) failed |
+| Merge box | Showed the required check as failed and merging as blocked |
+| Clean-up | The pull request was closed **without merging** and the branch deleted |
+| `main` | Unchanged by the test: at the time of the test it was `bc3611c` (later releases moved it on) |
+
+The screenshots of the failed check and of the blocked merge box are in Issue #6.
+
+## 10. Commands at a glance
+
+Every command below exists in this repository. The last column says where it is explained.
+
+| What | Where | Command | Details |
+| --- | --- | --- | --- |
+| Build and run everything locally | Repository root | `docker compose up --build -d` | 4.2 |
+| Build the image used by CI and Cloud Run | Repository root | `docker build .` | 4.1, 5.1 |
+| Run the server for development | `server/` | `npm ci`, then `npm run dev` | README section 3 |
+| Run the client for development | `client/` | `npm ci`, then `npm run dev` | README section 4 |
+| Build | `server/`, `client/` | `npm run build` | 5.1 |
+| Test: server (typecheck, then tests) | `server/` | `npm run typecheck`, `npm test` | 5.1, 5.3 |
+| Test: client | `client/` | `npm test` | 5.1, 5.3 |
+| Test: end-to-end | Repository root | `npm ci`, `npx playwright install --with-deps chromium`, `npm run typecheck:e2e`, `npm run test:e2e` | 5.1, README section 6 |
+| Test: deploy scripts, offline | Repository root | `bash deploy/tests/test_deploy_stub.sh`, `bash deploy/tests/test_release_stub.sh`, `python3 -m unittest discover -s deploy/tests -p 'test_smoke.py'` | 6.7 |
+| Migrate | `server/` | `npx prisma migrate deploy` | README section 3 |
+| Seed | `server/` | `npm run prisma:seed` | 2.1, README section 3 |
+| First deployment on GCP, once | Cloud Shell | `PROJECT_ID=... REGION=... bash deploy/deploy.sh --demo` | 6.4 |
+| Release | GitHub | Merge the release pull request into `main`; **Deploy demo** runs | 7.1 |
+| Migrate and seed in the cloud | Cloud Run job `kithub-migrate` | Runs `npx prisma migrate deploy && npm run prisma:seed`; started by `deploy/release.sh` in every release | 6.2, 7.1 |
+| Find the running commit | Run Summary, Cloud Run, Artifact Registry | Read "Commit image tag" and "Digest" | 7.2 |
+| Roll back or roll forward | Actions, Deploy demo, Run workflow on `main` | Set `image_tag` to the full 40-character commit SHA | 7.3, 8.2 |
+
+## 11. Lab 5 issues
+
+| Issue | What | Where in this document |
+| --- | --- | --- |
+| #1 | Google Cloud project, billing and budget alert | 6.1 (the project); billing and the budget alert are shown in the Issue |
+| #2 | Stack, environment variables, cloud readiness | 1, 2, 3 |
+| #3 | Docker | 4 |
+| #4 | CI on pull requests | 5 |
+| #5 | GCP deployment | 6 |
+| #6 | GitHub to Google Cloud and the merge gate | 9 |
+| #7 | Release pipeline | 7 |
+| #8 | Persistence, rollback and roll forward | 8 |
+| #9 | This document and the Lab 5 PDF | All sections; the commands are collected in 10 |
