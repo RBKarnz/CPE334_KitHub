@@ -4,7 +4,7 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Lab 5: GCP deployment and CI/CD |
-| Version | 0.8 |
+| Version | 0.9 |
 | Date | 2026-11-13 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Design | [SDS v1.8](../../system-sds.md), sections 9.1 to 9.7 |
@@ -22,6 +22,7 @@
 | 0.6 | 2026-11-13 | Methipat Mansap | Section 7 Release pipeline (#7): how a release happens, how to find the running commit, rollback, why the smoke-test login is skipped, what GitHub provides; 6.6 note for #7 updated; "Still to record" is now section 8 |
 | 0.7 | 2026-11-13 | Teerakarn Noiruksa | 7.2: why the first run showed two different digests and the `--provenance=false` fix in `deploy.yml` (#7) |
 | 0.8 | 2026-11-13 | Methipat Mansap | 7.6 filled with the first two automatic releases; new 7.7 for the second release, a visible change (C-06, #56) (#7) |
+| 0.9 | 2026-11-13 | Methipat Mansap | 7.7 filled: the pull requests, the Deploy demo run, the merge commit, the revision and digest, and the tagline on the public URL (C-06) (#7) |
 
 ## 1. Stack
 
@@ -454,12 +455,13 @@ One small change that a user can see on the public URL went through the whole pi
 | --- | --- |
 | Issue | #56 |
 | Change | "Borrow lab equipment from the faculty hardware room." under the heading "Sign in to KitHub" (heading text unchanged); one client test |
-| Pull request into `staging` | To be filled after the run |
-| Release pull request `staging` to `main` | To be filled after the run |
-| Deploy demo run | To be filled after the run |
-| `main` commit (Summary, Commit image tag) | To be filled after the run |
-| Cloud Run revision and digest | To be filled after the run |
-| Result on the public URL | To be filled after the run |
+| Pull request into `staging` | #57 (reviewed and approved by Teerakarn Noiruksa), merged as `dad859a` |
+| Release pull request `staging` to `main` | #58 (approved by Teerakarn Noiruksa, `test-and-docker` green), merged as a merge commit |
+| Deploy demo run | [43440432113](https://github.com/RBKarnz/CPE334_KitHub/actions/runs/43440432113), started by the merge of #58; `test / test-and-docker` and `deploy` green |
+| `main` commit (Summary, Commit image tag) | `3889ea47fb421ca8a8d5990197d73182727947c9` |
+| Cloud Run revision | `kithub-00004-hhs`, 100% of traffic |
+| Digest | `sha256:98f6265fae3c9b66793e158e783dccf3f0b440820fc2c2c7a057a716cdc421da`; the Summary and the revision show the same digest |
+| Result on the public URL | The tagline is visible under the heading "Sign in to KitHub" on the sign-in page of `https://kithub-itgltxbgxa-as.a.run.app`, after a hard refresh |
 
 ## 8. Still to record
 
