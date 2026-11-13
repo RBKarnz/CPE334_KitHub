@@ -4,11 +4,11 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Lab 5: GCP deployment and CI/CD |
-| Version | 0.7 |
+| Version | 0.8 |
 | Date | 2026-11-13 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Design | [SDS v1.8](../../system-sds.md), sections 9.1 to 9.7 |
-| Status | Started in #2 (stack, environment variables, cloud readiness); Docker added in #3; CI added in #4; `deploy/` adapted and the first GCP deployment run in #5 (Service URL in 6.1); release pipeline in #7 (section 7; the first automatic release is recorded in 7.6 after it runs). Evidence for #6, #8 and #9 is added later |
+| Status | Started in #2 (stack, environment variables, cloud readiness); Docker added in #3; CI added in #4; `deploy/` adapted and the first GCP deployment run in #5 (Service URL in 6.1); release pipeline in #7 (section 7; the first two automatic releases are recorded in 7.6, the visible change of C-06 in 7.7). Evidence for #6, #8 and #9 is added later |
 
 ## Revision history
 
@@ -21,6 +21,7 @@
 | 0.5 | 2026-11-13 | Teerakarn Noiruksa | First deployment done (#5): Service URL in 6.1, new 6.8 with the run, the checks on the public URL and the Console check; #5 removed from section 7 |
 | 0.6 | 2026-11-13 | Methipat Mansap | Section 7 Release pipeline (#7): how a release happens, how to find the running commit, rollback, why the smoke-test login is skipped, what GitHub provides; 6.6 note for #7 updated; "Still to record" is now section 8 |
 | 0.7 | 2026-11-13 | Teerakarn Noiruksa | 7.2: why the first run showed two different digests and the `--provenance=false` fix in `deploy.yml` (#7) |
+| 0.8 | 2026-11-13 | Methipat Mansap | 7.6 filled with the first two automatic releases; new 7.7 for the second release, a visible change (C-06, #56) (#7) |
 
 ## 1. Stack
 
@@ -428,7 +429,37 @@ Actions, Deploy demo, Run workflow on `main`, with `image_tag` set to the **full
 
 ### 7.6 First automatic release
 
-To be filled after the run: run link, commit SHA, revision.
+| | Run #1 | Run #2 |
+| --- | --- | --- |
+| Started by | Release PR #52 | Release PR #55 (after `--provenance=false`) |
+| `main` commit | `2adc25b` | `6bf2a8ceb5919964e428769b078b54dfb0dcad14` |
+| Run | [43405628558](https://github.com/RBKarnz/CPE334_KitHub/actions/runs/43405628558) | [43432255470](https://github.com/RBKarnz/CPE334_KitHub/actions/runs/43432255470) |
+| Result | Green on attempt 3 | Green on attempt 1 |
+| Cloud Run revision | `kithub-00002-ndd` | `kithub-00003-r8l` |
+| Digest in Summary vs revision | Different (see 7.2) | Equal |
+
+Run #1 needed three attempts:
+
+1. Attempt 1 failed: the pool name in the `WIF_PROVIDER` variable had a typo; fixed in GitHub.
+2. Attempt 2 failed in `release.sh`: a missing IAM permission on Google Cloud; fixed by Teerakarn.
+3. Attempt 3 was green and created revision `kithub-00002-ndd`. The two digests it showed are explained in 7.2.
+
+Run #2 ran with `--provenance=false`; the digest in its Summary equals the digest of the revision in Cloud Run.
+
+### 7.7 Second release, a visible change (C-06)
+
+One small change that a user can see on the public URL went through the whole pipeline: a tagline under the sign-in heading.
+
+| Item | Value |
+| --- | --- |
+| Issue | #56 |
+| Change | "Borrow lab equipment from the faculty hardware room." under the heading "Sign in to KitHub" (heading text unchanged); one client test |
+| Pull request into `staging` | To be filled after the run |
+| Release pull request `staging` to `main` | To be filled after the run |
+| Deploy demo run | To be filled after the run |
+| `main` commit (Summary, Commit image tag) | To be filled after the run |
+| Cloud Run revision and digest | To be filled after the run |
+| Result on the public URL | To be filled after the run |
 
 ## 8. Still to record
 

@@ -51,7 +51,8 @@ export function LoginPage() {
         <div className="mb-3">
           <Logo size={44} />
         </div>
-        <h1 className="mb-4">Sign in to KitHub</h1>
+        <h1 className="mb-2">Sign in to KitHub</h1>
+        <p className="text-muted mb-4">Borrow lab equipment from the faculty hardware room.</p>
         {notice && !formError && (
           <div className="alert alert-info" role="status">
             {notice}
