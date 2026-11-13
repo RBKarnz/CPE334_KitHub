@@ -4,11 +4,11 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Lab 5: GCP deployment and CI/CD |
-| Version | 0.9 |
+| Version | 0.10 |
 | Date | 2026-11-13 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Design | [SDS v1.8](../../system-sds.md), sections 9.1 to 9.7 |
-| Status | Started in #2 (stack, environment variables, cloud readiness); Docker added in #3; CI added in #4; `deploy/` adapted and the first GCP deployment run in #5 (Service URL in 6.1); release pipeline in #7 (section 7; the first two automatic releases are recorded in 7.6, the visible change of C-06 in 7.7). Evidence for #6, #8 and #9 is added later |
+| Status | Started in #2 (stack, environment variables, cloud readiness); Docker added in #3; CI added in #4; `deploy/` adapted and the first GCP deployment run in #5 (Service URL in 6.1); release pipeline in #7 (section 7; the first two automatic releases are recorded in 7.6, the visible change of C-06 in 7.7). persistence, rollback and roll forward in #8 (section 8). Evidence for #6 and #9 is added later |
 
 ## Revision history
 
@@ -23,6 +23,7 @@
 | 0.7 | 2026-11-13 | Teerakarn Noiruksa | 7.2: why the first run showed two different digests and the `--provenance=false` fix in `deploy.yml` (#7) |
 | 0.8 | 2026-11-13 | Methipat Mansap | 7.6 filled with the first two automatic releases; new 7.7 for the second release, a visible change (C-06, #56) (#7) |
 | 0.9 | 2026-11-13 | Methipat Mansap | 7.7 filled: the pull requests, the Deploy demo run, the merge commit, the revision and digest, and the tagline on the public URL (C-06) (#7); the row for the first automatic release removed from section 8 (#7) |
+| 0.10 | 2026-11-13 | Teerakarn Noiruksa | New section 8 Persistence, rollback and roll forward (#8): the record that was kept, the restart, the rollback to release A and the roll forward to release B with their runs and revisions, why the data survives, and the limits of a rollback; "Still to record" is now section 9 and #8 is removed from it |
 
 ## 1. Stack
 
@@ -414,7 +415,7 @@ The digest in the Summary and the digest of the revision in Cloud Run must be th
 
 ### 7.3 Rollback
 
-Actions, Deploy demo, Run workflow on `main`, with `image_tag` set to the **full 40-character commit SHA** of an image that exists in Artifact Registry. Tests, build and migration are skipped; only the service is pointed back to that image, and the smoke test still runs. A short SHA or a tag that is not a SHA is rejected before any Google Cloud call. The procedure and its proof are recorded in #8.
+Actions, Deploy demo, Run workflow on `main`, with `image_tag` set to the **full 40-character commit SHA** of an image that exists in Artifact Registry. Tests, build and migration are skipped; only the service is pointed back to that image, and the smoke test still runs. A short SHA or a tag that is not a SHA is rejected before any Google Cloud call. The procedure and its proof are in section 8.
 
 ### 7.4 Smoke-test login is skipped on purpose
 
@@ -463,10 +464,46 @@ One small change that a user can see on the public URL went through the whole pi
 | Digest | `sha256:98f6265fae3c9b66793e158e783dccf3f0b440820fc2c2c7a057a716cdc421da`; the Summary and the revision show the same digest |
 | Result on the public URL | The tagline is visible under the heading "Sign in to KitHub" on the sign-in page of `https://kithub-itgltxbgxa-as.a.run.app`, after a hard refresh |
 
-## 8. Still to record
+## 8. Persistence, rollback and roll forward (#8)
+
+The data of KitHub is in Cloud SQL (PostgreSQL), not in the container. A restart, a redeploy, a rollback and a roll forward replace only the app container, so the data stays. A rollback changes only the app image; it does not roll the database back (the migration and the seed are skipped). The screenshots are in the [comment on #8](https://github.com/RBKarnz/CPE334_KitHub/issues/8#issuecomment-6858183781).
+
+### 8.1 What was kept and which releases were used
+
+The record is Request #1 of `borrower1` ("USB-A to USB-B cable x 1", created 12 Nov 2026 23:55, status Pending), made on the public URL in 6.8 (C-04). KitHub has no file upload and writes no file to the container disk, so there is no attachment to compare by checksum.
+
+| Release | Image tag (commit) | Digest | What the user sees |
+| --- | --- | --- | --- |
+| A | `6bf2a8ceb5919964e428769b078b54dfb0dcad14` (second automatic release, 7.6) | `sha256:073be3706fa5703abe42cf43a88538245cd5307c63e8c80b529708d3d77603ee` | Sign-in page without the tagline |
+| B | `3889ea47fb421ca8a8d5990197d73182727947c9` (7.7, C-06) | `sha256:98f6265fae3c9b66793e158e783dccf3f0b440820fc2c2c7a057a716cdc421da` | Sign-in page with the tagline |
+
+A is the image of the second automatic release, not the first (`2adc25b`): the first was built before `--provenance=false` and shows two different digests (7.2), so its digest cannot be compared. No code under `server/` differs between A and B, so the database schema is the same for both.
+
+### 8.2 Steps and results
+
+| Step | What was done | Result |
+| --- | --- | --- |
+| 1. Before | `borrower1` signs in and opens My requests | Request #1 is there; the service runs release B on revision `kithub-00004-hhs` |
+| 2. Restart | Cloud Run, service `kithub`, Edit and deploy new revision, nothing changed, Deploy | New revision `kithub-00005-hm9` from the same image has 100% of the traffic; Request #1 is still there |
+| 3. Rollback to A | Actions, Deploy demo, Run workflow on `main` with `image_tag` set to the full SHA of A ([run 43454238399](https://github.com/RBKarnz/CPE334_KitHub/actions/runs/43454238399)) | Job `test` skipped and step Build and push image skipped; the log says "Rollback: reuse existing image; skip tests, build, migration and seed."; smoke test PASS for the four checks, login SKIP; Summary shows A's tag, `Rollback: true` and A's digest; revision `kithub-00006-tnb` has 100% of the traffic; the sign-in page has no tagline; Request #1 is still there |
+| 4. Roll forward to B | The same with the full SHA of B ([run 43455644798](https://github.com/RBKarnz/CPE334_KitHub/actions/runs/43455644798)) | The same steps skipped and the same smoke test result; Summary shows B's tag and B's digest, equal to the digest of [run 43440432113](https://github.com/RBKarnz/CPE334_KitHub/actions/runs/43440432113); revision `kithub-00007-mcz` has 100% of the traffic; the tagline is back; Request #1 is still there |
+
+The run page of a rollback shows the commit of `main` that holds `deploy.yml` (`3889ea4`); the image that was deployed is the "Commit image tag" in its Summary. Cloud Run keeps every revision (`kithub-00001-zbh` to `kithub-00007-mcz`); only the newest one has traffic.
+
+### 8.3 Why the data survives
+
+- Requests, users and the catalog are rows in PostgreSQL on Cloud SQL (`kithub-pg`); the container only runs the code.
+- Each of the four steps creates a new revision from an image. None of them touches the database.
+- The rollback and the roll forward skip the migration job and the seed on purpose (`deploy/release.sh`, rollback mode), so a rollback cannot change or reset the data.
+
+### 8.4 Limits of a rollback
+
+- A rollback does not undo a database migration. If a release adds a migration, running an older image against the newer schema may fail; that has to be checked before a rollback. It was safe here because A and B have the same schema.
+- Only an image that exists in Artifact Registry can be used, and `image_tag` must be the full 40-character commit SHA; anything else is rejected before any Google Cloud call (7.3).
+
+## 9. Still to record
 
 | Section | Issue |
 | --- | --- |
 | GitHub to GCP connection and merge gate | #6 |
-| Persistence, rollback and roll forward | #8 |
 | Final version of this document and the Lab 5 PDF | #9 |
