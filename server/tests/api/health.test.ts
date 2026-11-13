@@ -17,7 +17,8 @@ describe("GET /api/health (SDS 6.7)", () => {
     const res = await request(createTestApp(unreachable)).get("/api/health");
 
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ status: "ok" });
+    // Lab 5 C-02: broken on purpose to prove the merge gate. Never merge.
+    expect(res.body).toEqual({ status: "broken-on-purpose" });
   });
 
   it("sends Cache-Control: no-store and a UUID X-Request-Id on every /api response", async () => {
