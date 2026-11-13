@@ -72,6 +72,14 @@ describe("F-01 UI", () => {
     expect(screen.getByLabelText("Username")).toHaveValue("");
   });
 
+  it("the sign-in page shows a short tagline under the heading", async () => {
+    reply("GET /api/auth/me", unauthenticated);
+    renderAt("/login");
+    await screen.findByRole("heading", { name: "Sign in to KitHub" });
+
+    expect(screen.getByText("Borrow lab equipment from the faculty hardware room.")).toBeInTheDocument();
+  });
+
   it("empty fields show messages and do not call the API", async () => {
     reply("GET /api/auth/me", unauthenticated);
     renderAt("/login");
