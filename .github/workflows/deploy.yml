@@ -149,13 +149,16 @@ jobs:
       # 4. Build and push the image (skipped for rollbacks)
       #    KitHub: image path `.../kithub/kithub` matches the Artifact Registry
       #    repo and image in deploy/deploy.sh and deploy/release.sh.
+      #    `--provenance=false`: without it BuildKit pushes a manifest list (image
+      #    + attestation), so the digest in the run summary differs from the one
+      #    Cloud Run shows for the revision. With it both are the same digest.
       # ------------------------------------------------------------------------
       - name: Build and push image
         if: env.ROLLBACK != 'true'
         run: |
           gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
           IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/kithub/kithub:$IMAGE_TAG"
-          docker build --tag "$IMAGE" .
+          docker build --provenance=false --tag "$IMAGE" .
           docker push "$IMAGE"
 
       # ------------------------------------------------------------------------
