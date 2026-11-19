@@ -82,9 +82,9 @@ Evidence: <screenshot with the time and URL visible; no password>
 
 ## 6. Contacts
 
-| Who | GitHub | Role in Lab 6 |
-| --- | --- | --- |
-| Teerakarn Noiruksa | `RBKarnz` | Accounts and passwords, deploys |
-| Methipat Mansap | `Bobbie-CPE38` | Cases and triage |
+| Who | Discord | GitHub | Role in Lab 6 |
+| --- | --- | --- | --- |
+| Teerakarn Noiruksa | `_rbkz` | `RBKarnz` | Accounts and passwords, deploys |
+| Methipat Mansap | `studypurpose_1` | `Bobbie-CPE38` | Cases and triage |
 
 Chat: Discord direct messages between the two teams (no group channel).
