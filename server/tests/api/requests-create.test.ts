@@ -81,6 +81,25 @@ describe("TEST-11 (AC-11): BR-04, one open request per item type", () => {
       );
     },
   );
+
+  // UAT finding #68 (LECTRA, UAT-02 step 3): borrower2 requested HC-SR04 twice through the
+  // API while the first request was Pending, and the second one was stored (201).
+  it("TEST-11b (UAT finding #68): a second request for the same item type through the API is 409 and stores nothing", async () => {
+    const sr04 = await createItemTypeWithUnits(prisma, { name: "HC-SR04 ultrasonic sensor" }, { AVAILABLE: 6 });
+    const asB2 = await signIn(app, "borrower2");
+    const first = await postRequest(app, asB2, oneLine(sr04.id));
+    expect(first.status).toBe(201);
+    expect(first.body.status).toBe("PENDING");
+
+    const res = await expectRejected(postRequest(app, asB2, oneLine(sr04.id)), 409, "DUPLICATE_OPEN_REQUEST");
+    expect(res.body.error.message).toBe(
+      `You already have an open request for HC-SR04 ultrasonic sensor (Request #${first.body.id}).`,
+    );
+    expect(await prisma.borrowRequest.count({ where: { borrowerId: b2.id } })).toBe(1);
+    expect((await prisma.borrowRequest.findUniqueOrThrow({ where: { id: first.body.id } })).status).toBe(
+      RequestStatus.PENDING,
+    );
+  });
 });
 
 describe("TEST-12 (AC-12): the owner cannot be chosen by the client", () => {
