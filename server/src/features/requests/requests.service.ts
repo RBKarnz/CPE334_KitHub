@@ -51,7 +51,7 @@ export function requestsService(prisma: PrismaClient) {
         });
         const availableCount = await tx.unit.count({ where: { itemTypeId, status: UnitStatus.AVAILABLE } });
 
-        const violation = requestRuleViolation({ hasOpenRequest: false, availableCount, quantity });
+        const violation = requestRuleViolation({ hasOpenRequest: openRequest !== null, availableCount, quantity });
         if (violation === "DUPLICATE_OPEN_REQUEST")
           throw new ConflictError(
             violation,

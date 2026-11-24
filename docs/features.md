@@ -2,8 +2,8 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.8 |
-| Date | 2026-11-07 |
+| Version | 1.9 |
+| Date | 2026-11-24 |
 | Source requirements | `docs/srs.md` v1.3 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
 | Traceability | `docs/traceability.md` |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
@@ -16,6 +16,7 @@
 - Sprint 1 features list their planned acceptance criteria (`AC-xx`) and tests (`TEST-xx`). Their contracts (#14, #15, #16) adopt these IDs; any change is recorded in the contract's version history and in section 5 of `docs/traceability.md`.
 - Sprint 2 and Sprint 3 features have a sprint allocation now. Their AC and tests are written in their contracts before implementation.
 - **ID numbering.** AC-n is verified by TEST-n, and each number is used once across AC and TEST. A number may hold a test with no AC of the same number: the system checks TEST-27 to TEST-32 and TEST-53, and supporting tests such as a unit test of a domain function that serves AC numbered elsewhere. A number never holds an AC whose TEST-n verifies something else. Sprint 1 contracts written in parallel take fixed blocks: F-02 (#15) adds AC and tests from 33 to 40, F-03 (#16) uses 41 to 49 for its AC and 50 to 52 for supporting tests. Every later addition, including an F-02 addition that does not fit its block, takes the next free number above the highest AC or TEST on `staging` and claims it in its PR description.
+- **Regression tests for UAT findings.** A test added for a UAT finding that checks an existing AC again takes that AC's TEST number with a letter suffix, for example TEST-11b for #68 (section 4.6). It verifies the same AC as TEST-n, so it takes no new number and sits next to the test it extends; the finding's Issue is in its name. A letter in parentheses, such as TEST-41 (b), still names a case of one test, not a separate test.
 
 ## 2. Features
 
@@ -80,7 +81,7 @@ Test levels: **Unit** (domain logic), **API** (HTTP + database), **Integration**
 | AC-08 | A signed-in user sees categories, their item types and the available unit count of each | FR-04 | TEST-08 | API |
 | AC-09 | A Borrower requests one unit of an item type with available units; the request is stored as `PENDING` and its owner is the signed-in Borrower | FR-07, BR-05 | TEST-09 | API |
 | AC-10 | A request for an item type with 0 available units is rejected and nothing is stored | BR-01 | TEST-10 | Unit + API |
-| AC-11 | A Borrower with an open request for an item type cannot create a second request for the same item type | BR-04 | TEST-11 | Unit + API |
+| AC-11 | A Borrower with an open request for an item type cannot create a second request for the same item type | BR-04 | TEST-11, TEST-11b (#68) | Unit + API |
 | AC-12 | A request that names another Borrower as its owner is rejected | BR-05 | TEST-12 | API |
 | AC-13 | A Borrower's request list contains only their own requests, each with its lines, state and creation time, and they can open each one to see its details | FR-08 | TEST-13 | API |
 | AC-14 | A Borrower who opens another Borrower's request by ID is rejected and receives none of its fields | BR-05, NFR-02 | TEST-14 | API |
@@ -223,7 +224,7 @@ These are `npm test` and `npm run test:e2e` with a JSON report added; the report
 | AC-08 | TEST-08 | `server/tests/api/catalog.test.ts` | "TEST-08: both roles get categories and item types … with AVAILABLE counts and no unit data", "TEST-08: any query parameter is rejected …" | Pass (2) |
 | AC-09 | TEST-09; TEST-30 | `server/tests/api/requests-create.test.ts`; `e2e/journey.spec.ts` | "TEST-09: 201 PENDING, owned by the signed-in Borrower, units unchanged"; "TEST-30" | Pass (1 + 1) |
 | AC-10 | TEST-10 | `server/tests/api/requests-create.test.ts`, `server/tests/unit/request-rules.test.ts` | "TEST-10: 409 ITEM_TYPE_UNAVAILABLE and nothing stored", "TEST-10 (unit)" | Pass (2) |
-| AC-11 | TEST-11; TEST-31 | `server/tests/api/requests-create.test.ts`, `server/tests/unit/request-rules.test.ts`; `e2e/rejection.spec.ts` | "TEST-11: an existing PENDING request …", "… APPROVED request …", "TEST-11 (unit)"; "TEST-31" | Pass (3 + 1) |
+| AC-11 | TEST-11; TEST-31 | `server/tests/api/requests-create.test.ts`, `server/tests/unit/request-rules.test.ts`; `e2e/rejection.spec.ts` | "TEST-11: an existing PENDING request …", "… APPROVED request …", "TEST-11 (unit)"; "TEST-31" | Pass (3 + 1). TEST-11b (#68, PR #69) was added after this commit; its result is in section 4.6 |
 | AC-12 | TEST-12 | `server/tests/api/requests-create.test.ts` | "TEST-12: a body with borrowerId is 400 …", "… with role …" | Pass (2) |
 | AC-13 | TEST-13 | `server/tests/api/requests-read.test.ts` | "TEST-13: the list has only their requests, and each detail matches its list entry" | Pass (1) |
 | AC-14 | TEST-14 | `server/tests/api/requests-access.test.ts` | "TEST-14: 404 with only the error object and none of the request's fields" | Pass (1) |
@@ -269,3 +270,24 @@ All 43 Sprint 1 AC pass. TEST-51 (a) and (b) are listed under every AC they serv
 | TEST-53 | SR-04 | `e2e/narrow-screens.spec.ts` | Pass (1) |
 
 Another 50 server and client tests carry no TEST ID: health and readiness, the migration's constraints, the seed, the error handler and validation middleware, the test-database guard, the F-01 sign-in screens, and extra cases for the checkout dialog and the request detail. All of them pass. The manual checks MT-01 to MT-17 in `docs/sprints/sprint-1/manual-test-guide.md` are manual and are not counted here.
+
+### 4.6 Lab 6 Part D: UAT finding #68 and its correction (#66, PR #69)
+
+LECTRA (TH-051) found no defect in the Sprint 1 release (`55d3f55`), so the team followed the instructor's "no UAT defects" procedure (#66): exercise commit `a964d8e` (PR #67, merged into `staging` as `f5aa46e`) stopped `requests.service.ts` from passing the open-request check to `requestRuleViolation`. LECTRA tested `f5aa46e` independently and reported #68 (UAT-02 step 3, Major): `borrower2` requested HC-SR04 ultrasonic sensor twice while the first request was Pending, and the second request was stored (`201`, "Request #3 submitted.").
+
+PR #69 adds TEST-11b (AC-11, F-02 contract v1.3 section 8.2), which follows the report through the API, and restores the original line exactly, a clean revert of `a964d8e`. `git diff 55d3f55 -- server/src client/src` is empty after the fix. All runs on Windows 11 against `kithub_test` (PostgreSQL 16 in Docker).
+
+| Commit | Command | Result |
+| --- | --- | --- |
+| RED `6fbcb53` (test only) | `npm test -- tests/api/requests-create.test.ts tests/api/requests-concurrency.test.ts` in `server/` | 2 files failed; 6 failed, 13 passed (19). TEST-11 (PENDING, APPROVED), TEST-11b and TEST-36 get `201` instead of `409`; TEST-38 gets `ITEM_TYPE_UNAVAILABLE` instead of `DUPLICATE_OPEN_REQUEST`; TEST-37 gets `[201, 201]` instead of `[201, 409]` |
+| RED `6fbcb53` | `npm run test:e2e` | 1 failed, 3 passed. TEST-31 fails because the BR-04 alert is not shown, the UI path LECTRA used |
+| GREEN `d9fab1e` | Same server command | 2 files passed; 19 passed (19) |
+| GREEN `d9fab1e` | `npm run typecheck` and `npm test` in `server/` | No errors; 26 files, 161 passed, 0 failed, 0 skipped (160 + TEST-11b) |
+| GREEN `d9fab1e` | `npm test` in `client/` | 5 files, 40 passed, 0 failed, 0 skipped |
+| GREEN `d9fab1e` | `npm run test:e2e` | 4 passed, 0 failed, 0 skipped (TEST-30, TEST-31, TEST-32, TEST-53) |
+
+| AC | Test | Test file | Test name | Result on `d9fab1e` |
+| --- | --- | --- | --- | --- |
+| AC-11 | TEST-11b | `server/tests/api/requests-create.test.ts` | "TEST-11b (UAT finding #68): a second request for the same item type through the API is 409 and stores nothing" | Pass (1) |
+
+Evidence EV-D-01 (RED), EV-D-02 (GREEN) and EV-D-03 (regression) are in the Lab 6 report. The deployed release and LECTRA's retest of UAT-02 are recorded in #68.

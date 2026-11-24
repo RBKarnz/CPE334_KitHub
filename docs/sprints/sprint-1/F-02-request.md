@@ -7,9 +7,9 @@
 | Feature | F-02 Browse catalog and borrow request |
 | Sprint | 1 |
 | Issue | #15 (contract), #18 (implementation) |
-| Version | 1.2 |
+| Version | 1.3 |
 | Status | Agreed (PR #30 merged into `staging`); implemented in #18 (PR #32) |
-| Date | 2026-11-07 |
+| Date | 2026-11-24 |
 | Authors | Teerakarn Noiruksa (67070501062) |
 | Baseline | [SRS v1.2](../../srs.md), [System-Level SDS v1.1](../../system-sds.md), [Feature inventory](../../features.md) section 4.2, [Sprint plan v1.2](../plan.md), [Contract F-01 v1.2](F-01-auth.md) |
 
@@ -20,6 +20,7 @@
 | 1.0 | 2026-11-06 | Teerakarn Noiruksa | First contract. Adopts AC-08 to AC-17 and TEST-08 to TEST-17 from `docs/features.md` 4.2; adds AC-33 to AC-40 and TEST-33 to TEST-40 in the block reserved for F-02; decisions F02-D1 to F02-D7; answers the F-03 assumptions F02-A1 to F02-A7 | Part E: contract before implementation |
 | 1.1 | 2026-11-06 | Teerakarn Noiruksa | AC-39, TEST-14 and TEST-39 compare the `404` form (same `code` and keys, message "Request <id> does not exist." with the requested ID) instead of equal bodies; TEST-37 resets state per iteration; TEST-38 marked **TDD**; DoD path is a link now that #28 is merged | PR #30 review |
 | 1.2 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | Status (1) reads "Agreed (PR #30 merged into `staging`); implemented in #18 (PR #32)" instead of "Proposed". Header only: no behavior, AC or TEST change | The contract was merged and implemented; matches the F-03 status line (PR #37 review) |
+| 1.3 | 2026-11-24 | Methipat Mansap | Section 8.2 adds TEST-11b for AC-11: the UAT finding #68 path through the API (`borrower2`, HC-SR04 ultrasonic sensor, a first request that is `PENDING`, then a second request). No AC or behavior change; TEST-11 is unchanged | Lab 6 Part D: regression test for UAT finding #68 (#66, PR #69) |
 
 A change after this version is merged gets a new row here, and an AC or TEST change is also recorded in `docs/traceability.md` section 5. AC and TEST IDs are never reused for a different meaning.
 
@@ -343,6 +344,7 @@ Numbers 33 to 40 are the block reserved for F-02 (`docs/features.md` section 1, 
 | TEST-09 | AC-09 | API | A has 2 `AVAILABLE` units; B1 signed in | `POST /api/requests` with `{ lines: [ { itemTypeId: A, quantity: 1 } ] }` | `201`; body `status` `PENDING`, `borrower.id` = B1, one line for A with quantity 1, `dueAt` null, `loans` `[]`; one new `borrow_requests` row with `borrowerId` = B1; unit states unchanged | `server/tests/api/requests-create.test.ts` |
 | TEST-10 | AC-10 | Unit + API | Unit: `requestRuleViolation` with `availableCount` 0 and 1. API: O has 0 available; B1 signed in | Unit: call the rule. API: `POST /api/requests` for O | Unit: 0 gives `ITEM_TYPE_UNAVAILABLE`, 1 gives none. API: `409 ITEM_TYPE_UNAVAILABLE`, message "Oscilloscope has no available units."; nothing stored. **TDD** | `server/tests/unit/request-rules.test.ts`, `server/tests/api/requests-create.test.ts` |
 | TEST-11 | AC-11 | Unit + API | Unit: `hasOpenRequest` true and false. API: B1 has a `PENDING` request for A; a second case with an `APPROVED` request for A | Unit: call the rule. API: `POST /api/requests` for A | Unit: true gives `DUPLICATE_OPEN_REQUEST`. API: `409 DUPLICATE_OPEN_REQUEST` in both cases; nothing stored. **TDD** | `server/tests/unit/request-rules.test.ts`, `server/tests/api/requests-create.test.ts` |
+| TEST-11b | AC-11 | API | UAT finding #68: item type "HC-SR04 ultrasonic sensor" with 6 `AVAILABLE` units; B2 signed in | `POST /api/requests` for it (`201`, `PENDING`), then the same call again | Second call: `409 DUPLICATE_OPEN_REQUEST`, message "You already have an open request for HC-SR04 ultrasonic sensor (Request #n)." with the first request's ID; nothing stored; B2 has exactly one request and it is still `PENDING`. **TDD** (fails on `6fbcb53`, passes on `d9fab1e`) | `server/tests/api/requests-create.test.ts` |
 | TEST-12 | AC-12 | API | B1 signed in | `POST /api/requests` with the valid line plus `borrowerId: B2`; a second case with `role: "CUSTODIAN"` | `400 VALIDATION_FAILED` with `details` naming `borrowerId` and `role`; nothing stored; no request owned by B2 exists | `server/tests/api/requests-create.test.ts` |
 | TEST-13 | AC-13 | API | B1 has requests R1 (`PENDING`) and R2 (`CHECKED_OUT`); B2 has R3 | `GET /api/requests` as B1, then `GET /api/requests/R1` and `/R2` | List has exactly R1 and R2, each with `lines` (item type and quantity), `status` and `createdAt`; each detail `200` with the same fields as its list entry | `server/tests/api/requests-read.test.ts` |
 | TEST-14 | AC-14 | API | B2 has R3; B1 signed in | `GET /api/requests/R3` as B1 | `404 NOT_FOUND`; the body has only the `error` object, with no field of R3; `code` is `NOT_FOUND` and the message is "Request <R3> does not exist." with R3's ID, the same form as for a request ID that does not exist (TEST-39) | `server/tests/api/requests-access.test.ts` |
