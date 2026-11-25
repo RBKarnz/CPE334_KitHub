@@ -20,7 +20,7 @@
 | Version | Date | Author | Change |
 | --- | --- | --- | --- |
 | 1.0 | 2026-11-25 | Teerakarn Noiruksa | First contract: AC-80 to AC-89, TEST-80 to TEST-89, decisions F06-D1 to F06-D7 |
-| 1.1 | 2026-11-25 | Teerakarn Noiruksa | Review of PR #81: `/requests` is one route scoped by role (My requests for a Borrower, All requests for a Custodian, F06-D8), not a Custodian-only route; `decidedBy` is in the Custodian view only (SDS 4.4, as F03-D7), a Borrower sees `decidedAt` and `rejectionReason`; 3.7 corrected: approve then cancel both succeed (`APPROVED` → `CANCELLED`, FR-12), only reject and cancel have one winner; 8.1 names the snapshot helper file. Also aligned with F-02/F-05: path `id` 1 to 2 147 483 647 and the 404 text "Request 999 does not exist." |
+| 1.1 | 2026-11-25 | Teerakarn Noiruksa | Review of PR #81: `/requests` is one route scoped by role (My requests for a Borrower, All requests for a Custodian, F06-D8), not a Custodian-only route; `decidedBy` is in the Custodian view only (SDS 4.4, as F03-D7), a Borrower sees `decidedAt` and `rejectionReason`; 3.7 corrected: approve then cancel both succeed (`APPROVED` → `CANCELLED`, FR-12), only reject and cancel have one winner; 8.1 names the snapshot helper file. Also aligned with F-02/F-05: path `id` 1 to 2 147 483 647 and the 404 text "Request 999 does not exist."; 3.5: `415` comes first (`requireJson` runs before `authenticate`), as F-07 and F-08 |
 
 Changes after approval get a new version row with the reason. AC and TEST IDs are never reused for a different meaning.
 
@@ -100,7 +100,7 @@ No unit or loan changes: approval reserves nothing in Sprint 2 (reservation is B
 
 ### 3.5 Check order (approve and reject)
 
-`401` (no session) → `403` (not a Custodian) → `415` → `400` (path, then body) → transaction: `404` (request does not exist) → `409 INVALID_STATE` (not `PENDING`). The same order as F-03 3.7, so tests can rely on it.
+`415` (no `Content-Type: application/json`) → `401` (no session) → `403` (not a Custodian) → `400` (path, then body) → transaction: `404` (request does not exist) → `409 INVALID_STATE` (not `PENDING`). `415` comes first because `requireJson` runs on the whole `/api` router before `authenticate` (`server/src/app.ts`); the rest is the order of F-03 3.7, so tests can rely on it.
 
 ### 3.6 History entries
 
