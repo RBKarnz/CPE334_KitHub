@@ -15,7 +15,8 @@ beforeEach(async () => {
   await resetDb(prisma);
 });
 
-const LOAN_KEYS = ["checkedOutAt", "dueAt", "id", "itemType", "request", "returnedAt", "status", "unit"];
+// F-08 5.3 adds returnCondition to every loan, and returnedBy to the Custodian view.
+const LOAN_KEYS = ["checkedOutAt", "dueAt", "id", "itemType", "request", "returnCondition", "returnedAt", "status", "unit"];
 
 /** Borrower B: 2 active loans (due 3 Dec and 7 Dec) and 1 returned; Borrower B2: 1 active loan. */
 async function world() {
@@ -80,7 +81,7 @@ describe("TEST-99 (AC-99): a Custodian's loans", () => {
     const active = await request(app).get("/api/loans").set("Cookie", cookie);
     expect(active.status).toBe(200);
     expect(active.body.items.map((l: { id: number }) => l.id)).toEqual([s.early.id, s.other.id, s.late.id]);
-    for (const item of active.body.items) expect(Object.keys(item).sort()).toEqual([...LOAN_KEYS, "borrower"].sort());
+    for (const item of active.body.items) expect(Object.keys(item).sort()).toEqual([...LOAN_KEYS, "borrower", "returnedBy"].sort());
     expect(active.body.items[1].borrower).toEqual({ id: s.b2.id, username: "borrower2", displayName: "Borrower Two" });
 
     const returned = await request(app).get("/api/loans?status=RETURNED").set("Cookie", cookie);
