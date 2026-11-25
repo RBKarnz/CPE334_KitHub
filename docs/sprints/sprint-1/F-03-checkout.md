@@ -6,12 +6,12 @@
 | --- | --- |
 | Feature | F-03 Checkout and active loan |
 | Sprint | 1 (due 2026-11-08) |
-| Version | 1.2 |
-| Status | Approved for implementation (PR #28 merged into `staging`); implemented in #19 |
-| Date | 2026-11-06 |
+| Version | 1.3 |
+| Status | v1.2 implemented in #19 and accepted in Lab 6 (`495142e`). v1.3 (change request #71) is under review; its code starts only after this version is merged |
+| Date | 2026-11-25 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Baseline | [SRS v1.2](../../srs.md), [System-Level SDS v1.1](../../system-sds.md), [Feature inventory](../../features.md), [Traceability](../../traceability.md), [Three-sprint plan v1.2](../plan.md) |
-| Issues | #16 this contract; #19 implementation; #20 end-to-end journey test |
+| Issues | #16 this contract; #19 implementation; #20 end-to-end journey test; #71 change request (due date on a business day at 17:00, Lab 7) |
 | Definition of Done | [Product Definition of Done](definition-of-done.md) and section 4.9 of this contract |
 
 ### Revision history
@@ -21,6 +21,7 @@
 | 1.0 | 2026-11-06 | Methipat Mansap | First contract. Adopts AC-18 to AC-26 and TEST-18 to TEST-26 from `docs/features.md` 4.3; adds AC-41 to AC-49 and TEST-41 to TEST-49; decisions F03-D1 to F03-D8 |
 | 1.1 | 2026-11-06 | Methipat Mansap | Review of PR #28. TEST-n now verifies AC-n for AC-41 to AC-49 (old TEST-42 and TEST-44 split; the race, unit list and dialog tests renumbered TEST-47 to TEST-49); the supporting unit tests became TEST-50 (`computeDueAt`) and TEST-51 (transitions); new TEST-52 checks that a unique violation on the loan insert becomes `409 UNIT_NOT_AVAILABLE` (3.6 row 15, 3.9). After a 0-row conditional update the service re-reads the request or unit to build the `409` (3.1, 3.7, 3.9). TEST-24 sends a JSON body. F-01 contract v1.2 (#27) is merged and names TEST-41 (b) for the real-endpoint cases of AC-06, as here |
 | 1.2 | 2026-11-06 | Methipat Mansap | Header only, found while starting #19: Version and Status were not updated when v1.1 was merged. Sections 2.2 and 2.4 still describe the state before F-02; the F-02 contract (section 3.6) confirmed F02-A1 to F02-A7 with no change. No design, AC or test change |
+| 1.3 | 2026-11-25 | Teerakarn Noiruksa | Change request #71 (Lab 7), written before any code: the due date is now 17:00 ICT on a business day with a 16:00 checkout cutoff (D-21, section 3.4; the old rule is kept there for reference). New preview endpoint `GET /api/item-types/:id/due-date-preview` (5.5) and preview line in the checkout dialog (4.3). AC-19 wording, TEST-19, TEST-49 and TEST-50 expected values revised for the new rule (the old values were correct for v1.2); new AC-54 to AC-60 with TEST-54 to TEST-60 (7.3, 8.2). Examples in 4.3, 4.4, 5.3 and 5.4 use the new due time. No schema change. Impact analysis: `docs/labs/lab-07/change-71.md`. Review of PR #72: RED and fake-clock rules in 8.1; MT-12, MT-13 and plan v1.6 also follow D-21; F03-D5 rationale no longer says `dueAt − checkedOutAt = maxLoanDays × 24 h` |
 
 Changes after approval get a new version row with the reason. AC and TEST IDs are never reused for a different meaning.
 
@@ -35,7 +36,7 @@ Changes after approval get a new version row with the reason. AC and TEST IDs ar
 | Business rules (through access rules) | BR-17 | Only Custodians check out; a Borrower cannot (SRS 3.1) |
 | Non-functional | NFR-02, NFR-05, NFR-09, NFR-12 | Role check on every F-03 endpoint; concurrent checkouts; history entries; list states of the pending list |
 | Non-functional (through access rules) | NFR-01 | Every F-03 endpoint rejects a call without a session |
-| SRS decisions | D-16, D-17 | Sprint 1 due date; no available unit means checkout is rejected and the request stays `PENDING` |
+| SRS decisions | D-16, D-17, D-21 | Sprint 1 loan length; no available unit means checkout is rejected and the request stays `PENDING`; due time 17:00 ICT on a business day with a 16:00 cutoff (#71) |
 | SDS design decisions | DD-04, DD-06, DD-07, DD-10, DD-11 | Conditional updates plus partial unique index; `404` for records outside scope; append-only history; `409` with rule codes; `units` array body |
 
 ### 2.2 Depends on
@@ -83,7 +84,7 @@ From the Custodian's view, with the server sequence from SDS 4.7:
 
 1. The Custodian signs in and lands on **Pending requests** (`/pending`). The UI calls `GET /api/requests?status=PENDING` and shows every `PENDING` request, oldest first.
 2. The Custodian chooses **Check out** on a row. A dialog opens and the UI calls `GET /api/item-types/:id/units?status=AVAILABLE` for the line's item type.
-3. The dialog lists the `AVAILABLE` units by asset tag. If the list is empty, the dialog says so and checkout cannot be submitted; the request stays `PENDING` (D-17).
+3. The dialog lists the `AVAILABLE` units by asset tag and, from v1.3, shows the due date a checkout now would get, from `GET /api/item-types/:id/due-date-preview` (5.5). If the list is empty, the dialog says so and checkout cannot be submitted; the request stays `PENDING` (D-17).
 4. The Custodian selects a unit and confirms. The UI calls `POST /api/requests/:id/checkout` with `{ "units": [ { "lineId", "unitId" } ] }`.
 5. The server runs `authenticate`, `requireRole("CUSTODIAN")` and the strict body schema, then opens one transaction:
    1. Reads the request with its lines, and the chosen unit. A missing request or unit gives `404 NOT_FOUND`. A `lineId` that is not a line of this request gives `400 VALIDATION_FAILED`. The item type used next is the line's `itemTypeId` from the database, never a value from the client.
@@ -115,21 +116,44 @@ No other transition is allowed by F-03. In particular a request in any state oth
 | BR-02 unit `AVAILABLE` and of the line's item type | Dialog lists only `AVAILABLE` units of the line's item type | - | Conditional unit update on `id`, `itemTypeId` and `status = 'AVAILABLE'`; on 0 rows, picks the code (3.6) | `assertTransition("UNIT", "AVAILABLE", "ON_LOAN")` | FK `loans.unitId` |
 | BR-03 one `ACTIVE` loan per unit | Submit disabled while running | - | Conditional unit update; lock order request then unit | - | Partial unique index `loans_one_active_per_unit` (backstop) |
 | BR-16 history | - | - | Three entries in the same transaction (3.10) | - | Append-only trigger; CHECK on actor and subject |
-| D-16 due date | Shows `dueAt` from the response | - | Calls `computeDueAt` with the line's item type `maxLoanDays` | `computeDueAt(checkedOutAt, maxLoanDays)` | `loans.dueAt` not null |
+| D-16, D-21 due date | Shows the preview before confirming and `dueAt` from the response after | `requireRole("CUSTODIAN")` on the preview endpoint | Calls `computeDueAt` with `now` and the line's item type `maxLoanDays`; the preview calls it the same way | `computeDueAt(checkedOutAt, maxLoanDays)` (3.4) | `loans.dueAt` not null |
 | D-17 no available unit | Empty unit list: message and checkout disabled | - | Every unit of the item type fails the conditional update → `409 UNIT_NOT_AVAILABLE`; rollback keeps the request `PENDING` | - | - |
 | Request is `PENDING` (SRS 8.2) | Only `PENDING` requests are listed | - | Conditional request update → `409 INVALID_STATE` | `assertTransition("REQUEST", "PENDING", "CHECKED_OUT")` | - |
 | `lineId` belongs to the request (SDS 4.7, 6.4) | Sends the line ID it received | - | Compares each `lineId` with the request's lines → `400 VALIDATION_FAILED` | - | FK `loans.requestLineId` |
 
-### 3.4 Due-date rule (D-16)
+### 3.4 Due-date rule (D-16, D-21)
+
+**Old rule (v1.2, accepted Sprint 1 baseline `v0.1.0` and release `495142e`), replaced by #71:**
 
 ```text
-dueAt = checkedOutAt + maxLoanDays × 24 h
+dueAt = checkedOutAt + maxLoanDays × 24 h        (same clock time as the checkout)
 ```
 
-- `maxLoanDays` is `item_types.maxLoanDays` of the line's item type, read in the transaction.
-- Whole days are added as 24-hour periods (SDS 4.5). Asia/Bangkok has no daylight saving time, so the due date is the same clock time on the calendar day `maxLoanDays` later.
-- Pure function: `computeDueAt(checkedOutAt: Date, maxLoanDays: number): Date` in `server/src/domain/due-date.ts`. It returns `new Date(checkedOutAt.getTime() + maxLoanDays * 86_400_000)` and throws a `RangeError` when `maxLoanDays` is not an integer ≥ 1. The database CHECK already prevents such a value; the guard makes the unit test of the boundary meaningful.
-- Example: checkout at `2026-11-06T07:30:00.000Z` (6 Nov 2026, 14:30 Bangkok) of an item type with 14 days gives `2026-11-20T07:30:00.000Z` (20 Nov 2026, 14:30). With 3 days (instruments) it gives `2026-11-09T07:30:00.000Z`.
+**New rule (v1.3, #71).** All dates and times are Asia/Bangkok (ICT, UTC+7). A business day is Monday to Friday; Saturday and Sunday are the only non-business days (no holiday calendar).
+
+```text
+startDay = checkout date                     if it is a business day and the checkout time is before 16:00:00
+         = next business day after it        otherwise (at or after 16:00:00, or on Saturday or Sunday)
+dueDay   = startDay + maxLoanDays calendar days, then moved to the following Monday if it is a Saturday or Sunday
+dueAt    = dueDay at 17:00:00.000 ICT        (stored as dueDay T10:00:00.000Z)
+```
+
+- `maxLoanDays` is still `item_types.maxLoanDays` of the line's item type, read in the transaction (D-08, D-16). Only the start day and the due time change.
+- Pure function, same signature as v1.2: `computeDueAt(checkedOutAt: Date, maxLoanDays: number): Date` in `server/src/domain/due-date.ts`. It works on the ICT calendar date of `checkedOutAt` (UTC + 7 h, then the UTC date fields), so the result does not depend on the server's time zone. It still throws a `RangeError` when `maxLoanDays` is not an integer ≥ 1, and does not modify its input.
+- The checkout service and the preview endpoint (5.5) both call it with their own `now`; nothing else computes a due date.
+- Loans created before the release keep their stored `dueAt`; nothing is recalculated and no migration is needed (AC-59).
+- Examples (checked with code; weekdays of 2026):
+
+| Checkout (ICT) | `maxLoanDays` | `checkedOutAt` (UTC) | `dueAt` (UTC) | `dueAt` (ICT) |
+| --- | --- | --- | --- | --- |
+| Fri 6 Nov 14:30 | 14 | `2026-11-06T07:30:00.000Z` | `2026-11-20T10:00:00.000Z` | Fri 20 Nov 17:00 |
+| Fri 6 Nov 14:30 | 3 | `2026-11-06T07:30:00.000Z` | `2026-11-09T10:00:00.000Z` | Mon 9 Nov 17:00 |
+| Wed 25 Nov 15:59:59 | 14 | `2026-11-25T08:59:59.000Z` | `2026-12-09T10:00:00.000Z` | Wed 9 Dec 17:00 |
+| Wed 25 Nov 16:00:00 | 14 | `2026-11-25T09:00:00.000Z` | `2026-12-10T10:00:00.000Z` | Thu 10 Dec 17:00 |
+| Wed 25 Nov 10:00 | 3 | `2026-11-25T03:00:00.000Z` | `2026-11-30T10:00:00.000Z` | Sat 28 Nov → Mon 30 Nov 17:00 |
+| Sat 28 Nov 10:00 | 3 | `2026-11-28T03:00:00.000Z` | `2026-12-03T10:00:00.000Z` | start Mon 30 Nov → Thu 3 Dec 17:00 |
+| Fri 4 Dec 16:00:00 | 3 | `2026-12-04T09:00:00.000Z` | `2026-12-10T10:00:00.000Z` | start Mon 7 Dec → Thu 10 Dec 17:00 |
+
 - From Sprint 2 the due date uses the request's `loanDays` (BR-08, F-07); `computeDueAt` keeps its signature and receives the request's value instead.
 
 ### 3.5 Validation
@@ -253,7 +277,7 @@ A rejected checkout writes no entry, because the transaction is rolled back. No 
 | F03-D2 | For a Custodian, `GET /api/requests?status=PENDING` is ordered by `createdAt` ascending, then `id` ascending | Oldest first matches a counter queue: the request waiting longest is served first. The `id` tie-break makes the order stable for tests. The `(status, createdAt)` index (SDS 4.2) supports it |
 | F03-D3 | User-facing messages for each `409`: `INVALID_STATE`: "Request #12 cannot be checked out because it is CHECKED_OUT, not PENDING." `UNIT_WRONG_ITEM_TYPE`: "Unit KH-ESP-0001 is not a unit of Arduino Uno R3." `UNIT_NOT_AVAILABLE`: "Unit KH-ARD-0007 is not available for checkout." The UI shows the message as it is | Each message names the record and the reason, uses the state names shown on badges, and reveals nothing a Custodian cannot already see. The `UNIT_NOT_AVAILABLE` text is the SDS 6.5 example |
 | F03-D4 | When a unit is both of another item type and not `AVAILABLE`, the code is `UNIT_WRONG_ITEM_TYPE` | Choosing a unit of the wrong model is the more basic mistake: that unit can never be lent on this line, whatever its state |
-| F03-D5 | The service takes one timestamp `now` (`new Date()`) at the start of the transaction and uses it for `loans.checkedOutAt`, as the base of `dueAt`, and as `occurredAt` of all three history entries | One instant for one event. Tests can assert `dueAt − checkedOutAt = maxLoanDays × 24 h` exactly and that the history matches the loan |
+| F03-D5 | The service takes one timestamp `now` (`new Date()`) at the start of the transaction and uses it for `loans.checkedOutAt`, as the base of `dueAt`, and as `occurredAt` of all three history entries | One instant for one event. Tests can assert `dueAt = computeDueAt(checkedOutAt, maxLoanDays)` (or the worked values in 3.4) exactly and that the history matches the loan. v1.2 said `dueAt − checkedOutAt = maxLoanDays × 24 h`, which is no longer true under D-21 (#71) |
 | F03-D6 | Checkout returns `201` with the full request in the same shape as `GET /api/requests/:id` for a Custodian, including `dueAt` and the new loan in `lines[].loans` | SDS 6.3: a transition that creates a record returns `201` and the updated record. One shape for detail and checkout means one UI type and one test assertion helper. Loans sit under their line, so FR-17 (several units per line) adds entries, not fields (DD-11) |
 | F03-D7 | A loan shown to a Borrower has `id`, `status`, `unit { id, assetTag }`, `checkedOutAt` and `dueAt`, without `checkedOutBy`. A Custodian also sees `checkedOutBy { id, username, displayName }` | SDS 4.4 lets Custodians see users on requests and loans, but grants Borrowers only their own profile. The Borrower needs the asset tag and due date (SDS 5.1), not the staff member's account |
 | F03-D8 | `GET /api/item-types/:id/units` takes an optional `status`. Without it, every unit of the item type is returned. Items are ordered by `assetTag` ascending | The Sprint 1 UI only sends `AVAILABLE`, but Sprint 2 catalog management (F-09) lists every unit of an item type with the same endpoint. Asset tag order matches the labels on the shelf |
@@ -265,8 +289,8 @@ A rejected checkout writes no entry, because the transaction is rolled back. No 
 | Layer | Change |
 | --- | --- |
 | UI | New Pending requests page and checkout dialog; the request detail screen from F-02 shows loan fields |
-| API | New `GET /api/item-types/:id/units` and `POST /api/requests/:id/checkout`; F-03 relies on F-02's `GET /api/requests?status=PENDING` and adds `dueAt` and `lines[].loans` to the request representation if F-02 does not include them |
-| Domain | New `computeDueAt`; F-03 rows in the transition table |
+| API | New `GET /api/item-types/:id/units` and `POST /api/requests/:id/checkout`; F-03 relies on F-02's `GET /api/requests?status=PENDING` and adds `dueAt` and `lines[].loans` to the request representation if F-02 does not include them. v1.3 (#71): new `GET /api/item-types/:id/due-date-preview` (5.5) |
+| Domain | New `computeDueAt`; F-03 rows in the transition table. v1.3 (#71): `computeDueAt` implements the business-day rule of 3.4 with the same signature |
 | Database | No schema change and no migration (section 4.6) |
 
 ### 4.2 Pending requests screen (`/pending`)
@@ -298,6 +322,7 @@ States, through the shared `AsyncState` component (SDS 5.3, NFR-12, AC-25):
 | --- | --- |
 | Title and summary | "Check out Request #12", then "Borrower One (borrower1) · Arduino Uno R3" |
 | Unit list | On open, calls `GET /api/item-types/:id/units?status=AVAILABLE` for the line's item type and lists the units by asset tag as radio options, in the API order. While loading: "Loading…". On error: the message and "Try again" |
+| Due date preview (v1.3, #71) | On open, also calls `GET /api/item-types/:id/due-date-preview` for the line's item type and shows "Due if checked out now: Fri 20 Nov 2026, 17:00" under the summary (weekday, date and time in ICT). While loading: "Calculating due date…". On error: "Due date not available." and checkout stays possible, because the server computes `dueAt` again at checkout |
 | Selection | One unit. The confirm button is disabled until a unit is selected |
 | Confirmation | The confirm button names the request and the unit: "Check out KH-ARD-0007 for Request #12" (SDS 5.3 Confirmation). "Cancel" closes the dialog without a call. The dialog can be used and closed with the keyboard |
 | No unit available (D-17) | "No unit of Arduino Uno R3 is available. The request stays pending." The confirm button is disabled and no checkout call is sent |
@@ -306,7 +331,7 @@ States, through the shared `AsyncState` component (SDS 5.3, NFR-12, AC-25):
 | `409 INVALID_STATE` or `404 NOT_FOUND` | The API `message` as an alert; the pending list behind the dialog is fetched again, because the request has been handled or is gone |
 | `400 VALIDATION_FAILED` | The API `message` as an alert (the UI never sends such a body; this only guards against a defect) |
 | `401`, `403` | Shared behavior from SDS 5.3 (session ended, Forbidden message) |
-| Success | Dialog closes; a confirmation "Request #12 checked out: KH-ARD-0007, due 20 Nov 2026, 14:30" built from the response (`id`, `lines[0].loans[0].unit.assetTag`, `dueAt`); the pending list is fetched again and no longer contains the request |
+| Success | Dialog closes; a confirmation "Request #12 checked out: KH-ARD-0007, due 20 Nov 2026, 17:00" built from the response (`id`, `lines[0].loans[0].unit.assetTag`, `dueAt`); the pending list is fetched again and no longer contains the request. The confirmation always shows the stored `dueAt`, even if the 16:00 cutoff passed while the dialog was open |
 
 ### 4.4 Borrower side
 
@@ -314,7 +339,7 @@ The request detail screen (`/requests/:id`) belongs to F-02. F-03 adds, for a re
 
 | Field added | Source | Example |
 | --- | --- | --- |
-| Due date | `dueAt` | "Due 20 Nov 2026, 14:30" |
+| Due date | `dueAt` | "Due 20 Nov 2026, 17:00" |
 | Asset tag per loan, under its line | `lines[].loans[].unit.assetTag` | `KH-ARD-0007` |
 | Checked out time per loan | `lines[].loans[].checkedOutAt` | "Checked out 6 Nov 2026, 14:30" |
 
@@ -432,7 +457,7 @@ Response `201`:
   "id": 12,
   "status": "CHECKED_OUT",
   "createdAt": "2026-11-06T06:10:00.000Z",
-  "dueAt": "2026-11-20T07:30:00.000Z",
+  "dueAt": "2026-11-20T10:00:00.000Z",
   "borrower": { "id": 3, "username": "borrower1", "displayName": "Borrower One" },
   "lines": [
     {
@@ -445,7 +470,7 @@ Response `201`:
           "status": "ACTIVE",
           "unit": { "id": 7, "assetTag": "KH-ARD-0007" },
           "checkedOutAt": "2026-11-06T07:30:00.000Z",
-          "dueAt": "2026-11-20T07:30:00.000Z",
+          "dueAt": "2026-11-20T10:00:00.000Z",
           "checkedOutBy": { "id": 1, "username": "custodian1", "displayName": "Custodian One" }
         }
       ]
@@ -511,7 +536,7 @@ Borrower view of request #12 after checkout (only for its own Borrower; another 
   "id": 12,
   "status": "CHECKED_OUT",
   "createdAt": "2026-11-06T06:10:00.000Z",
-  "dueAt": "2026-11-20T07:30:00.000Z",
+  "dueAt": "2026-11-20T10:00:00.000Z",
   "lines": [
     {
       "id": 5,
@@ -523,7 +548,7 @@ Borrower view of request #12 after checkout (only for its own Borrower; another 
           "status": "ACTIVE",
           "unit": { "id": 7, "assetTag": "KH-ARD-0007" },
           "checkedOutAt": "2026-11-06T07:30:00.000Z",
-          "dueAt": "2026-11-20T07:30:00.000Z"
+          "dueAt": "2026-11-20T10:00:00.000Z"
         }
       ]
     }
@@ -532,6 +557,31 @@ Borrower view of request #12 after checkout (only for its own Borrower; another 
 ```
 
 Whether the Borrower view also carries `borrower` is F-02's choice (F02-A2).
+
+### 5.5 `GET /api/item-types/:id/due-date-preview` (v1.3, #71)
+
+| Aspect | Specification |
+| --- | --- |
+| Who | Custodian only. Borrower: `403`. No session: `401` |
+| Path | `id`: integer ≥ 1 |
+| Query | None. Any query field gives `400 VALIDATION_FAILED` |
+| Success | `200 { "itemTypeId", "maxLoanDays", "at", "dueAt" }`: `at` is the server time used, `dueAt` is `computeDueAt(at, maxLoanDays)` (3.4). Read only: nothing is written |
+| Order of checks | `401`, `403`, `400` (path and query), `404` (item type) |
+
+Example at `2026-11-06T07:30:00.000Z` (Fri 6 Nov 2026, 14:30 ICT): `GET /api/item-types/3/due-date-preview`
+
+```json
+{ "itemTypeId": 3, "maxLoanDays": 14, "at": "2026-11-06T07:30:00.000Z", "dueAt": "2026-11-20T10:00:00.000Z" }
+```
+
+| Status | Code | When |
+| --- | --- | --- |
+| `401` | `UNAUTHENTICATED` | No valid session |
+| `403` | `FORBIDDEN` | Caller is a Borrower |
+| `400` | `VALIDATION_FAILED` | `id` is not an integer ≥ 1; any query field |
+| `404` | `NOT_FOUND` | No item type with this `id`. Message: "Item type 99 does not exist." |
+
+The checkout (5.3) never trusts a due date from the client: it computes `dueAt` again with its own `now`. With the same time both values are equal (TEST-58 uses a fixed clock).
 
 ## 6. Data specification
 
@@ -579,7 +629,7 @@ Whether the Borrower view also carries `borrower` is F-02's choice (F02-A2).
 | AC | Expected outcome | Requirements |
 | --- | --- | --- |
 | AC-18 | A Custodian sees every `PENDING` request with its Borrower, line and creation time | FR-09 |
-| AC-19 | A Custodian checks out an `AVAILABLE` unit of the requested item type; one `ACTIVE` loan is created with due date = checkout time + the item type's maximum loan length, the unit becomes `ON_LOAN` and the request becomes `CHECKED_OUT` | FR-16 |
+| AC-19 | A Custodian checks out an `AVAILABLE` unit of the requested item type; one `ACTIVE` loan is created with the due date of section 3.4 (v1.3: 17:00 ICT on a business day, from the item type's maximum loan length; v1.2 said "checkout time + the item type's maximum loan length"), the unit becomes `ON_LOAN` and the request becomes `CHECKED_OUT` | FR-16, D-21 |
 | AC-20 | Checkout is rejected, no loan is created, the request stays `PENDING` and every unit keeps its state in both cases: (a) the chosen unit is not `AVAILABLE`; (b) no unit of the item type is `AVAILABLE` (D-17), so the unit list for the item type has no `AVAILABLE` unit and checkout with any of its units is rejected | FR-16, BR-02 |
 | AC-21 | Checkout with a unit of a different item type is rejected and no loan is created | BR-02 |
 | AC-22 | Two simultaneous checkouts of the same unit produce exactly one `ACTIVE` loan; the other checkout is rejected | BR-03, NFR-05 |
@@ -604,6 +654,20 @@ Whether the Borrower view also carries `borrower` is F-02's choice (F02-A2).
 
 A Borrower calling the unit list or checkout is AC-06 (F-01 contract, #14); its F-03 cases are in TEST-41.
 
+### 7.3 Added by change request #71 (v1.3)
+
+Block AC-54 to AC-60 claimed in #71 (next free numbers above TEST-53; Sprint 2 contracts start at 62).
+
+| AC | Expected outcome | Requirements |
+| --- | --- | --- |
+| AC-54 | A checkout on a business day before 16:00 ICT gets `dueAt` = checkout date + `maxLoanDays` at 17:00 ICT, when that date is a business day | FR-16, D-21 |
+| AC-55 | Cutoff boundary: a checkout at 15:59:59 ICT counts from the checkout date; at 16:00:00 ICT it counts from the next business day | FR-16, D-21 |
+| AC-56 | A due day that falls on Saturday or Sunday moves to the following Monday at 17:00 ICT | FR-16, D-21 |
+| AC-57 | A checkout on Saturday or Sunday counts from the following Monday | FR-16, D-21 |
+| AC-58 | Before confirming, the checkout dialog shows the due date that a checkout now would get, and with the same server time the stored `dueAt` equals it. The preview endpoint answers a Borrower with `403 FORBIDDEN`, a call without a session with `401 UNAUTHENTICATED`, an unknown item type with `404 NOT_FOUND`, and writes nothing | FR-16, D-21, NFR-01, NFR-02 |
+| AC-59 | Loans that existed before the change keep their stored `dueAt`; the change adds no migration and recalculates nothing | FR-16, D-21 |
+| AC-60 | The Borrower's request detail shows the stored `dueAt` in ICT ("Due 20 Nov 2026, 17:00") | FR-08, FR-16 |
+
 ## 8. Software Test Specification (STS)
 
 ### 8.1 Conventions
@@ -612,13 +676,16 @@ A Borrower calling the unit list or checkout is AC-06 (F-01 contract, #14); its 
 - Every test creates its own data through the #13 test helpers (F02-A7), never the demo seed: two Custodians, two Borrowers, item types "Arduino Uno R3" (`maxLoanDays` 14) and "ESP32 DevKitC" (14), "Digital multimeter" (3), with units in the states each case needs, and `PENDING` requests with one line.
 - "Unchanged" has the meaning from 3.6. The planned helper `snapshotCheckoutState()` reads the `loans` count, every request status, every unit status and the `history_entries` count; each rejection test compares the snapshot before and after the call.
 - **TDD** marks the tests for the BR-02, BR-03 and D-16 rules. For each, #19 first commits the test, runs it and keeps the failing output with that commit's SHA, then commits the implementation and keeps the passing output (Deliverable 1, Part E).
+- v1.3 (#71): tests that depend on the time of day fix the clock. API tests use `vi.useFakeTimers({ toFake: ["Date"] })` with `vi.setSystemTime(...)`, so only `Date` is faked and the database and HTTP timers run normally. The new and revised **TDD** tests (TEST-19, TEST-50, TEST-54 to TEST-58) are committed and run against the pre-change code first, and their failing output and commit are kept for Lab 7. TEST-60 and the TEST-49 (e) text only check how a stored `dueAt` is displayed, so they cannot fail on the old code; they are updated with the new example values. The end-to-end TEST-30 (#20) checks the due date against the real server clock, so its assertion changes from "14 × 24 h after checkout" to "17:00 ICT on a Monday to Friday, 14 to 17 calendar days after the ICT checkout date".
+- v1.3 RED rules (review of PR #72): a RED test must fail on an assertion, not on an import or compile error. UI tests that need the preview (TEST-58 (f), (g)) mock the API module with a `vi.mock` factory, so they do not import a preview function that does not exist yet; the API part of TEST-58 failing with `404` because the route is missing is a valid missing-behaviour failure.
+- v1.3 fake clock: `vi.useFakeTimers({ toFake: ["Date"] })` fakes JavaScript `Date` only. Columns filled by the database (`@default(now())`: `createdAt`, `history_entries.occurredAt`) still use the database clock, so tests do not compare them with `checkedOutAt` or `dueAt`.
 
 ### 8.2 Test cases
 
 | Test | AC | Level | Preconditions and input | Action | Expected result | Planned file |
 | --- | --- | --- | --- | --- | --- | --- |
 | TEST-18 | AC-18 | API | Borrower A has `PENDING` requests R1 (older) and R3 (newer); Borrower B has `PENDING` R2 (between them) and a `CHECKED_OUT` request R4. Signed in as Custodian | `GET /api/requests?status=PENDING` | `200`; `items` IDs are exactly `[R1, R2, R3]` in that order (F03-D2); R4 absent; each item has `borrower { id, username, displayName }` matching its owner, `lines[0] { id, itemType { id, name }, quantity: 1 }` and `createdAt` as an ISO string; no item contains `passwordHash` or a field outside the documented shape | `server/tests/api/pending-requests.test.ts` |
-| TEST-19 **TDD** | AC-19 | API | `PENDING` request R for "Arduino Uno R3" (`maxLoanDays` 14) with line L; unit U `AVAILABLE` of that item type. Signed in as Custodian C. Record `t0` before the call and `t1` after | `POST /api/requests/R/checkout` with `{ "units": [ { "lineId": L, "unitId": U } ] }` | `201`; body `status` `CHECKED_OUT`, `lines[0].loans` has one loan with `status` `ACTIVE`, `unit.id` U and its `assetTag`, `checkedOutBy.id` C, `checkedOutAt` within `[t0, t1]`, `dueAt − checkedOutAt` = 14 × 86 400 000 ms, top-level `dueAt` equal to the loan's. Database: R is `CHECKED_OUT`; U is `ON_LOAN`; exactly one `loans` row for L with `status` `ACTIVE`, `checkedOutById` C and the same `dueAt`; every other unit unchanged | `server/tests/api/checkout.test.ts` |
+| TEST-19 **TDD** | AC-19 | API | `PENDING` request R for "Arduino Uno R3" (`maxLoanDays` 14) with line L; unit U `AVAILABLE` of that item type. Signed in as Custodian C. v1.3: system time fixed at `2026-11-06T07:30:00.000Z` (Fri 14:30 ICT) | `POST /api/requests/R/checkout` with `{ "units": [ { "lineId": L, "unitId": U } ] }` | `201`; body `status` `CHECKED_OUT`, `lines[0].loans` has one loan with `status` `ACTIVE`, `unit.id` U and its `assetTag`, `checkedOutBy.id` C, `checkedOutAt` `2026-11-06T07:30:00.000Z`, `dueAt` `2026-11-20T10:00:00.000Z` (v1.2 expected `checkedOutAt` + 14 × 86 400 000 ms; revised by #71), top-level `dueAt` equal to the loan's. Database: R is `CHECKED_OUT`; U is `ON_LOAN`; exactly one `loans` row for L with `status` `ACTIVE`, `checkedOutById` C and the same `dueAt`; every other unit unchanged | `server/tests/api/checkout.test.ts` |
 | TEST-20 **TDD** | AC-20 | API | Item type T "Arduino Uno R3" with units U1 `ON_LOAN` (with an `ACTIVE` loan for another request), U2 `MAINTENANCE`; `PENDING` request R for T. Signed in as Custodian | (a) checkout R with U1; (b) checkout R with U2; (c) `GET /api/item-types/T/units?status=AVAILABLE`, then checkout R with U1 and with U2 | (a) `409 UNIT_NOT_AVAILABLE`, `details[0]` `{ field: "units[0].unitId", issue: "Unit is ON_LOAN" }`; (b) `409 UNIT_NOT_AVAILABLE`, issue "Unit is MAINTENANCE"; (c) `200 { "items": [] }`, and both checkouts `409 UNIT_NOT_AVAILABLE`. After each call: Unchanged; R is `PENDING`; U1 `ON_LOAN` with its one loan, U2 `MAINTENANCE` | `server/tests/api/checkout.test.ts` |
 | TEST-21 **TDD** | AC-21 | API | `PENDING` request R for "Arduino Uno R3"; unit E1 of "ESP32 DevKitC" `AVAILABLE`; unit E2 of "ESP32 DevKitC" `ON_LOAN`. Signed in as Custodian | (a) checkout R with E1; (b) checkout R with E2 | (a) and (b) `409 UNIT_WRONG_ITEM_TYPE` with `details[0].field` `units[0].unitId` (F03-D4 for (b)). Unchanged: no loan, R `PENDING`, E1 `AVAILABLE`, E2 `ON_LOAN` | `server/tests/api/checkout.test.ts` |
 | TEST-22 **TDD** | AC-22 | Integration | (a) Unit U `AVAILABLE`; two `PENDING` requests R1 and R2 (two Borrowers) for U's item type; Custodians C1 and C2 signed in on two agents. (b) Unit V with an `ACTIVE` loan | (a) `Promise.all` of C1 checkout R1 with U and C2 checkout R2 with U; repeated 5 rounds with fresh data. (b) Insert a second `ACTIVE` loan for V directly with `prisma.loan.create` | (a) Each round: exactly one `201` and one `409 UNIT_NOT_AVAILABLE` whose `details[0].issue` is "Unit is ON_LOAN" (from the re-read, 3.7); exactly one `ACTIVE` loan for U; U `ON_LOAN`; the winning request `CHECKED_OUT`, the losing request `PENDING`; history entries only for the winner (3 rows). (b) The insert fails with Prisma `P2002` on `loans_one_active_per_unit`; still one `ACTIVE` loan for V | `server/tests/api/checkout-concurrency.test.ts` |
@@ -634,8 +701,15 @@ A Borrower calling the unit list or checkout is AC-06 (F-01 contract, #14); its 
 | TEST-46 | AC-46 | API | `PENDING` requests R (line L) and R2 (line L2); no unit with ID 999 999. Signed in as Custodian | (a) checkout R with `{ lineId: L, unitId: 999999 }`; (b) checkout R with `{ lineId: L2, unitId: 999999 }` | (a) `404 NOT_FOUND`, message "Unit 999999 does not exist.", `details[0]` `{ field: "units[0].unitId", issue: "Unit does not exist" }`; (b) the same `404` (unit existence is checked before `lineId`, 3.7). After each: Unchanged; R and R2 `PENDING` | `server/tests/api/checkout.test.ts` |
 | TEST-47 | AC-47 | Integration | `PENDING` request R with line L; units U1 and U2 `AVAILABLE` of its item type; Custodians C1 and C2 on two agents | `Promise.all` of C1 checkout R with U1 and C2 checkout R with U2; repeated 5 rounds with fresh data | Each round: one `201` and one `409 INVALID_STATE` whose message says the request is `CHECKED_OUT` (from the re-read, 3.7); exactly one loan for L; R `CHECKED_OUT`; exactly one of U1 and U2 `ON_LOAN` (the one in the `201` body), the other `AVAILABLE`; exactly 3 new history entries | `server/tests/api/checkout-concurrency.test.ts` |
 | TEST-48 | AC-48 | API | Item type T with units `KH-ARD-0003` `AVAILABLE`, `KH-ARD-0001` `AVAILABLE`, `KH-ARD-0002` `ON_LOAN`, `KH-ARD-0004` `MAINTENANCE`; item type T2 with an `AVAILABLE` unit. Signed in as Custodian | (a) `GET /api/item-types/T/units?status=AVAILABLE`; (b) `GET /api/item-types/T/units`; (c) `GET /api/item-types/999999/units?status=AVAILABLE`; (d) `?status=BROKEN`; (e) `?colour=red`; (f) `/api/item-types/abc/units` | (a) `200`, `items` asset tags exactly `["KH-ARD-0001", "KH-ARD-0003"]`, each item exactly `{ id, assetTag, status: "AVAILABLE" }`, no T2 unit; (b) `200`, all four T units in asset-tag order; (c) `404 NOT_FOUND`; (d), (e), (f) `400 VALIDATION_FAILED` with `details` naming `status`, `colour`, `id` | `server/tests/api/units.test.ts` |
-| TEST-49 | AC-49 | UI | `CheckoutDialog` for request #12 (Borrower One, line 5, "Arduino Uno R3", item type 3) with the units and checkout API modules mocked | (a) units mock resolves `KH-ARD-0006`, `KH-ARD-0007`; (b) select `KH-ARD-0007`, click confirm twice quickly; (c) units mock resolves `[]`; (d) checkout mock rejects with `409 UNIT_NOT_AVAILABLE` "Unit KH-ARD-0007 is not available for checkout."; (e) checkout mock resolves the 5.3 example | (a) Both asset tags listed as options; confirm button disabled. (b) Button reads "Check out KH-ARD-0007 for Request #12"; checkout mock called once with `(12, { units: [ { lineId: 5, unitId: 7 } ] })`; button disabled while pending. (c) "No unit of Arduino Uno R3 is available. The request stays pending." shown; confirm disabled; checkout mock never called. (d) The message shown as an alert; units mock called a second time; dialog still open. (e) Dialog closes; "Request #12 checked out: KH-ARD-0007, due 20 Nov 2026, 14:30" shown; the pending list reload callback is called | `client/tests/CheckoutDialog.test.tsx` |
-| TEST-50 **TDD** | AC-19 | Unit | `computeDueAt` from `server/src/domain/due-date.ts` | (a) `2026-11-06T07:30:00.000Z`, 14; (b) same, 3; (c) same, 1; (d) `2026-11-25T07:30:00.000Z`, 14 (crosses a month end); (e) 0, −1 and 1.5 | (a) `2026-11-20T07:30:00.000Z`; (b) `2026-11-09T07:30:00.000Z`; (c) `2026-11-07T07:30:00.000Z`; (d) `2026-12-09T07:30:00.000Z`; (e) each throws `RangeError`. The input `Date` is not modified | `server/tests/unit/due-date.test.ts` |
+| TEST-49 | AC-49 | UI | `CheckoutDialog` for request #12 (Borrower One, line 5, "Arduino Uno R3", item type 3) with the units and checkout API modules mocked | (a) units mock resolves `KH-ARD-0006`, `KH-ARD-0007`; (b) select `KH-ARD-0007`, click confirm twice quickly; (c) units mock resolves `[]`; (d) checkout mock rejects with `409 UNIT_NOT_AVAILABLE` "Unit KH-ARD-0007 is not available for checkout."; (e) checkout mock resolves the 5.3 example | (a) Both asset tags listed as options; confirm button disabled. (b) Button reads "Check out KH-ARD-0007 for Request #12"; checkout mock called once with `(12, { units: [ { lineId: 5, unitId: 7 } ] })`; button disabled while pending. (c) "No unit of Arduino Uno R3 is available. The request stays pending." shown; confirm disabled; checkout mock never called. (d) The message shown as an alert; units mock called a second time; dialog still open. (e) Dialog closes; "Request #12 checked out: KH-ARD-0007, due 20 Nov 2026, 17:00" shown (v1.2: 14:30; revised by #71 with the 5.3 example); the pending list reload callback is called | `client/tests/CheckoutDialog.test.tsx` |
+| TEST-50 **TDD** | AC-19 | Unit | `computeDueAt` from `server/src/domain/due-date.ts` | (a) `2026-11-06T07:30:00.000Z`, 14; (b) same, 3; (c) same, 1; (d) `2026-11-25T07:30:00.000Z`, 14 (crosses a month end); (e) 0, −1 and 1.5 | v1.3 (#71): (a) `2026-11-20T10:00:00.000Z`; (b) `2026-11-09T10:00:00.000Z`; (c) Sat 7 Nov → `2026-11-09T10:00:00.000Z`; (d) `2026-12-09T10:00:00.000Z`; (e) each throws `RangeError`. The input `Date` is not modified. v1.2 expected the same clock time (`…T07:30:00.000Z`, and (c) `2026-11-07T07:30:00.000Z`) | `server/tests/unit/due-date.test.ts` |
+| TEST-54 **TDD** | AC-54 | Unit + API | Unit: `computeDueAt`. API: as TEST-19 with the system time fixed at `2026-11-25T03:00:00.000Z` (Wed 10:00 ICT) | Unit: (a) `2026-11-25T03:00:00.000Z`, 14. API: checkout R with U | Unit: (a) `2026-12-09T10:00:00.000Z`. API: `201`; loan `dueAt` `2026-12-09T10:00:00.000Z`, and the `loans` row has the same value | `server/tests/unit/due-date.test.ts`, `server/tests/api/checkout.test.ts` |
+| TEST-55 **TDD** | AC-55 | Unit | `computeDueAt` | (a) `2026-11-25T08:59:59.000Z` (15:59:59 ICT), 14; (b) `2026-11-25T09:00:00.000Z` (16:00:00), 14; (c) `2026-11-25T08:59:59.999Z`, 14 | (a) `2026-12-09T10:00:00.000Z`; (b) `2026-12-10T10:00:00.000Z`; (c) `2026-12-09T10:00:00.000Z` | `server/tests/unit/due-date.test.ts` |
+| TEST-56 **TDD** | AC-56 | Unit | `computeDueAt` | (a) `2026-11-25T03:00:00.000Z` (Wed 10:00), 3 → due day Sat 28 Nov; (b) `2026-11-26T03:00:00.000Z` (Thu 10:00), 3 → Sun 29 Nov; (c) `2026-11-27T03:00:00.000Z` (Fri 10:00), 3 → Mon 30 Nov | (a) and (b) `2026-11-30T10:00:00.000Z`; (c) `2026-11-30T10:00:00.000Z` (already a Monday) | `server/tests/unit/due-date.test.ts` |
+| TEST-57 **TDD** | AC-57 | Unit | `computeDueAt` | (a) `2026-11-28T03:00:00.000Z` (Sat 10:00), 3; (b) `2026-11-29T15:00:00.000Z` (Sun 22:00), 3; (c) `2026-12-04T09:00:00.000Z` (Fri 16:00:00), 3 | (a) start Mon 30 Nov → `2026-12-03T10:00:00.000Z`; (b) the same; (c) start Mon 7 Dec → `2026-12-10T10:00:00.000Z` | `server/tests/unit/due-date.test.ts` |
+| TEST-58 **TDD** | AC-58 | API + UI | API: item type T "Arduino Uno R3" (14), `PENDING` request R for T, unit U `AVAILABLE`; system time fixed at `2026-11-06T07:30:00.000Z`. UI: `CheckoutDialog` with the preview, units and checkout modules mocked | API: (a) as Custodian `GET /api/item-types/T/due-date-preview`, then checkout R with U; (b) as Borrower; (c) with no session; (d) item type 999 999; (e) `?x=1`. UI: (f) preview mock resolves `{ dueAt: "2026-11-20T10:00:00.000Z" }`; (g) preview mock rejects | (a) `200 { itemTypeId: T, maxLoanDays: 14, at: "2026-11-06T07:30:00.000Z", dueAt: "2026-11-20T10:00:00.000Z" }`, and the checkout `201` has the same `dueAt`; (b) `403 FORBIDDEN`; (c) `401 UNAUTHENTICATED`; (d) `404 NOT_FOUND`; (e) `400 VALIDATION_FAILED` naming `x`; after (b) to (e) no row changed. (f) "Due if checked out now: Fri 20 Nov 2026, 17:00" shown; (g) "Due date not available." shown and the confirm button still works after a unit is selected | `server/tests/api/due-date-preview.test.ts`, `client/tests/CheckoutDialog.test.tsx` |
+| TEST-59 | AC-59 | Integration + manual | Integration: a loan L0 inserted directly with `dueAt` `2026-11-20T07:30:00.000Z` (old rule); then a new checkout of another request. Manual (post-deploy): Request #5 on production, checked out on 24 Nov 2026 22:07 ICT with due `2026-12-08 22:07` under the old rule | Integration: read L0 after the new checkout. Manual: open Request #5 after the deploy of #71 | Integration: L0 `dueAt` unchanged; `server/prisma/migrations` has no migration added by #71 (file count equals the pre-change commit). Manual: Request #5 still shows "Due 8 Dec 2026, 22:07" | `server/tests/api/checkout.test.ts`; Lab 7 post-deploy check |
+| TEST-60 | AC-60 | UI | Request detail page with the requests module mocked: request 12 `CHECKED_OUT`, `dueAt` `2026-11-20T10:00:00.000Z`, one loan checked out `2026-11-06T07:30:00.000Z` | Render `/requests/12` | Shows "Due 20 Nov 2026, 17:00" and "Checked out 6 Nov 2026, 14:30" | `client/tests/my-requests.test.tsx` |
 | TEST-51 | AC-19, AC-20, AC-43 | Unit | `assertTransition` from `server/src/domain/transitions.ts` | (a) `("REQUEST", "PENDING", "CHECKED_OUT")`, `("UNIT", "AVAILABLE", "ON_LOAN")`, `("LOAN", null, "ACTIVE")`; (b) `("REQUEST", "CHECKED_OUT", "CHECKED_OUT")`, `("REQUEST", "CHECKED_OUT", "PENDING")`, `("UNIT", "ON_LOAN", "ON_LOAN")`, `("UNIT", "MAINTENANCE", "ON_LOAN")`, `("UNIT", "RETIRED", "ON_LOAN")`, `("LOAN", "ACTIVE", "ACTIVE")` | (a) Each returns without error. (b) Each throws the invalid-transition error that the error handler maps to `409 INVALID_STATE` | `server/tests/unit/transitions.test.ts` |
 | TEST-52 | AC-22 | Unit | `toLoanInsertConflict(err, unit)` from `server/src/features/loans/checkout-errors.ts`; unit `{ id: 7, assetTag: "KH-ARD-0007" }` | Call it with (a) a `Prisma.PrismaClientKnownRequestError` with code `P2002` and `meta.target` `["unitId"]`; (b) a `PrismaClientKnownRequestError` with code `P2003`; (c) a plain `Error` | (a) Returns a `ConflictError` with status `409`, code `UNIT_NOT_AVAILABLE`, message "Unit KH-ARD-0007 is not available for checkout." and `details` `[ { field: "units[0].unitId", issue: "Unit already has an active loan" } ]`, so the SR-01 handler does not answer with the generic `409 CONFLICT`; (b) and (c) return the same error object unchanged | `server/tests/unit/checkout-errors.test.ts` |
 
@@ -645,6 +719,7 @@ A Borrower calling the unit list or checkout is AC-06 (F-01 contract, #14); its 
 - Every new F-03 endpoint has a no-session test and a wrong-role test (SDS 7.3): unit list and checkout in TEST-41 (a) and (b). The pending list has a no-session test in TEST-41 (a); its Borrower scope is F-02's (AC-13, TEST-13).
 - Every rejection test asserts the database afterwards (Unchanged).
 - Every failure case in 3.6 has a test (column "Test").
+- v1.3 (#71): the new preview endpoint has its no-session and wrong-role tests in TEST-58 (b) and (c). Every case of the worked examples in 3.4 is a unit test (TEST-50, TEST-54 to TEST-57).
 - End-to-end coverage of F-03 is in #20: TEST-30 (journey including checkout and the Borrower seeing `CHECKED_OUT`) and TEST-32 (a Borrower cannot reach checkout in the UI, and the API rejects it).
 
 ## 9. Definition of Done (F-03)
@@ -667,7 +742,7 @@ The #19 PR satisfies the [Product Definition of Done](definition-of-done.md) and
 | AC | Requirements | Tests | Planned files |
 | --- | --- | --- | --- |
 | AC-18 | FR-09 | TEST-18 | `server/tests/api/pending-requests.test.ts` |
-| AC-19 | FR-16, D-16 | TEST-19, TEST-50, TEST-51 | `server/tests/api/checkout.test.ts`, `server/tests/unit/due-date.test.ts`, `server/tests/unit/transitions.test.ts` |
+| AC-19 | FR-16, D-16, D-21 | TEST-19, TEST-50, TEST-51 | `server/tests/api/checkout.test.ts`, `server/tests/unit/due-date.test.ts`, `server/tests/unit/transitions.test.ts` |
 | AC-20 | FR-16, BR-02, D-17 | TEST-20, TEST-51 | `server/tests/api/checkout.test.ts`, `server/tests/unit/transitions.test.ts` |
 | AC-21 | BR-02 | TEST-21 | `server/tests/api/checkout.test.ts` |
 | AC-22 | BR-03, NFR-05 | TEST-22, TEST-52 | `server/tests/api/checkout-concurrency.test.ts`, `server/tests/unit/checkout-errors.test.ts` |
@@ -685,3 +760,10 @@ The #19 PR satisfies the [Product Definition of Done](definition-of-done.md) and
 | AC-47 | FR-16 | TEST-47 | `server/tests/api/checkout-concurrency.test.ts` |
 | AC-48 | FR-16, D-17 | TEST-48 | `server/tests/api/units.test.ts` |
 | AC-49 | FR-16, D-17 | TEST-49 | `client/tests/CheckoutDialog.test.tsx` |
+| AC-54 | FR-16, D-21 | TEST-54 | `server/tests/unit/due-date.test.ts`, `server/tests/api/checkout.test.ts` |
+| AC-55 | FR-16, D-21 | TEST-55 | `server/tests/unit/due-date.test.ts` |
+| AC-56 | FR-16, D-21 | TEST-56 | `server/tests/unit/due-date.test.ts` |
+| AC-57 | FR-16, D-21 | TEST-57 | `server/tests/unit/due-date.test.ts` |
+| AC-58 | FR-16, D-21, NFR-01, NFR-02 | TEST-58 | `server/tests/api/due-date-preview.test.ts`, `client/tests/CheckoutDialog.test.tsx` |
+| AC-59 | FR-16, D-21 | TEST-59 | `server/tests/api/checkout.test.ts`; Lab 7 post-deploy check |
+| AC-60 | FR-08, FR-16 | TEST-60 | `client/tests/my-requests.test.tsx` |
