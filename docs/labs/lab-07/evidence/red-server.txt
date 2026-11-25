@@ -1,0 +1,456 @@
+# RED, server: the three changed test files on the pre-change code
+Command: cd server && npx vitest run --reporter=verbose tests/unit/due-date.test.ts tests/api/checkout.test.ts tests/api/due-date-preview.test.ts
+Commit: e08dbb2d08c752c296b7ecef7fadd933200b061f test(#71): RED for the business-day due date (D-21)
+Date: 2026-11-25 20:39:04 ICT
+node -v: v24.14.0   npm -v: 10.8.2
+git status --short (evidence folder is untracked here):
+ M server/prisma/migrations/migration_lock.toml
+?? docs/labs/lab-07/evidence/
+----
+
+ RUN  v2.1.9 E:/CPE334_KitHub/server
+
+ × tests/api/checkout.test.ts > TEST-19 (AC-19): normal checkout > TEST-19: checking out an AVAILABLE unit creates one ACTIVE loan due at 17:00 ICT and moves request and unit 365ms
+   → expected '2026-11-20T07:30:00.000Z' to be '2026-11-20T10:00:00.000Z' // Object.is equality
+ × tests/api/checkout.test.ts > TEST-19 (AC-19): normal checkout > TEST-19: an item type with maxLoanDays 3 checked out Fri 14:30 ICT is due Mon 17:00 ICT (D-21)
+   → expected '2026-11-09T07:30:00.000Z' to be '2026-11-09T10:00:00.000Z' // Object.is equality
+ × tests/api/checkout.test.ts > TEST-54 (AC-54): checkout on a business day before 16:00 ICT (D-21) > TEST-54: Wed 25 Nov 10:00 ICT, 14 days: the response and the loans row are due Wed 9 Dec 17:00 ICT
+   → expected '2026-12-09T03:00:00.000Z' to be '2026-12-09T10:00:00.000Z' // Object.is equality
+ ✓ tests/api/checkout.test.ts > TEST-20 (AC-20): unit not AVAILABLE, and no AVAILABLE unit at all (D-17) > TEST-20 (a): a unit that is ON_LOAN is 409 UNIT_NOT_AVAILABLE and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-20 (AC-20): unit not AVAILABLE, and no AVAILABLE unit at all (D-17) > TEST-20 (b): a unit in MAINTENANCE is 409 UNIT_NOT_AVAILABLE and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-20 (AC-20): unit not AVAILABLE, and no AVAILABLE unit at all (D-17) > TEST-20 (c): with no AVAILABLE unit the unit list is empty and checkout with any unit is rejected; the request stays PENDING
+ ✓ tests/api/checkout.test.ts > TEST-21 (AC-21): unit of a different item type > TEST-21 (a): an ESP32 unit that is AVAILABLE is 409 UNIT_WRONG_ITEM_TYPE and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-21 (AC-21): unit of a different item type > TEST-21 (b): an ESP32 unit that is ON_LOAN is 409 UNIT_WRONG_ITEM_TYPE and nothing changes 310ms
+ ✓ tests/api/checkout.test.ts > TEST-26 (AC-26): the Borrower sees the checked-out request; the available count drops > TEST-26: Borrower sees CHECKED_OUT with asset tag and due date and no checkedOutBy; count 3 → 2; another Borrower gets 404 362ms
+ ✓ tests/api/checkout.test.ts > TEST-42 (AC-42): request does not exist > TEST-42 (a): request 999999 is 404 NOT_FOUND and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-42 (AC-42): request does not exist > TEST-42 (b): request 999999 with unit 999999 is 404 for the request, without unit details
+ ✓ tests/api/checkout.test.ts > TEST-43 (AC-43): request is not PENDING > TEST-43: checking out a CHECKED_OUT request again is 409 INVALID_STATE; it keeps its one loan
+ ✓ tests/api/checkout.test.ts > TEST-44 (AC-44): body or path fails the schema > TEST-44 (a) empty object is 400 VALIDATION_FAILED and nothing changes 303ms
+ ✓ tests/api/checkout.test.ts > TEST-44 (AC-44): body or path fails the schema > TEST-44 (b) zero entries is 400 VALIDATION_FAILED and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-44 (AC-44): body or path fails the schema > TEST-44 (c) two entries is 400 VALIDATION_FAILED and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-44 (AC-44): body or path fails the schema > TEST-44 (d) unknown field in an entry is 400 VALIDATION_FAILED and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-44 (AC-44): body or path fails the schema > TEST-44 (e) unknown top-level field is 400 VALIDATION_FAILED and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-44 (AC-44): body or path fails the schema > TEST-44 (f) unitId as a string is 400 VALIDATION_FAILED and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-44 (AC-44): body or path fails the schema > TEST-44 (f) unitId 0 is 400 VALIDATION_FAILED and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-44 (AC-44): body or path fails the schema > TEST-44 (g): malformed JSON is 400 VALIDATION_FAILED and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-44 (AC-44): body or path fails the schema > TEST-44 (h): path id 'abc' is 400 VALIDATION_FAILED naming id and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-45 (AC-45): lineId is not a line of this request > TEST-45 (a) a line of another request is 400 VALIDATION_FAILED naming units[0].lineId; neither request changes
+ ✓ tests/api/checkout.test.ts > TEST-45 (AC-45): lineId is not a line of this request > TEST-45 (b) line 999999 is 400 VALIDATION_FAILED naming units[0].lineId; neither request changes
+ ✓ tests/api/checkout.test.ts > TEST-46 (AC-46): unit does not exist > TEST-46 (a) with the request's own line: unit 999999 is 404 NOT_FOUND naming units[0].unitId
+ ✓ tests/api/checkout.test.ts > TEST-46 (AC-46): unit does not exist > TEST-46 (b) with a line of another request (unit is checked before lineId): unit 999999 is 404 NOT_FOUND naming units[0].unitId
+ ✓ tests/api/checkout.test.ts > TEST-59 (AC-59): loans from before #71 keep their due date > TEST-59: a loan stored under the old rule is not recalculated by a new checkout, and #71 adds no migration
+ × tests/api/due-date-preview.test.ts > TEST-58 (AC-58): due-date preview endpoint > TEST-58 (a): a Custodian gets the due date, and a checkout at the same time stores the same dueAt 300ms
+   → expected 404 to be 200 // Object.is equality
+ × tests/api/due-date-preview.test.ts > TEST-58 (AC-58): due-date preview endpoint > TEST-58 (b): a Borrower gets 403 FORBIDDEN
+   → expected 404 to be 403 // Object.is equality
+ × tests/api/due-date-preview.test.ts > TEST-58 (AC-58): due-date preview endpoint > TEST-58 (c): no session gets 401 UNAUTHENTICATED
+   → expected 404 to be 401 // Object.is equality
+ × tests/api/due-date-preview.test.ts > TEST-58 (AC-58): due-date preview endpoint > TEST-58 (d): an unknown item type gets 404 NOT_FOUND
+   → expected 'The requested resource was not found.' to be 'Item type 999999 does not exist.' // Object.is equality
+ × tests/api/due-date-preview.test.ts > TEST-58 (AC-58): due-date preview endpoint > TEST-58 (e): any query field gets 400 VALIDATION_FAILED naming it
+   → expected 404 to be 400 // Object.is equality
+ × tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50 (a): 14 days from Fri 6 Nov 14:30 ICT is 2026-11-20T10:00:00.000Z
+   → expected '2026-11-20T07:30:00.000Z' to be '2026-11-20T10:00:00.000Z' // Object.is equality
+ × tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50 (b): 3 days from Fri 6 Nov 14:30 ICT is 2026-11-09T10:00:00.000Z
+   → expected '2026-11-09T07:30:00.000Z' to be '2026-11-09T10:00:00.000Z' // Object.is equality
+ × tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50 (c) due day Sat 7 Nov moves to Monday: 1 days from Fri 6 Nov 14:30 ICT is 2026-11-09T10:00:00.000Z
+   → expected '2026-11-07T07:30:00.000Z' to be '2026-11-09T10:00:00.000Z' // Object.is equality
+ × tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50 (d): 14 days from Wed 25 Nov crosses the month end to Wed 9 Dec 17:00
+   → expected '2026-12-09T07:30:00.000Z' to be '2026-12-09T10:00:00.000Z' // Object.is equality
+ ✓ tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50 (e): 0 days throws RangeError
+ ✓ tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50 (e): -1 days throws RangeError
+ ✓ tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50 (e): 1.5 days throws RangeError
+ ✓ tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50: the input Date is not modified
+ × tests/unit/due-date.test.ts > TEST-54 (AC-54): business day before 16:00, due day is a business day > TEST-54 (a): Wed 25 Nov 10:00 ICT + 14 days is Wed 9 Dec 17:00 ICT
+   → expected '2026-12-09T03:00:00.000Z' to be '2026-12-09T10:00:00.000Z' // Object.is equality
+ × tests/unit/due-date.test.ts > TEST-55 (AC-55): the 16:00 ICT cutoff > TEST-55 (a) 15:59:59 counts from the checkout date
+   → expected '2026-12-09T08:59:59.000Z' to be '2026-12-09T10:00:00.000Z' // Object.is equality
+ × tests/unit/due-date.test.ts > TEST-55 (AC-55): the 16:00 ICT cutoff > TEST-55 (b) 16:00:00 counts from the next business day
+   → expected '2026-12-09T09:00:00.000Z' to be '2026-12-10T10:00:00.000Z' // Object.is equality
+ × tests/unit/due-date.test.ts > TEST-55 (AC-55): the 16:00 ICT cutoff > TEST-55 (c) 15:59:59.999 still counts from the checkout date
+   → expected '2026-12-09T08:59:59.999Z' to be '2026-12-09T10:00:00.000Z' // Object.is equality
+ × tests/unit/due-date.test.ts > TEST-56 (AC-56): a due day on Saturday or Sunday moves to Monday > TEST-56 (a) Wed 25 Nov + 3 is Sat 28 Nov: due Mon 30 Nov 17:00 ICT
+   → expected '2026-11-28T03:00:00.000Z' to be '2026-11-30T10:00:00.000Z' // Object.is equality
+ × tests/unit/due-date.test.ts > TEST-56 (AC-56): a due day on Saturday or Sunday moves to Monday > TEST-56 (b) Thu 26 Nov + 3 is Sun 29 Nov: due Mon 30 Nov 17:00 ICT
+   → expected '2026-11-29T03:00:00.000Z' to be '2026-11-30T10:00:00.000Z' // Object.is equality
+ × tests/unit/due-date.test.ts > TEST-56 (AC-56): a due day on Saturday or Sunday moves to Monday > TEST-56 (c) Fri 27 Nov + 3 is already Mon 30 Nov: due Mon 30 Nov 17:00 ICT
+   → expected '2026-11-30T03:00:00.000Z' to be '2026-11-30T10:00:00.000Z' // Object.is equality
+ × tests/unit/due-date.test.ts > TEST-57 (AC-57): a checkout on Saturday or Sunday, or after the cutoff on Friday > TEST-57 (a) Sat 28 Nov 10:00 starts Mon 30 Nov
+   → expected '2026-12-01T03:00:00.000Z' to be '2026-12-03T10:00:00.000Z' // Object.is equality
+ × tests/unit/due-date.test.ts > TEST-57 (AC-57): a checkout on Saturday or Sunday, or after the cutoff on Friday > TEST-57 (b) Sun 29 Nov 22:00 starts Mon 30 Nov
+   → expected '2026-12-02T15:00:00.000Z' to be '2026-12-03T10:00:00.000Z' // Object.is equality
+ × tests/unit/due-date.test.ts > TEST-57 (AC-57): a checkout on Saturday or Sunday, or after the cutoff on Friday > TEST-57 (c) Fri 4 Dec 16:00:00 starts Mon 7 Dec
+   → expected '2026-12-07T09:00:00.000Z' to be '2026-12-10T10:00:00.000Z' // Object.is equality
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 22 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/api/checkout.test.ts > TEST-19 (AC-19): normal checkout > TEST-19: checking out an AVAILABLE unit creates one ACTIVE loan due at 17:00 ICT and moves request and unit
+AssertionError: expected '2026-11-20T07:30:00.000Z' to be '2026-11-20T10:00:00.000Z' // Object.is equality
+
+Expected: "2026-11-20T10:00:00.000Z"
+Received: "2026-11-20T07:30:00.000Z"
+
+ ❯ tests/api/checkout.test.ts:61:24
+     59|     expect(loan.checkedOutAt).toBe("2026-11-06T07:30:00.000Z");
+     60|     // v1.2 expected checkedOutAt + 14 × 86 400 000 ms; revised by #71…
+     61|     expect(loan.dueAt).toBe("2026-11-20T10:00:00.000Z");
+       |                        ^
+     62|     expect(res.body.dueAt).toBe(loan.dueAt);
+     63| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/22]⎯
+
+ FAIL  tests/api/checkout.test.ts > TEST-19 (AC-19): normal checkout > TEST-19: an item type with maxLoanDays 3 checked out Fri 14:30 ICT is due Mon 17:00 ICT (D-21)
+AssertionError: expected '2026-11-09T07:30:00.000Z' to be '2026-11-09T10:00:00.000Z' // Object.is equality
+
+Expected: "2026-11-09T10:00:00.000Z"
+Received: "2026-11-09T07:30:00.000Z"
+
+ ❯ tests/api/checkout.test.ts:86:46
+     84| 
+     85|     expect(res.status).toBe(201);
+     86|     expect(res.body.lines[0].loans[0].dueAt).toBe("2026-11-09T10:00:00…
+       |                                              ^
+     87|   });
+     88| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/22]⎯
+
+ FAIL  tests/api/checkout.test.ts > TEST-54 (AC-54): checkout on a business day before 16:00 ICT (D-21) > TEST-54: Wed 25 Nov 10:00 ICT, 14 days: the response and the loans row are due Wed 9 Dec 17:00 ICT
+AssertionError: expected '2026-12-09T03:00:00.000Z' to be '2026-12-09T10:00:00.000Z' // Object.is equality
+
+Expected: "2026-12-09T10:00:00.000Z"
+Received: "2026-12-09T03:00:00.000Z"
+
+ ❯ tests/api/checkout.test.ts:102:46
+    100| 
+    101|     expect(res.status).toBe(201);
+    102|     expect(res.body.lines[0].loans[0].dueAt).toBe("2026-12-09T10:00:00…
+       |                                              ^
+    103|     const row = await prisma.loan.findFirstOrThrow({ where: { requestL…
+    104|     expect(row.dueAt.toISOString()).toBe("2026-12-09T10:00:00.000Z");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/22]⎯
+
+ FAIL  tests/api/due-date-preview.test.ts > TEST-58 (AC-58): due-date preview endpoint > TEST-58 (a): a Custodian gets the due date, and a checkout at the same time stores the same dueAt
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/due-date-preview.test.ts:44:24
+     42|     const res = await getPreview(cookie, w.arduino.id);
+     43| 
+     44|     expect(res.status).toBe(200);
+       |                        ^
+     45|     expect(res.body).toEqual({
+     46|       itemTypeId: w.arduino.id,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/22]⎯
+
+ FAIL  tests/api/due-date-preview.test.ts > TEST-58 (AC-58): due-date preview endpoint > TEST-58 (b): a Borrower gets 403 FORBIDDEN
+AssertionError: expected 404 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 404
+
+ ❯ tests/api/due-date-preview.test.ts:64:24
+     62|     const res = await getPreview(await signIn(app, "borrower1"), w.ard…
+     63| 
+     64|     expect(res.status).toBe(403);
+       |                        ^
+     65|     expect(res.body.error.code).toBe("FORBIDDEN");
+     66|     expect(Object.keys(res.body)).toEqual(["error"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/22]⎯
+
+ FAIL  tests/api/due-date-preview.test.ts > TEST-58 (AC-58): due-date preview endpoint > TEST-58 (c): no session gets 401 UNAUTHENTICATED
+AssertionError: expected 404 to be 401 // Object.is equality
+
+- Expected
++ Received
+
+- 401
++ 404
+
+ ❯ tests/api/due-date-preview.test.ts:76:24
+     74|     const res = await getPreview(undefined, w.arduino.id);
+     75| 
+     76|     expect(res.status).toBe(401);
+       |                        ^
+     77|     expect(res.body.error.code).toBe("UNAUTHENTICATED");
+     78|     expect(Object.keys(res.body)).toEqual(["error"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/22]⎯
+
+ FAIL  tests/api/due-date-preview.test.ts > TEST-58 (AC-58): due-date preview endpoint > TEST-58 (d): an unknown item type gets 404 NOT_FOUND
+AssertionError: expected 'The requested resource was not found.' to be 'Item type 999999 does not exist.' // Object.is equality
+
+Expected: "Item type 999999 does not exist."
+Received: "The requested resource was not found."
+
+ ❯ tests/api/due-date-preview.test.ts:90:36
+     88|     expect(res.status).toBe(404);
+     89|     expect(res.body.error.code).toBe("NOT_FOUND");
+     90|     expect(res.body.error.message).toBe("Item type 999999 does not exi…
+       |                                    ^
+     91|     expect(await snapshotCheckoutState(prisma)).toEqual(before);
+     92|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/22]⎯
+
+ FAIL  tests/api/due-date-preview.test.ts > TEST-58 (AC-58): due-date preview endpoint > TEST-58 (e): any query field gets 400 VALIDATION_FAILED naming it
+AssertionError: expected 404 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 404
+
+ ❯ tests/api/due-date-preview.test.ts:100:24
+     98|     const res = await getPreview(await signIn(app, "custodian1"), w.ar…
+     99| 
+    100|     expect(res.status).toBe(400);
+       |                        ^
+    101|     expect(res.body.error.code).toBe("VALIDATION_FAILED");
+    102|     expect(detailFields(res).some((f) => f === "x" || f.endsWith(".x")…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/22]⎯
+
+ FAIL  tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50 (a): 14 days from Fri 6 Nov 14:30 ICT is 2026-11-20T10:00:00.000Z
+AssertionError: expected '2026-11-20T07:30:00.000Z' to be '2026-11-20T10:00:00.000Z' // Object.is equality
+
+Expected: "2026-11-20T10:00:00.000Z"
+Received: "2026-11-20T07:30:00.000Z"
+
+ ❯ tests/unit/due-date.test.ts:19:39
+     17|     ["(c) due day Sat 7 Nov moves to Monday", 1, "2026-11-09T10:00:00.…
+     18|   ])("TEST-50 %s: %i days from Fri 6 Nov 14:30 ICT is %s", (_case, day…
+     19|     expect(due(CHECKED_OUT_AT, days)).toBe(expected);
+       |                                       ^
+     20|   });
+     21| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/22]⎯
+
+ FAIL  tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50 (b): 3 days from Fri 6 Nov 14:30 ICT is 2026-11-09T10:00:00.000Z
+AssertionError: expected '2026-11-09T07:30:00.000Z' to be '2026-11-09T10:00:00.000Z' // Object.is equality
+
+Expected: "2026-11-09T10:00:00.000Z"
+Received: "2026-11-09T07:30:00.000Z"
+
+ ❯ tests/unit/due-date.test.ts:19:39
+     17|     ["(c) due day Sat 7 Nov moves to Monday", 1, "2026-11-09T10:00:00.…
+     18|   ])("TEST-50 %s: %i days from Fri 6 Nov 14:30 ICT is %s", (_case, day…
+     19|     expect(due(CHECKED_OUT_AT, days)).toBe(expected);
+       |                                       ^
+     20|   });
+     21| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/22]⎯
+
+ FAIL  tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50 (c) due day Sat 7 Nov moves to Monday: 1 days from Fri 6 Nov 14:30 ICT is 2026-11-09T10:00:00.000Z
+AssertionError: expected '2026-11-07T07:30:00.000Z' to be '2026-11-09T10:00:00.000Z' // Object.is equality
+
+Expected: "2026-11-09T10:00:00.000Z"
+Received: "2026-11-07T07:30:00.000Z"
+
+ ❯ tests/unit/due-date.test.ts:19:39
+     17|     ["(c) due day Sat 7 Nov moves to Monday", 1, "2026-11-09T10:00:00.…
+     18|   ])("TEST-50 %s: %i days from Fri 6 Nov 14:30 ICT is %s", (_case, day…
+     19|     expect(due(CHECKED_OUT_AT, days)).toBe(expected);
+       |                                       ^
+     20|   });
+     21| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/22]⎯
+
+ FAIL  tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50 (d): 14 days from Wed 25 Nov crosses the month end to Wed 9 Dec 17:00
+AssertionError: expected '2026-12-09T07:30:00.000Z' to be '2026-12-09T10:00:00.000Z' // Object.is equality
+
+Expected: "2026-12-09T10:00:00.000Z"
+Received: "2026-12-09T07:30:00.000Z"
+
+ ❯ tests/unit/due-date.test.ts:23:49
+     21| 
+     22|   it("TEST-50 (d): 14 days from Wed 25 Nov crosses the month end to We…
+     23|     expect(due("2026-11-25T07:30:00.000Z", 14)).toBe("2026-12-09T10:00…
+       |                                                 ^
+     24|   });
+     25| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/22]⎯
+
+ FAIL  tests/unit/due-date.test.ts > TEST-54 (AC-54): business day before 16:00, due day is a business day > TEST-54 (a): Wed 25 Nov 10:00 ICT + 14 days is Wed 9 Dec 17:00 ICT
+AssertionError: expected '2026-12-09T03:00:00.000Z' to be '2026-12-09T10:00:00.000Z' // Object.is equality
+
+Expected: "2026-12-09T10:00:00.000Z"
+Received: "2026-12-09T03:00:00.000Z"
+
+ ❯ tests/unit/due-date.test.ts:40:49
+     38| describe("TEST-54 (AC-54): business day before 16:00, due day is a bus…
+     39|   it("TEST-54 (a): Wed 25 Nov 10:00 ICT + 14 days is Wed 9 Dec 17:00 I…
+     40|     expect(due("2026-11-25T03:00:00.000Z", 14)).toBe("2026-12-09T10:00…
+       |                                                 ^
+     41|   });
+     42| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/22]⎯
+
+ FAIL  tests/unit/due-date.test.ts > TEST-55 (AC-55): the 16:00 ICT cutoff > TEST-55 (a) 15:59:59 counts from the checkout date
+AssertionError: expected '2026-12-09T08:59:59.000Z' to be '2026-12-09T10:00:00.000Z' // Object.is equality
+
+Expected: "2026-12-09T10:00:00.000Z"
+Received: "2026-12-09T08:59:59.000Z"
+
+ ❯ tests/unit/due-date.test.ts:50:35
+     48|     ["(c) 15:59:59.999 still counts from the checkout date", "2026-11-…
+     49|   ])("TEST-55 %s", (_case, checkedOutAt, expected) => {
+     50|     expect(due(checkedOutAt, 14)).toBe(expected);
+       |                                   ^
+     51|   });
+     52| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/22]⎯
+
+ FAIL  tests/unit/due-date.test.ts > TEST-55 (AC-55): the 16:00 ICT cutoff > TEST-55 (b) 16:00:00 counts from the next business day
+AssertionError: expected '2026-12-09T09:00:00.000Z' to be '2026-12-10T10:00:00.000Z' // Object.is equality
+
+Expected: "2026-12-10T10:00:00.000Z"
+Received: "2026-12-09T09:00:00.000Z"
+
+ ❯ tests/unit/due-date.test.ts:50:35
+     48|     ["(c) 15:59:59.999 still counts from the checkout date", "2026-11-…
+     49|   ])("TEST-55 %s", (_case, checkedOutAt, expected) => {
+     50|     expect(due(checkedOutAt, 14)).toBe(expected);
+       |                                   ^
+     51|   });
+     52| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/22]⎯
+
+ FAIL  tests/unit/due-date.test.ts > TEST-55 (AC-55): the 16:00 ICT cutoff > TEST-55 (c) 15:59:59.999 still counts from the checkout date
+AssertionError: expected '2026-12-09T08:59:59.999Z' to be '2026-12-09T10:00:00.000Z' // Object.is equality
+
+Expected: "2026-12-09T10:00:00.000Z"
+Received: "2026-12-09T08:59:59.999Z"
+
+ ❯ tests/unit/due-date.test.ts:50:35
+     48|     ["(c) 15:59:59.999 still counts from the checkout date", "2026-11-…
+     49|   ])("TEST-55 %s", (_case, checkedOutAt, expected) => {
+     50|     expect(due(checkedOutAt, 14)).toBe(expected);
+       |                                   ^
+     51|   });
+     52| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/22]⎯
+
+ FAIL  tests/unit/due-date.test.ts > TEST-56 (AC-56): a due day on Saturday or Sunday moves to Monday > TEST-56 (a) Wed 25 Nov + 3 is Sat 28 Nov: due Mon 30 Nov 17:00 ICT
+AssertionError: expected '2026-11-28T03:00:00.000Z' to be '2026-11-30T10:00:00.000Z' // Object.is equality
+
+Expected: "2026-11-30T10:00:00.000Z"
+Received: "2026-11-28T03:00:00.000Z"
+
+ ❯ tests/unit/due-date.test.ts:60:34
+     58|     ["(c) Fri 27 Nov + 3 is already Mon 30 Nov", "2026-11-27T03:00:00.…
+     59|   ])("TEST-56 %s: due Mon 30 Nov 17:00 ICT", (_case, checkedOutAt) => {
+     60|     expect(due(checkedOutAt, 3)).toBe("2026-11-30T10:00:00.000Z");
+       |                                  ^
+     61|   });
+     62| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/22]⎯
+
+ FAIL  tests/unit/due-date.test.ts > TEST-56 (AC-56): a due day on Saturday or Sunday moves to Monday > TEST-56 (b) Thu 26 Nov + 3 is Sun 29 Nov: due Mon 30 Nov 17:00 ICT
+AssertionError: expected '2026-11-29T03:00:00.000Z' to be '2026-11-30T10:00:00.000Z' // Object.is equality
+
+Expected: "2026-11-30T10:00:00.000Z"
+Received: "2026-11-29T03:00:00.000Z"
+
+ ❯ tests/unit/due-date.test.ts:60:34
+     58|     ["(c) Fri 27 Nov + 3 is already Mon 30 Nov", "2026-11-27T03:00:00.…
+     59|   ])("TEST-56 %s: due Mon 30 Nov 17:00 ICT", (_case, checkedOutAt) => {
+     60|     expect(due(checkedOutAt, 3)).toBe("2026-11-30T10:00:00.000Z");
+       |                                  ^
+     61|   });
+     62| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/22]⎯
+
+ FAIL  tests/unit/due-date.test.ts > TEST-56 (AC-56): a due day on Saturday or Sunday moves to Monday > TEST-56 (c) Fri 27 Nov + 3 is already Mon 30 Nov: due Mon 30 Nov 17:00 ICT
+AssertionError: expected '2026-11-30T03:00:00.000Z' to be '2026-11-30T10:00:00.000Z' // Object.is equality
+
+Expected: "2026-11-30T10:00:00.000Z"
+Received: "2026-11-30T03:00:00.000Z"
+
+ ❯ tests/unit/due-date.test.ts:60:34
+     58|     ["(c) Fri 27 Nov + 3 is already Mon 30 Nov", "2026-11-27T03:00:00.…
+     59|   ])("TEST-56 %s: due Mon 30 Nov 17:00 ICT", (_case, checkedOutAt) => {
+     60|     expect(due(checkedOutAt, 3)).toBe("2026-11-30T10:00:00.000Z");
+       |                                  ^
+     61|   });
+     62| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/22]⎯
+
+ FAIL  tests/unit/due-date.test.ts > TEST-57 (AC-57): a checkout on Saturday or Sunday, or after the cutoff on Friday > TEST-57 (a) Sat 28 Nov 10:00 starts Mon 30 Nov
+AssertionError: expected '2026-12-01T03:00:00.000Z' to be '2026-12-03T10:00:00.000Z' // Object.is equality
+
+Expected: "2026-12-03T10:00:00.000Z"
+Received: "2026-12-01T03:00:00.000Z"
+
+ ❯ tests/unit/due-date.test.ts:70:34
+     68|     ["(c) Fri 4 Dec 16:00:00 starts Mon 7 Dec", "2026-12-04T09:00:00.0…
+     69|   ])("TEST-57 %s", (_case, checkedOutAt, expected) => {
+     70|     expect(due(checkedOutAt, 3)).toBe(expected);
+       |                                  ^
+     71|   });
+     72| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/22]⎯
+
+ FAIL  tests/unit/due-date.test.ts > TEST-57 (AC-57): a checkout on Saturday or Sunday, or after the cutoff on Friday > TEST-57 (b) Sun 29 Nov 22:00 starts Mon 30 Nov
+AssertionError: expected '2026-12-02T15:00:00.000Z' to be '2026-12-03T10:00:00.000Z' // Object.is equality
+
+Expected: "2026-12-03T10:00:00.000Z"
+Received: "2026-12-02T15:00:00.000Z"
+
+ ❯ tests/unit/due-date.test.ts:70:34
+     68|     ["(c) Fri 4 Dec 16:00:00 starts Mon 7 Dec", "2026-12-04T09:00:00.0…
+     69|   ])("TEST-57 %s", (_case, checkedOutAt, expected) => {
+     70|     expect(due(checkedOutAt, 3)).toBe(expected);
+       |                                  ^
+     71|   });
+     72| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/22]⎯
+
+ FAIL  tests/unit/due-date.test.ts > TEST-57 (AC-57): a checkout on Saturday or Sunday, or after the cutoff on Friday > TEST-57 (c) Fri 4 Dec 16:00:00 starts Mon 7 Dec
+AssertionError: expected '2026-12-07T09:00:00.000Z' to be '2026-12-10T10:00:00.000Z' // Object.is equality
+
+Expected: "2026-12-10T10:00:00.000Z"
+Received: "2026-12-07T09:00:00.000Z"
+
+ ❯ tests/unit/due-date.test.ts:70:34
+     68|     ["(c) Fri 4 Dec 16:00:00 starts Mon 7 Dec", "2026-12-04T09:00:00.0…
+     69|   ])("TEST-57 %s", (_case, checkedOutAt, expected) => {
+     70|     expect(due(checkedOutAt, 3)).toBe(expected);
+       |                                  ^
+     71|   });
+     72| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/22]⎯
+
+ Test Files  3 failed (3)
+      Tests  22 failed | 27 passed (49)
+   Start at  20:39:14
+   Duration  17.69s (transform 401ms, setup 206ms, collect 909ms, tests 8.30s, environment 0ms, prepare 174ms)
+
+exit code: 1

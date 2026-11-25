@@ -96,8 +96,16 @@ test("TEST-30: Borrower requests, Custodian checks out, Borrower sees Checked ou
   expect(loan.status).toBe("ACTIVE");
   expect(loan.unit.assetTag).toBe("KH-ARD-0001");
   expect(loan.unit.status).toBe("ON_LOAN");
-  // Due date = checkout time + the item type's 14-day maximum (D-16).
-  expect(loan.dueAt.getTime() - loan.checkedOutAt.getTime()).toBe(14 * DAY_MS);
+  // Due date (D-21, #71): 17:00 ICT on Monday to Friday, 14 to 17 days after the ICT checkout date
+  // (the real server clock is used, so there is no fixed value). v1.2 expected checkout + 14 × 24 h.
+  const ICT_MS = 7 * 3_600_000;
+  const dueIct = new Date(loan.dueAt.getTime() + ICT_MS);
+  const ictDay = (d: Date) => Math.floor((d.getTime() + ICT_MS) / DAY_MS);
+  expect([dueIct.getUTCHours(), dueIct.getUTCMinutes(), dueIct.getUTCSeconds(), dueIct.getUTCMilliseconds()]).toEqual([17, 0, 0, 0]);
+  expect([1, 2, 3, 4, 5]).toContain(dueIct.getUTCDay());
+  const days = ictDay(loan.dueAt) - ictDay(loan.checkedOutAt);
+  expect(days).toBeGreaterThanOrEqual(14);
+  expect(days).toBeLessThanOrEqual(17);
   expect(await db.loan.count()).toBe(1);
   expect(await db.unit.count({ where: { itemTypeId: arduino.itemType.id, status: "AVAILABLE" } })).toBe(4);
 

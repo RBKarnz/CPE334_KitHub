@@ -99,4 +99,20 @@ describe("Seed settings (SDS 4.8, 8.1)", () => {
   it("accepts a password of exactly 72 bytes", () => {
     expect(loadSeedConfig({ SEED_CUSTODIAN_PASSWORD: "a".repeat(72) }).custodianPassword).toHaveLength(72);
   });
+
+  it("SEED_DEMO_REQUESTS defaults to false and needs SEED_DEMO_DATA=true (#73)", () => {
+    expect(loadSeedConfig({ SEED_CUSTODIAN_PASSWORD: SECRET_PASSWORD }).seedDemoRequests).toBe(false);
+
+    const both = loadSeedConfig({
+      SEED_CUSTODIAN_PASSWORD: SECRET_PASSWORD,
+      SEED_BORROWER_PASSWORD: SECRET_PASSWORD,
+      SEED_DEMO_DATA: "true",
+      SEED_DEMO_REQUESTS: "true",
+    });
+    expect(both.seedDemoRequests).toBe(true);
+
+    const err = errorOf(() => loadSeedConfig({ SEED_CUSTODIAN_PASSWORD: SECRET_PASSWORD, SEED_DEMO_REQUESTS: "true" }));
+    expect(err.problems).toEqual(["SEED_DEMO_REQUESTS needs SEED_DEMO_DATA=true"]);
+    expect(err.message).not.toContain("sentinel");
+  });
 });

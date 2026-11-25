@@ -6,10 +6,10 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part C |
-| Version | 1.8 |
-| Date | 2026-11-12 |
+| Version | 1.11 |
+| Date | 2026-11-25 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
-| Baseline | [SRS v1.3](srs.md) |
+| Baseline | [SRS v1.5](srs.md) |
 | Related | [Three-sprint plan](sprints/plan.md), feature contracts in `docs/sprints/sprint-N/` |
 
 ### Revision history
@@ -25,6 +25,9 @@
 | 1.6 | 2026-11-12 | Teerakarn Noiruksa | Lab 5 cloud readiness (branch `refactor/2-cloud-ready`): `GET /api/ready` returns `{ "status": "ready", "db": "connected" }` (6.7); both `.env.example` files in 9.2 describe every variable in a comment and list `COOKIE_SECURE` as a commented-out line. No API path, status code or schema change |
 | 1.7 | 2026-11-12 | Teerakarn Noiruksa | Lab 5 Docker files (#3): 9.5 names the four Compose services, the per-folder Dockerfiles for the local run only, and the `.dockerignore` and `.gitattributes` files. No behavior, API or schema change |
 | 1.8 | 2026-11-12 | Teerakarn Noiruksa | Lab 5 CI (#4): 9.6 says what `test-and-docker` runs on PRs into `staging` and `main`, including the backend typecheck and the end-to-end tests. No behavior, API or schema change |
+| 1.9 | 2026-11-25 | Teerakarn Noiruksa | Change request #71 (Lab 7), baseline SRS v1.4: the due-date rule in 4.5 and the `loans.dueAt` note in 4.2 follow D-21 (17:00 ICT on a business day, 16:00 cutoff); new read-only endpoint `GET /api/item-types/:id/due-date-preview` for Custodians (5.1 Pending requests row, 6.6 endpoint list, 7.1 permission matrix). No table, column or migration change |
+| 1.10 | 2026-11-25 | Teerakarn Noiruksa | #73: Sprint 2 columns of 4.2 and CHECKs of 4.3 are now in migration `20261125104833_sprint2_columns`; 4.8 and 9.1 describe `SEED_DEMO_REQUESTS` and the Sprint 2 demo requests. No behaviour change for Sprint 1 |
+| 1.11 | 2026-11-25 | Teerakarn Noiruksa | Review of PR #87: 6.2 adds the Sprint 2 create example with several lines and `loanDays` (F-04 5.2). Baseline SRS v1.5. No behaviour change |
 
 ## 2. Introduction
 
@@ -334,7 +337,7 @@ Constraint: unique `(requestId, itemTypeId)`. A request names each item type onc
 | status | `LoanStatus` | not null, default `ACTIVE` | SRS 8.3 | 1 |
 | checkedOutAt | timestamptz | not null | | 1 |
 | checkedOutById | int | FK → users, not null | Custodian who recorded the checkout | 1 |
-| dueAt | timestamptz | not null | Same value for every loan of a request (glossary "Due date"). Sprint 1: `checkedOutAt + item type maxLoanDays` (D-16). From Sprint 2: `checkedOutAt + request loanDays` (BR-08) | 1 |
+| dueAt | timestamptz | not null | Same value for every loan of a request (glossary "Due date"). Computed by `computeDueAt` (D-21): 17:00 ICT on a business day reached from the start day plus the loan length; Sprint 1 loan length = item type `maxLoanDays` (D-16), from Sprint 2 the request's `loanDays` (BR-08). Values stored before #71 are kept | 1 |
 | returnedAt | timestamptz | nullable; CHECK set exactly when status is `RETURNED` | | 2 |
 | returnedById | int | FK → users, nullable | Custodian who recorded the return | 2 |
 | returnCondition | `ReturnCondition` | nullable | `DAMAGED` sends the unit to `MAINTENANCE` (BR-11) | 2 |
@@ -405,7 +408,7 @@ These values are calculated by queries when they are needed and are never stored
 | Overdue request | Status is `CHECKED_OUT` and at least one of its loans is `ACTIVE` with `dueAt` < now | 3 |
 | Units held by a Borrower (BR-14) | `ACTIVE` loans + quantities on lines of the Borrower's open requests (D-20) | 3 |
 
-Due dates add whole days as 24-hour periods. Asia/Bangkok has no daylight saving time, so this equals the calendar day at the same clock time.
+Due dates follow D-21 (since #71): counting starts on the checkout date if the checkout is on a business day (Monday to Friday) before 16:00 ICT, otherwise on the next business day; the loan length is added in calendar days, a Saturday or Sunday result moves to the following Monday, and the time is 17:00 ICT (`T10:00:00.000Z`). The rule works on ICT calendar dates, so it does not depend on the server time zone. Before #71 due dates added whole days as 24-hour periods at the checkout's clock time; stored values are not recalculated.
 
 ### 4.6 History (BR-16, NFR-09)
 
@@ -518,6 +521,7 @@ The seed script (`server/prisma/seed.ts`, run with `npm run prisma:seed`) is rep
 - It inserts each record only if no record with the same natural key exists (username, category name, item type name, asset tag). It never changes an existing record: a rerun does not reset passwords, unit states or loans.
 - Passwords come from environment variables, never from code. The seed stops with an error naming the missing variable if a password it needs is not set, and it never prints a password.
 - Catalog data and Custodian accounts are always seeded. Borrower demo accounts are seeded only when `SEED_DEMO_DATA=true`.
+- Sprint 2 demo requests (#73), one in each state from `PENDING` to `RETURNED` with their loans, unit states and history, are seeded only when `SEED_DEMO_REQUESTS=true` (which needs `SEED_DEMO_DATA=true`) and only into a database with no request, so a database in use is never changed. Their times are hours before the seed time, so the approval is still inside the 48-hour window (BR-13) and the checked-out loan is not overdue (BR-15); the seed stops with an error if a demo unit is not `AVAILABLE`.
 
 Planned seed content (limits from D-08; several units per item type, as D-17 requires):
 
@@ -555,7 +559,7 @@ All state lives in PostgreSQL: records, sessions and history. The server keeps n
 | Catalog | `/catalog` | Both | 1 | Categories with their item types and available counts (FR-04). Borrowers get a "Request" action per item type (FR-07) | `GET /api/categories`, `POST /api/requests` |
 | My requests | `/requests` | Borrower | 1 | Own requests with lines, state and creation time (FR-08) | `GET /api/requests` |
 | Request detail | `/requests/:id` | Borrower (own), Custodian | 1 | Lines and state; after checkout, the unit's asset tag and the due date | `GET /api/requests/:id` |
-| Pending requests | `/pending` | Custodian | 1 | Pending requests with Borrower, lines and creation time (FR-09). A checkout dialog lists the `AVAILABLE` units of the item type and records checkout (FR-16) | `GET /api/requests?status=PENDING`, `GET /api/item-types/:id/units?status=AVAILABLE`, `POST /api/requests/:id/checkout` |
+| Pending requests | `/pending` | Custodian | 1 | Pending requests with Borrower, lines and creation time (FR-09). A checkout dialog lists the `AVAILABLE` units of the item type and records checkout (FR-16) | `GET /api/requests?status=PENDING`, `GET /api/item-types/:id/units?status=AVAILABLE`, `GET /api/item-types/:id/due-date-preview` (#71), `POST /api/requests/:id/checkout` |
 | Item type detail | `/catalog/item-types/:id` | Both | 2 | Description, limits and available count (FR-05) | `GET /api/item-types/:id` |
 | New or edit request | `/requests/new`, `/requests/:id/edit` | Borrower | 2 | Several lines and one loan length; shows which item type sets the maximum (FR-10, FR-11) | `POST /api/requests`, `PATCH /api/requests/:id` |
 | All requests | `/requests` | Custodian | 2 | Every request, filtered by state (FR-30); approve, reject, check out and return from the detail page | `GET /api/requests?status=`, request actions |
@@ -620,6 +624,12 @@ Feature contracts define each endpoint's exact body and errors. This section set
 
 ```json
 { "lines": [ { "itemTypeId": 3, "quantity": 1 } ] }
+```
+
+From Sprint 2 (F-04 5.2, FR-10, BR-08), the same body holds several lines and one loan length:
+
+```json
+{ "lines": [ { "itemTypeId": 3, "quantity": 2 }, { "itemTypeId": 7, "quantity": 1 } ], "loanDays": 7 }
 ```
 
 ### 6.3 Responses
@@ -690,6 +700,7 @@ The contracts give the bodies. "Signed in" means either role.
 | 1 | `GET /api/requests` | Borrower (own), Custodian (all, `?status=`) | FR-08, FR-09 |
 | 1 | `GET /api/requests/:id` | Borrower (own), Custodian | FR-08 |
 | 1 | `GET /api/item-types/:id/units?status=AVAILABLE` | Custodian | FR-16 unit choice |
+| 1 (#71) | `GET /api/item-types/:id/due-date-preview` | Custodian | FR-16, D-21: due date a checkout now would get; read only |
 | 1 | `POST /api/requests/:id/checkout` | Custodian | FR-16; body `{ "units": [ { "lineId", "unitId" } ] }`, one entry in Sprint 1 |
 | 2 | `GET /api/item-types/:id` | Signed in | FR-05 |
 | 2 | `PATCH /api/requests/:id` | Borrower (own, `PENDING`) | FR-11 |
@@ -728,6 +739,7 @@ The contracts give the bodies. "Signed in" means either role.
 | Health and readiness | `GET /api/health`, `GET /api/ready` | Yes | Yes | Yes | 1 |
 | Browse catalog and availability | `GET /api/categories`; `GET /api/item-types...` from Sprint 2 | No | Yes | Yes | 1 |
 | List units and asset tags of an item type | `GET /api/item-types/:id/units` | No | No | Yes | 1 |
+| Preview the due date of a checkout now | `GET /api/item-types/:id/due-date-preview` | No | No | Yes | 1 (#71) |
 | Create a request | `POST /api/requests` | No | Yes; owner is always self | No (BR-17) | 1 |
 | View requests | `GET /api/requests`, `GET /api/requests/:id` | No | Own only | All | 1 |
 | Record checkout | `POST /api/requests/:id/checkout` | No | No | Yes | 1 |
@@ -820,6 +832,7 @@ Server (`server/.env`):
 | `SEED_CUSTODIAN_PASSWORD` | For the seed | - | Yes | Initial password of the seeded Custodian accounts | Secret Manager `kithub-custodian-password`, given to the migration job only |
 | `SEED_BORROWER_PASSWORD` | For the seed when `SEED_DEMO_DATA=true` | - | Yes | Password of the demo Borrower accounts | Secret Manager `kithub-borrower-password`, given to the migration job only |
 | `SEED_DEMO_DATA` | No | `false` | No | `true` seeds the demo Borrower accounts | Migration job setting |
+| `SEED_DEMO_REQUESTS` | No | `false` | No | `true` seeds the Sprint 2 demo requests into an empty request table (#73); needs `SEED_DEMO_DATA=true` | Local and demo databases; not set on the migration job |
 
 The Docker image also sets `TZ=Asia/Bangkok` (as in the Lab 5 kit). It only affects log timestamps: the application stores UTC instants and the UI formats them.
 
@@ -862,6 +875,10 @@ BCRYPT_COST=12
 
 # true also seeds the demo Borrower accounts (needed for UAT). Default: false.
 SEED_DEMO_DATA=true
+
+# true also seeds one demo request in every Sprint 2 state, but only into a database with
+# no request yet (#73). Needs SEED_DEMO_DATA=true. Default: false.
+SEED_DEMO_REQUESTS=false
 
 # Initial password of the seeded Custodian accounts. Secret. Required to run the seed.
 SEED_CUSTODIAN_PASSWORD="<choose-a-local-password>"

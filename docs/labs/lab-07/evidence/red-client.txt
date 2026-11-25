@@ -1,0 +1,1009 @@
+# RED, client: the whole client suite on the pre-change code
+Command: cd client && npx vitest run --reporter=verbose
+Commit: e08dbb2d08c752c296b7ecef7fadd933200b061f test(#71): RED for the business-day due date (D-21)
+Date: 2026-11-25 20:39:32 ICT
+node -v: v24.14.0   npm -v: 10.8.2
+git status --short (evidence folder is untracked here):
+ M server/prisma/migrations/migration_lock.toml
+?? docs/labs/lab-07/evidence/
+----
+
+ RUN  v2.1.9 E:/CPE334_KitHub/client
+
+stderr | tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: shows Loading… until the slow response arrives
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Pending requests states > TEST-25 (a): shows Loading… until the first response
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: shows Loading… until the slow response arrives
+stderr | tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: shows Loading…, then each request with its line, state and Bangkok time
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Pending requests states > TEST-25 (a): shows Loading… until the first response
+ ✓ tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: an empty catalog shows its message
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Pending requests states > TEST-25 (b): no pending requests shows the empty message
+stderr | tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (a): lists the AVAILABLE units of the line's item type; confirm is disabled until one is chosen
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/App.test.tsx > F-01 UI > a first visit with no session opens the sign-in page with no message
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: shows Loading…, then each request with its line, state and Bangkok time
+ ✓ tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: an error shows the API message, and Try again calls the API again
+ ✓ tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: no requests shows the empty message with a link to the catalog
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: a 0-available item type has a disabled button and 'None available'
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Pending requests states > TEST-25 (c): an error shows the API message, and Try again calls the API again
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (a): lists the AVAILABLE units of the line's item type; confirm is disabled until one is chosen
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Pending requests states > TEST-25 (d): a row shows request, borrower, item type, quantity, Bangkok time and a Check out button
+ ✓ tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: an error shows the API message, and Try again calls the API again
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: a double press sends one request, shows the confirmation and refetches the catalog
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > shows the title, state, creation time and lines
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Pending requests states > TEST-25: rows keep the API order (oldest first, F03-D2)
+ ✓ tests/App.test.tsx > F-01 UI > a first visit with no session opens the sign-in page with no message
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > TEST-60 (AC-60): after checkout the Borrower sees Checked out, the stored due date in ICT, the asset tag and the checkout time (contract F-03 4.4)
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: a 409 shows the API message as an alert and refetches the catalog
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: a Custodian sees the catalog without Request buttons
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > a 404 shows 'Request not found.' with a link to My requests
+ ✓ tests/App.test.tsx > F-01 UI > the sign-in page shows a short tagline under the heading
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (b): the confirm button names the unit and request; a double click sends one call
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (c): with no AVAILABLE unit the dialog says so and sends no checkout (D-17)
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > a Custodian's 404 links back to Pending requests, not the Borrower-only list
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > an ID that is not a positive integer shows Not found without calling the API
+ ✓ tests/App.test.tsx > F-01 UI > empty fields show messages and do not call the API
+ ✓ tests/App.test.tsx > F-01 UI > a wrong sign-in keeps the username, clears the password and shows the API message
+ ✓ tests/App.test.tsx > F-01 UI > a Custodian lands on Pending requests and sees their name and role badge
+ ✓ tests/App.test.tsx > F-01 UI > sign-in returns to the page that sent the user to /login
+ ✓ tests/App.test.tsx > F-01 UI > a Borrower sent to /login from a Custodian route lands on the Catalog, not the Forbidden page
+ ✓ tests/App.test.tsx > F-01 UI > a Borrower opening a Custodian route sees the Forbidden page
+ ✓ tests/App.test.tsx > F-01 UI > sign out sends Content-Type: application/json and opens the sign-in page with no message
+ ✓ tests/App.test.tsx > F-01 UI > a 401 after sign-in opens the sign-in page with the session-ended message
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > moving to another request ID loads that request
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (d): a 409 is shown as an alert, the selection is cleared and the units are fetched again
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (e): on success the dialog closes, shows asset tag and due date, and the pending list is fetched again
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (e): the dialog passes the checked-out request to onCheckedOut
+ × tests/CheckoutDialog.test.tsx > TEST-58 (AC-58): due-date preview in the checkout dialog (#71) > TEST-58 (f): shows the due date a checkout now would get, with weekday, in ICT 1015ms
+   → Unable to find an element with the text: Due if checked out now: Fri 20 Nov 2026, 17:00. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="modal-backdrop show"
+    />
+    <div
+      aria-labelledby=":r6:"
+      aria-modal="true"
+      class="modal d-block"
+      role="dialog"
+      tabindex="-1"
+    >
+      <div
+        class="modal-dialog"
+      >
+        <div
+          class="modal-content"
+        >
+          <div
+            class="modal-header"
+          >
+            <h2
+              class="modal-title h5"
+              id=":r6:"
+            >
+              Check out Request #
+              12
+            </h2>
+            <button
+              aria-label="Close"
+              class="btn-close"
+              type="button"
+            />
+          </div>
+          <div
+            class="modal-body"
+          >
+            <p>
+              Borrower One
+               (
+              borrower1
+              ) · 
+              Arduino Uno R3
+            </p>
+            <fieldset>
+              <legend
+                class="kh-legend fs-6"
+              >
+                Available units
+              </legend>
+              <div
+                class="kh-chips kh-foam"
+              >
+                <div
+                  class="kh-chip"
+                >
+                  <input
+                    class="form-check-input"
+                    id=":r6:-unit-6"
+                    name="checkout-unit"
+                    type="radio"
+                  />
+                  <label
+                    class="kh-tag"
+                    for=":r6:-unit-6"
+                  >
+                    KH-ARD-0006
+                  </label>
+                </div>
+                <div
+                  class="kh-chip"
+                >
+                  <input
+                    class="form-check-input"
+                    id=":r6:-unit-7"
+                    name="checkout-unit"
+                    type="radio"
+                  />
+                  <label
+                    class="kh-tag"
+                    for=":r6:-unit-7"
+                  >
+                    KH-ARD-0007
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+          </div>
+          <div
+            class="modal-footer"
+          >
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary"
+              disabled=""
+              type="button"
+            >
+              Check out
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="modal-backdrop show"
+    />
+    <div
+      aria-labelledby=":r6:"
+      aria-modal="true"
+      class="modal d-block"
+      role="dialog"
+      tabindex="-1"
+    >
+      <div
+        class="modal-dialog"
+      >
+        <div
+          class="modal-content"
+        >
+          <div
+            class="modal-header"
+          >
+            <h2
+              class="modal-title h5"
+              id=":r6:"
+            >
+              Check out Request #
+              12
+            </h2>
+            <button
+              aria-label="Close"
+              class="btn-close"
+              type="button"
+            />
+          </div>
+          <div
+            class="modal-body"
+          >
+            <p>
+              Borrower One
+               (
+              borrower1
+              ) · 
+              Arduino Uno R3
+            </p>
+            <fieldset>
+              <legend
+                class="kh-legend fs-6"
+              >
+                Available units
+              </legend>
+              <div
+                class="kh-chips kh-foam"
+              >
+                <div
+                  class="kh-chip"
+                >
+                  <input
+                    class="form-check-input"
+                    id=":r6:-unit-6"
+                    name="checkout-unit"
+                    type="radio"
+                  />
+                  <label
+                    class="kh-tag"
+                    for=":r6:-unit-6"
+                  >
+                    KH-ARD-0006
+                  </label>
+                </div>
+                <div
+                  class="kh-chip"
+                >
+                  <input
+                    class="form-check-input"
+                    id=":r6:-unit-7"
+                    name="checkout-unit"
+                    type="radio"
+                  />
+                  <label
+                    class="kh-tag"
+                    for=":r6:-unit-7"
+                  >
+                    KH-ARD-0007
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+          </div>
+          <div
+            class="modal-footer"
+          >
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary"
+              disabled=""
+              type="button"
+            >
+              Check out
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ × tests/CheckoutDialog.test.tsx > TEST-58 (AC-58): due-date preview in the checkout dialog (#71) > TEST-58 (g): a preview error shows 'Due date not available.' and checkout still works 1017ms
+   → Unable to find an element with the text: Due date not available.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="modal-backdrop show"
+    />
+    <div
+      aria-labelledby=":r7:"
+      aria-modal="true"
+      class="modal d-block"
+      role="dialog"
+      tabindex="-1"
+    >
+      <div
+        class="modal-dialog"
+      >
+        <div
+          class="modal-content"
+        >
+          <div
+            class="modal-header"
+          >
+            <h2
+              class="modal-title h5"
+              id=":r7:"
+            >
+              Check out Request #
+              12
+            </h2>
+            <button
+              aria-label="Close"
+              class="btn-close"
+              type="button"
+            />
+          </div>
+          <div
+            class="modal-body"
+          >
+            <p>
+              Borrower One
+               (
+              borrower1
+              ) · 
+              Arduino Uno R3
+            </p>
+            <fieldset>
+              <legend
+                class="kh-legend fs-6"
+              >
+                Available units
+              </legend>
+              <div
+                class="kh-chips kh-foam"
+              >
+                <div
+                  class="kh-chip"
+                >
+                  <input
+                    class="form-check-input"
+                    id=":r7:-unit-6"
+                    name="checkout-unit"
+                    type="radio"
+                  />
+                  <label
+                    class="kh-tag"
+                    for=":r7:-unit-6"
+                  >
+                    KH-ARD-0006
+                  </label>
+                </div>
+                <div
+                  class="kh-chip"
+                >
+                  <input
+                    class="form-check-input"
+                    id=":r7:-unit-7"
+                    name="checkout-unit"
+                    type="radio"
+                  />
+                  <label
+                    class="kh-tag"
+                    for=":r7:-unit-7"
+                  >
+                    KH-ARD-0007
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+          </div>
+          <div
+            class="modal-footer"
+          >
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary"
+              disabled=""
+              type="button"
+            >
+              Check out
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="modal-backdrop show"
+    />
+    <div
+      aria-labelledby=":r7:"
+      aria-modal="true"
+      class="modal d-block"
+      role="dialog"
+      tabindex="-1"
+    >
+      <div
+        class="modal-dialog"
+      >
+        <div
+          class="modal-content"
+        >
+          <div
+            class="modal-header"
+          >
+            <h2
+              class="modal-title h5"
+              id=":r7:"
+            >
+              Check out Request #
+              12
+            </h2>
+            <button
+              aria-label="Close"
+              class="btn-close"
+              type="button"
+            />
+          </div>
+          <div
+            class="modal-body"
+          >
+            <p>
+              Borrower One
+               (
+              borrower1
+              ) · 
+              Arduino Uno R3
+            </p>
+            <fieldset>
+              <legend
+                class="kh-legend fs-6"
+              >
+                Available units
+              </legend>
+              <div
+                class="kh-chips kh-foam"
+              >
+                <div
+                  class="kh-chip"
+                >
+                  <input
+                    class="form-check-input"
+                    id=":r7:-unit-6"
+                    name="checkout-unit"
+                    type="radio"
+                  />
+                  <label
+                    class="kh-tag"
+                    for=":r7:-unit-6"
+                  >
+                    KH-ARD-0006
+                  </label>
+                </div>
+                <div
+                  class="kh-chip"
+                >
+                  <input
+                    class="form-check-input"
+                    id=":r7:-unit-7"
+                    name="checkout-unit"
+                    type="radio"
+                  />
+                  <label
+                    class="kh-tag"
+                    for=":r7:-unit-7"
+                  >
+                    KH-ARD-0007
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+          </div>
+          <div
+            class="modal-footer"
+          >
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary"
+              disabled=""
+              type="button"
+            >
+              Check out
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ ✓ tests/CheckoutDialog.test.tsx > Checkout dialog: other responses and keyboard (contract F-03 4.3) > 409 INVALID_STATE shows the message and asks the page to reload the pending list
+ ✓ tests/CheckoutDialog.test.tsx > Checkout dialog: other responses and keyboard (contract F-03 4.3) > Cancel and Escape close the dialog without a checkout call
+ ✓ tests/CheckoutDialog.test.tsx > Checkout dialog: other responses and keyboard (contract F-03 4.3) > an error loading the units shows the message and Try again
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/CheckoutDialog.test.tsx > TEST-58 (AC-58): due-date preview in the checkout dialog (#71) > TEST-58 (f): shows the due date a checkout now would get, with weekday, in ICT
+TestingLibraryElementError: Unable to find an element with the text: Due if checked out now: Fri 20 Nov 2026, 17:00. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="modal-backdrop show"
+    />
+    <div
+      aria-labelledby=":r6:"
+      aria-modal="true"
+      class="modal d-block"
+      role="dialog"
+      tabindex="-1"
+    >
+      <div
+        class="modal-dialog"
+      >
+        <div
+          class="modal-content"
+        >
+          <div
+            class="modal-header"
+          >
+            <h2
+              class="modal-title h5"
+              id=":r6:"
+            >
+              Check out Request #
+              12
+            </h2>
+            <button
+              aria-label="Close"
+              class="btn-close"
+              type="button"
+            />
+          </div>
+          <div
+            class="modal-body"
+          >
+            <p>
+              Borrower One
+               (
+              borrower1
+              ) · 
+              Arduino Uno R3
+            </p>
+            <fieldset>
+              <legend
+                class="kh-legend fs-6"
+              >
+                Available units
+              </legend>
+              <div
+                class="kh-chips kh-foam"
+              >
+                <div
+                  class="kh-chip"
+                >
+                  <input
+                    class="form-check-input"
+                    id=":r6:-unit-6"
+                    name="checkout-unit"
+                    type="radio"
+                  />
+                  <label
+                    class="kh-tag"
+                    for=":r6:-unit-6"
+                  >
+                    KH-ARD-0006
+                  </label>
+                </div>
+                <div
+                  class="kh-chip"
+                >
+                  <input
+                    class="form-check-input"
+                    id=":r6:-unit-7"
+                    name="checkout-unit"
+                    type="radio"
+                  />
+                  <label
+                    class="kh-tag"
+                    for=":r6:-unit-7"
+                  >
+                    KH-ARD-0007
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+          </div>
+          <div
+            class="modal-footer"
+          >
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary"
+              disabled=""
+              type="button"
+            >
+              Check out
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="modal-backdrop show"
+    />
+    <div
+      aria-labelledby=":r6:"
+      aria-modal="true"
+      class="modal d-block"
+      role="dialog"
+      tabindex="-1"
+    >
+      <div
+        class="modal-dialog"
+      >
+        <div
+          class="modal-content"
+        >
+          <div
+            class="modal-header"
+          >
+            <h2
+              class="modal-title h5"
+              id=":r6:"
+            >
+              Check out Request #
+              12
+            </h2>
+            <button
+              aria-label="Close"
+              class="btn-close"
+              type="button"
+            />
+          </div>
+          <div
+            class="modal-body"
+          >
+            <p>
+              Borrower One
+               (
+              borrower1
+              ) · 
+              Arduino Uno R3
+            </p>
+            <fieldset>
+              <legend
+                class="kh-legend fs-6"
+              >
+                Available units
+              </legend>
+              <div
+                class="kh-chips kh-foam"
+              >
+                <div
+                  class="kh-chip"
+                >
+                  <input
+                    class="form-check-input"
+                    id=":r6:-unit-6"
+                    name="checkout-unit"
+                    type="radio"
+                  />
+                  <label
+                    class="kh-tag"
+                    for=":r6:-unit-6"
+                  >
+                    KH-ARD-0006
+                  </label>
+                </div>
+                <div
+                  class="kh-chip"
+                >
+                  <input
+                    class="form-check-input"
+                    id=":r6:-unit-7"
+                    name="checkout-unit"
+                    type="radio"
+                  />
+                  <label
+                    class="kh-tag"
+                    for=":r6:-unit-7"
+                  >
+                    KH-ARD-0007
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+          </div>
+          <div
+            class="modal-footer"
+          >
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary"
+              disabled=""
+              type="button"
+            >
+              Check out
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/CheckoutDialog.test.tsx:148:25
+    146|     renderDialog();
+    147| 
+    148|     expect(await screen.findByText("Due if checked out now: Fri 20 Nov…
+       |                         ^
+    149|     expect(fetchDueDatePreview).toHaveBeenCalledWith(3);
+    150|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/CheckoutDialog.test.tsx > TEST-58 (AC-58): due-date preview in the checkout dialog (#71) > TEST-58 (g): a preview error shows 'Due date not available.' and checkout still works
+TestingLibraryElementError: Unable to find an element with the text: Due date not available.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="modal-backdrop show"
+    />
+    <div
+      aria-labelledby=":r7:"
+      aria-modal="true"
+      class="modal d-block"
+      role="dialog"
+      tabindex="-1"
+    >
+      <div
+        class="modal-dialog"
+      >
+        <div
+          class="modal-content"
+        >
+          <div
+            class="modal-header"
+          >
+            <h2
+              class="modal-title h5"
+              id=":r7:"
+            >
+              Check out Request #
+              12
+            </h2>
+            <button
+              aria-label="Close"
+              class="btn-close"
+              type="button"
+            />
+          </div>
+          <div
+            class="modal-body"
+          >
+            <p>
+              Borrower One
+               (
+              borrower1
+              ) · 
+              Arduino Uno R3
+            </p>
+            <fieldset>
+              <legend
+                class="kh-legend fs-6"
+              >
+                Available units
+              </legend>
+              <div
+                class="kh-chips kh-foam"
+              >
+                <div
+                  class="kh-chip"
+                >
+                  <input
+                    class="form-check-input"
+                    id=":r7:-unit-6"
+                    name="checkout-unit"
+                    type="radio"
+                  />
+                  <label
+                    class="kh-tag"
+                    for=":r7:-unit-6"
+                  >
+                    KH-ARD-0006
+                  </label>
+                </div>
+                <div
+                  class="kh-chip"
+                >
+                  <input
+                    class="form-check-input"
+                    id=":r7:-unit-7"
+                    name="checkout-unit"
+                    type="radio"
+                  />
+                  <label
+                    class="kh-tag"
+                    for=":r7:-unit-7"
+                  >
+                    KH-ARD-0007
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+          </div>
+          <div
+            class="modal-footer"
+          >
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary"
+              disabled=""
+              type="button"
+            >
+              Check out
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="modal-backdrop show"
+    />
+    <div
+      aria-labelledby=":r7:"
+      aria-modal="true"
+      class="modal d-block"
+      role="dialog"
+      tabindex="-1"
+    >
+      <div
+        class="modal-dialog"
+      >
+        <div
+          class="modal-content"
+        >
+          <div
+            class="modal-header"
+          >
+            <h2
+              class="modal-title h5"
+              id=":r7:"
+            >
+              Check out Request #
+              12
+            </h2>
+            <button
+              aria-label="Close"
+              class="btn-close"
+              type="button"
+            />
+          </div>
+          <div
+            class="modal-body"
+          >
+            <p>
+              Borrower One
+               (
+              borrower1
+              ) · 
+              Arduino Uno R3
+            </p>
+            <fieldset>
+              <legend
+                class="kh-legend fs-6"
+              >
+                Available units
+              </legend>
+              <div
+                class="kh-chips kh-foam"
+              >
+                <div
+                  class="kh-chip"
+                >
+                  <input
+                    class="form-check-input"
+                    id=":r7:-unit-6"
+                    name="checkout-unit"
+                    type="radio"
+                  />
+                  <label
+                    class="kh-tag"
+                    for=":r7:-unit-6"
+                  >
+                    KH-ARD-0006
+                  </label>
+                </div>
+                <div
+                  class="kh-chip"
+                >
+                  <input
+                    class="form-check-input"
+                    id=":r7:-unit-7"
+                    name="checkout-unit"
+                    type="radio"
+                  />
+                  <label
+                    class="kh-tag"
+                    for=":r7:-unit-7"
+                  >
+                    KH-ARD-0007
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+          </div>
+          <div
+            class="modal-footer"
+          >
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              class="btn btn-primary"
+              disabled=""
+              type="button"
+            >
+              Check out
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/CheckoutDialog.test.tsx:158:25
+    156|     const handlers = renderDialog();
+    157| 
+    158|     expect(await screen.findByText("Due date not available.")).toBeInT…
+       |                         ^
+    159|     expect(fetchDueDatePreview).toHaveBeenCalledWith(3);
+    160|     fireEvent.click(await screen.findByRole("radio", { name: "KH-ARD-0…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  2 failed | 40 passed (42)
+   Start at  20:39:41
+   Duration  21.70s (transform 904ms, setup 2.06s, collect 1.78s, tests 4.18s, environment 6.32s, prepare 1.26s)
+
+exit code: 1

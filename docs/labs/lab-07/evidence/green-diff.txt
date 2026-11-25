@@ -1,0 +1,229 @@
+# Implementation diff between RED and GREEN
+Command: git diff e08dbb2 b1898d5 -- server/src client/src
+Date: 2026-11-25 20:42:52 ICT
+----
+ client/src/api/units.ts                     | 16 +++++++++++-
+ client/src/format.ts                        |  5 ++++
+ client/src/pages/pending/CheckoutDialog.tsx | 14 +++++++++--
+ server/src/domain/due-date.ts               | 39 ++++++++++++++++++++++++++---
+ server/src/features/units/units.routes.ts   | 22 ++++++++++++++--
+ server/src/features/units/units.schemas.ts  |  3 +++
+ server/src/features/units/units.service.ts  | 15 ++++++++++-
+ 7 files changed, 104 insertions(+), 10 deletions(-)
+
+diff --git a/client/src/api/units.ts b/client/src/api/units.ts
+index aa76d97..065cf37 100644
+--- a/client/src/api/units.ts
++++ b/client/src/api/units.ts
+@@ -1,4 +1,5 @@
+-// Units of an item type, for the checkout dialog (contract F-03 5.2). Custodian only.
++// Units of an item type and the due-date preview, for the checkout dialog (contract F-03 5.2, 5.5).
++// Custodian only.
+ import { apiFetch } from "./client";
+ 
+ export type UnitStatus = "AVAILABLE" | "ON_LOAN" | "MAINTENANCE" | "RETIRED";
+@@ -14,3 +15,16 @@ export const fetchUnits = (itemTypeId: number, status?: UnitStatus) =>
+   apiFetch<{ items: UnitSummary[] }>(
+     `/item-types/${itemTypeId}/units${status ? `?status=${encodeURIComponent(status)}` : ""}`,
+   ).then((r) => r.items);
++
++export interface DueDatePreview {
++  itemTypeId: number;
++  maxLoanDays: number;
++  /** The server time the preview used. */
++  at: string;
++  /** The due date a checkout at `at` would get (D-21). */
++  dueAt: string;
++}
++
++/** GET /item-types/:id/due-date-preview (contract F-03 5.5, #71). */
++export const fetchDueDatePreview = (itemTypeId: number) =>
++  apiFetch<DueDatePreview>(`/item-types/${itemTypeId}/due-date-preview`);
+diff --git a/client/src/format.ts b/client/src/format.ts
+index 9876c3e..a131ede 100644
+--- a/client/src/format.ts
++++ b/client/src/format.ts
+@@ -10,3 +10,8 @@ const DATE_TIME = new Intl.DateTimeFormat("en-GB", {
+ });
+ 
+ export const formatDateTime = (iso: string) => DATE_TIME.format(new Date(iso));
++
++// With the weekday, for the due-date preview: "Fri 20 Nov 2026, 17:00" (contract F-03 4.3, #71).
++const WEEKDAY = new Intl.DateTimeFormat("en-GB", { weekday: "short", timeZone: "Asia/Bangkok" });
++
++export const formatWeekdayDateTime = (iso: string) => `${WEEKDAY.format(new Date(iso))} ${formatDateTime(iso)}`;
+diff --git a/client/src/pages/pending/CheckoutDialog.tsx b/client/src/pages/pending/CheckoutDialog.tsx
+index f84166a..3f8b2b7 100644
+--- a/client/src/pages/pending/CheckoutDialog.tsx
++++ b/client/src/pages/pending/CheckoutDialog.tsx
+@@ -4,10 +4,10 @@ import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } f
+ import { checkoutRequest } from "../../api/checkout";
+ import { ApiError } from "../../api/client";
+ import type { BorrowRequest } from "../../api/requests";
+-import { fetchUnits } from "../../api/units";
++import { fetchDueDatePreview, fetchUnits } from "../../api/units";
+ import { useLoad } from "../../api/useLoad";
+ import { AsyncState } from "../../components/AsyncState";
+-import { formatDateTime } from "../../format";
++import { formatDateTime, formatWeekdayDateTime } from "../../format";
+ 
+ export interface CheckoutDialogProps {
+   request: BorrowRequest;
+@@ -32,6 +32,9 @@ export function CheckoutDialog({ request, onClose, onCheckedOut, onStale }: Chec
+   const line = request.lines[0];
+   const loadUnits = useCallback(() => fetchUnits(line.itemType.id, "AVAILABLE"), [line.itemType.id]);
+   const units = useLoad(loadUnits);
++  // The due date a checkout now would get (#71). Only a hint: the server computes dueAt again at checkout.
++  const loadPreview = useCallback(() => fetchDueDatePreview(line.itemType.id), [line.itemType.id]);
++  const preview = useLoad(loadPreview);
+   const [selectedId, setSelectedId] = useState<number | null>(null);
+   const [submitting, setSubmitting] = useState(false);
+   const [alert, setAlert] = useState<string | null>(null);
+@@ -123,6 +126,13 @@ export function CheckoutDialog({ request, onClose, onCheckedOut, onStale }: Chec
+               <p>
+                 {request.borrower.displayName} ({request.borrower.username}) · {line.itemType.name}
+               </p>
++              <p className="text-body-secondary">
++                {preview.data
++                  ? `Due if checked out now: ${formatWeekdayDateTime(preview.data.dueAt)}`
++                  : preview.error
++                    ? "Due date not available."
++                    : "Calculating due date…"}
++              </p>
+               {alert && (
+                 <div className="alert alert-warning" role="alert">
+                   {alert}
+diff --git a/server/src/domain/due-date.ts b/server/src/domain/due-date.ts
+index 836dc2b..ad98a5f 100644
+--- a/server/src/domain/due-date.ts
++++ b/server/src/domain/due-date.ts
+@@ -1,11 +1,42 @@
+-// Due-date rule D-16 (contract F-03 3.4, SDS 4.5): whole days added as 24-hour periods.
+-// Asia/Bangkok has no daylight saving time, so this is the same clock time maxLoanDays later.
++// Due-date rule D-21 (contract F-03 3.4 v1.3, SDS 4.5; change request #71). D-16 sets the loan length.
++// Works on the ICT calendar (UTC + 7 h, no daylight saving time), so the result does not depend on
++// the server's time zone. Holidays are not considered: a business day is Monday to Friday.
+ 
+ const DAY_MS = 86_400_000;
++const ICT_OFFSET_MS = 7 * 3_600_000;
++/** Checkouts at or after 16:00 ICT count from the next business day. */
++const CUTOFF_HOUR_ICT = 16;
++/** Every loan is due at 17:00 ICT. */
++const DUE_HOUR_ICT = 17;
+ 
+-/** dueAt = checkedOutAt + maxLoanDays × 24 h. Returns a new Date; the input is not modified. */
++const isWeekend = (ictDay: Date) => ictDay.getUTCDay() === 0 || ictDay.getUTCDay() === 6;
++
++/** Moves an ICT calendar day forward to Monday if it is a Saturday or Sunday. */
++function toBusinessDay(ictDay: Date): Date {
++  const day = new Date(ictDay);
++  while (isWeekend(day)) day.setUTCDate(day.getUTCDate() + 1);
++  return day;
++}
++
++/**
++ * Start day = the ICT checkout date if it is a business day and the time is before 16:00, else the
++ * next business day. Due day = start day + maxLoanDays calendar days, moved to Monday if it is a
++ * Saturday or Sunday. Due time = 17:00 ICT. Returns a new Date; the input is not modified.
++ */
+ export function computeDueAt(checkedOutAt: Date, maxLoanDays: number): Date {
+   if (!Number.isInteger(maxLoanDays) || maxLoanDays < 1)
+     throw new RangeError(`maxLoanDays must be an integer of at least 1, got ${maxLoanDays}`);
+-  return new Date(checkedOutAt.getTime() + maxLoanDays * DAY_MS);
++
++  // The UTC fields of `ict` are the ICT wall-clock fields of the checkout.
++  const ict = new Date(checkedOutAt.getTime() + ICT_OFFSET_MS);
++  let startDay = new Date(Date.UTC(ict.getUTCFullYear(), ict.getUTCMonth(), ict.getUTCDate()));
++  if (isWeekend(startDay) || ict.getUTCHours() >= CUTOFF_HOUR_ICT) {
++    startDay = toBusinessDay(new Date(startDay.getTime() + DAY_MS));
++  }
++
++  const dueDay = new Date(startDay);
++  dueDay.setUTCDate(dueDay.getUTCDate() + maxLoanDays);
++  const dueDayBusiness = toBusinessDay(dueDay);
++
++  return new Date(dueDayBusiness.getTime() + DUE_HOUR_ICT * 3_600_000 - ICT_OFFSET_MS);
+ }
+diff --git a/server/src/features/units/units.routes.ts b/server/src/features/units/units.routes.ts
+index d5ea6bb..aeb2438 100644
+--- a/server/src/features/units/units.routes.ts
++++ b/server/src/features/units/units.routes.ts
+@@ -2,10 +2,13 @@ import { Router } from "express";
+ import { Role, type PrismaClient } from "@prisma/client";
+ import { authenticate, requireRole } from "../../core/middleware/authenticate.js";
+ import { validate } from "../../core/middleware/validate.js";
+-import { itemTypeIdParams, listUnitsQuery, type ListUnitsQuery } from "./units.schemas.js";
++import { dueDatePreviewQuery, itemTypeIdParams, listUnitsQuery, type ListUnitsQuery } from "./units.schemas.js";
+ import { unitsService } from "./units.service.js";
+ 
+-/** GET /item-types/:id/units (contract F-03 5.2). Custodian only: asset tags are staff data (SDS 7.1). */
++/**
++ * GET /item-types/:id/units (contract F-03 5.2) and GET /item-types/:id/due-date-preview (5.5, #71).
++ * Custodian only: asset tags and checkout planning are staff data (SDS 7.1).
++ */
+ export function unitsRouter(prisma: PrismaClient): Router {
+   const router = Router();
+   const service = unitsService(prisma);
+@@ -25,5 +28,20 @@ export function unitsRouter(prisma: PrismaClient): Router {
+     },
+   );
+ 
++  router.get(
++    "/item-types/:id/due-date-preview",
++    authenticate(prisma),
++    requireRole(Role.CUSTODIAN),
++    validate({ params: itemTypeIdParams, query: dueDatePreviewQuery }),
++    async (req, res, next) => {
++      try {
++        const { id } = req.params as unknown as { id: number };
++        res.status(200).json(await service.dueDatePreview(id));
++      } catch (err) {
++        next(err);
++      }
++    },
++  );
++
+   return router;
+ }
+diff --git a/server/src/features/units/units.schemas.ts b/server/src/features/units/units.schemas.ts
+index 1148707..979db22 100644
+--- a/server/src/features/units/units.schemas.ts
++++ b/server/src/features/units/units.schemas.ts
+@@ -19,3 +19,6 @@ export const listUnitsQuery = z.object({
+ });
+ 
+ export type ListUnitsQuery = z.infer<typeof listUnitsQuery>;
++
++// The due-date preview takes no query field; validate() makes this strict (contract F-03 5.5, #71).
++export const dueDatePreviewQuery = z.object({});
+diff --git a/server/src/features/units/units.service.ts b/server/src/features/units/units.service.ts
+index c467d26..3ea92f0 100644
+--- a/server/src/features/units/units.service.ts
++++ b/server/src/features/units/units.service.ts
+@@ -1,6 +1,7 @@
+-// Units of an item type, for the checkout dialog (contract F-03 5.2, F03-D8).
++// Units of an item type and the due-date preview, for the checkout dialog (contract F-03 5.2, 5.5).
+ import type { PrismaClient } from "@prisma/client";
+ import { NotFoundError } from "../../core/errors.js";
++import { computeDueAt } from "../../domain/due-date.js";
+ import type { ListUnitsQuery } from "./units.schemas.js";
+ 
+ export function unitsService(prisma: PrismaClient) {
+@@ -15,5 +16,17 @@ export function unitsService(prisma: PrismaClient) {
+         select: { id: true, assetTag: true, status: true },
+       });
+     },
++
++    /** The due date a checkout at `now` would get (D-21). Read only (contract F-03 5.5, #71). */
++    async dueDatePreview(itemTypeId: number, now: Date = new Date()) {
++      const itemType = await prisma.itemType.findUnique({ where: { id: itemTypeId }, select: { id: true, maxLoanDays: true } });
++      if (!itemType) throw new NotFoundError(`Item type ${itemTypeId} does not exist.`);
++      return {
++        itemTypeId: itemType.id,
++        maxLoanDays: itemType.maxLoanDays,
++        at: now.toISOString(),
++        dueAt: computeDueAt(now, itemType.maxLoanDays).toISOString(),
++      };
++    },
+   };
+ }
