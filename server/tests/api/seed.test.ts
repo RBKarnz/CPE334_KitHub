@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { UnitStatus } from "@prisma/client";
 import { beforeEach, describe, expect, it } from "vitest";
-import { seed } from "../../prisma/seed-lib.js";
+import { seed, seedDemoRequests } from "../../prisma/seed-lib.js";
 import { prisma } from "../helpers/app.js";
 import { resetDb } from "../helpers/db.js";
 
@@ -78,6 +78,54 @@ describe("seed (SDS 4.8)", () => {
     await seed(prisma, { ...config, seedDemoData: false, borrowerPassword: undefined });
 
     expect((await prisma.user.findMany()).map((u) => u.username).sort()).toEqual(["custodian1", "custodian2"]);
+  });
+
+  it("seeds one demo request in every Sprint 2 state, with consistent loans, units and history (#73)", async () => {
+    await seed(prisma, config);
+
+    expect(await seedDemoRequests(prisma)).toBe(6);
+
+    const requests = await prisma.borrowRequest.findMany({ include: { lines: { include: { loans: true } } }, orderBy: { id: "asc" } });
+    expect(requests.map((r) => r.status).sort()).toEqual(["APPROVED", "CANCELLED", "CHECKED_OUT", "PENDING", "REJECTED", "RETURNED"]);
+    for (const r of requests) expect(r.loanDays).toBeGreaterThanOrEqual(1);
+
+    const rejected = requests.find((r) => r.status === "REJECTED")!;
+    expect(rejected.rejectionReason?.trim()).not.toBe("");
+    for (const r of requests.filter((x) => x.status === "APPROVED" || x.status === "REJECTED")) {
+      expect(r.decidedById).not.toBeNull();
+      expect(r.decidedAt).not.toBeNull();
+    }
+
+    // Loans: ACTIVE for CHECKED_OUT, RETURNED (with returnedAt) for RETURNED; units match.
+    const checkedOut = requests.find((r) => r.status === "CHECKED_OUT")!;
+    const activeLoans = checkedOut.lines.flatMap((l) => l.loans);
+    expect(activeLoans.length).toBeGreaterThanOrEqual(2);
+    for (const loan of activeLoans) {
+      expect(loan.status).toBe("ACTIVE");
+      expect((await prisma.unit.findUniqueOrThrow({ where: { id: loan.unitId } })).status).toBe(UnitStatus.ON_LOAN);
+    }
+    const returned = requests.find((r) => r.status === "RETURNED")!;
+    for (const loan of returned.lines.flatMap((l) => l.loans)) {
+      expect(loan.status).toBe("RETURNED");
+      expect(loan.returnedAt).not.toBeNull();
+      expect((await prisma.unit.findUniqueOrThrow({ where: { id: loan.unitId } })).status).toBe(UnitStatus.AVAILABLE);
+    }
+    expect(await prisma.unit.count({ where: { status: UnitStatus.ON_LOAN } })).toBe(activeLoans.length);
+
+    // BR-16: every seeded request has history; the newest entry ends in its current state.
+    for (const r of requests) {
+      const last = await prisma.historyEntry.findFirst({ where: { requestId: r.id, entityType: "REQUEST" }, orderBy: { id: "desc" } });
+      expect(last?.toStatus).toBe(r.status);
+    }
+  });
+
+  it("adds no demo request when any request already exists, so a used database is never changed (#73)", async () => {
+    await seed(prisma, config);
+    expect(await seedDemoRequests(prisma)).toBe(6);
+    const before = await prisma.borrowRequest.count();
+
+    expect(await seedDemoRequests(prisma)).toBe(0);
+    expect(await prisma.borrowRequest.count()).toBe(before);
   });
 
   it("changes nothing when run a second time, even after records were changed", async () => {
