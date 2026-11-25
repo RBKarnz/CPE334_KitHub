@@ -275,7 +275,8 @@ describe("TEST-84 (AC-84): bodies that fail the schema", () => {
     for (const id of ["abc", "0", "2147483648"]) {
       const res = await postDecision(app, cookie, id, "approve", {});
       expect(res.status).toBe(400);
-      expect(detailFields(res)).toContain("id");
+      // Path fields are named "params.id", as in TEST-48 (f).
+      expect(detailFields(res).some((f) => f === "id" || f.endsWith(".id"))).toBe(true);
     }
   });
 });
