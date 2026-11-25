@@ -303,7 +303,7 @@ Evidence EV-D-01 (RED), EV-D-02 (GREEN) and EV-D-03 (regression) are in the Lab 
 
 ### 4.7 Lab 7: change request #71 (due date on a business day at 17:00)
 
-Status on 2026-11-25: specified in F-03 contract v1.3, SRS v1.4 (D-21) and SDS v1.9 (PR #72); implemented in PR #88. Impact analysis: `docs/labs/lab-07/change-71.md`. Raw output: `docs/labs/lab-07/evidence/` (`regression-summary.md` lists every file).
+Status on 2026-11-25: specified in F-03 contract v1.3, SRS v1.4 (D-21) and SDS v1.9 (PR #72); implemented in PR #88, released in PR #89. Impact analysis: `docs/labs/lab-07/change-71.md`. Raw output: `docs/labs/lab-07/evidence/` (`regression-summary.md` lists every file).
 
 | Run | Commit | Command | Result |
 | --- | --- | --- | --- |
@@ -315,17 +315,17 @@ Status on 2026-11-25: specified in F-03 contract v1.3, SRS v1.4 (D-21) and SDS v
 
 | AC | Tests | Status |
 | --- | --- | --- |
-| AC-19 (revised) | TEST-19, TEST-50 (revised), TEST-51 | **Implemented**: pass on `b1898d5` |
-| AC-49 (revised example) | TEST-49 (e) | **Implemented**: pass on `b1898d5` |
-| AC-54 | TEST-54 | **Implemented**: failed on `e08dbb2`, pass on `b1898d5` |
-| AC-55 | TEST-55 | **Implemented**: failed on `e08dbb2`, pass on `b1898d5` |
-| AC-56 | TEST-56 | **Implemented**: failed on `e08dbb2`, pass on `b1898d5` |
-| AC-57 | TEST-57 | **Implemented**: failed on `e08dbb2`, pass on `b1898d5` |
-| AC-58 | TEST-58 (a) to (g) | **Implemented**: failed on `e08dbb2`, pass on `b1898d5` |
-| AC-59 | TEST-59 (integration) | **Implemented**: pass on `e08dbb2` and `b1898d5` (stored values were never recalculated); the manual production check of Request #5 follows the deploy |
-| AC-60 | TEST-60 | **Implemented**: pass on `e08dbb2` and `b1898d5` (display of the stored value) |
+| AC-19 (revised) | TEST-19, TEST-50 (revised), TEST-51 | **Verified**: pass on `b1898d5` |
+| AC-49 (revised example) | TEST-49 (e) | **Verified**: pass on `b1898d5` |
+| AC-54 | TEST-54 | **Verified**: failed on `e08dbb2`, pass on `b1898d5` |
+| AC-55 | TEST-55 | **Verified**: failed on `e08dbb2`, pass on `b1898d5` |
+| AC-56 | TEST-56 | **Verified**: failed on `e08dbb2`, pass on `b1898d5` |
+| AC-57 | TEST-57 | **Verified**: failed on `e08dbb2`, pass on `b1898d5` |
+| AC-58 | TEST-58 (a) to (g) | **Verified**: failed on `e08dbb2`, pass on `b1898d5` |
+| AC-59 | TEST-59 (integration) | **Verified**: pass on `e08dbb2` and `b1898d5` (stored values were never recalculated); manual part done on `kithub-00010-slp`: Request #5 still has `dueAt` `2026-12-08T15:07:38.200Z` (8 Dec 2026, 22:07 ICT, old rule), unchanged (`docs/labs/lab-07/evidence/postdeploy/api-responses.txt` item 5) |
+| AC-60 | TEST-60 | **Verified**: pass on `e08dbb2` and `b1898d5` (display of the stored value) |
 
-"Implemented" means the tests pass on the GREEN commit. The rows move to **Verified** after the release into `main`, when the post-deploy checks (17:00 business-day due date on a new checkout, Request #5 keeps its old due date, a Borrower gets `403` on the preview) are recorded.
+Post-deploy checks on 2026-11-25 about 21:20 ICT, release PR #89, `main` `6ada56d`, Deploy demo run 45630366597, revision `kithub-00010-slp` (100% traffic), image digest `sha256:825e7962fff33d6f6c71f3ef6b6880dcd659e6a549fb03dc4f706fe2b5f57803`; evidence in `docs/labs/lab-07/evidence/postdeploy/`: (1) the checkout dialog for Request #7 (Arduino Uno R3, 14 days) showed "Due if checked out now: Thu 10 Dec 2026, 17:00", written down beforehand for a checkout on Wed 25 Nov after 16:00 ICT, and the checkout stored `2026-12-10T10:00:00.000Z`; (2) Request #5 still has `dueAt` `2026-12-08T15:07:38.200Z` and its detail page shows "Due 8 Dec 2026, 22:07" (old rule; TEST-59 manual part, screenshot 05 with the address bar); (3) a Borrower gets `403` and no session gets `401` on the preview; (4) the journey Borrower requests → Custodian checks out → Borrower sees Checked out with "Due 10 Dec 2026, 17:00" works on the deployed revision. All AC above are therefore **Verified**.
 
 ## 5. Sprint 2 acceptance criteria and planned tests
 
