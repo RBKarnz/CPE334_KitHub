@@ -1,4 +1,4 @@
-# GREEN, end-to-end (Playwright, not run by CI)
+# GREEN, end-to-end (Playwright; CI also runs it in test-and-docker, ci-docker.yml lines 172 to 174)
 Command: npm run test:e2e
 Commit: be5e11c10734e72005908337839857b7452b2df6 feat(#76): approve and reject requests; All requests view and Custodian history
 Date: 2026-11-26 00:23:28 ICT
