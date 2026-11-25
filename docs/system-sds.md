@@ -6,7 +6,7 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part C |
-| Version | 1.9 |
+| Version | 1.10 |
 | Date | 2026-11-25 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Baseline | [SRS v1.4](srs.md) |
@@ -26,6 +26,7 @@
 | 1.7 | 2026-11-12 | Teerakarn Noiruksa | Lab 5 Docker files (#3): 9.5 names the four Compose services, the per-folder Dockerfiles for the local run only, and the `.dockerignore` and `.gitattributes` files. No behavior, API or schema change |
 | 1.8 | 2026-11-12 | Teerakarn Noiruksa | Lab 5 CI (#4): 9.6 says what `test-and-docker` runs on PRs into `staging` and `main`, including the backend typecheck and the end-to-end tests. No behavior, API or schema change |
 | 1.9 | 2026-11-25 | Teerakarn Noiruksa | Change request #71 (Lab 7), baseline SRS v1.4: the due-date rule in 4.5 and the `loans.dueAt` note in 4.2 follow D-21 (17:00 ICT on a business day, 16:00 cutoff); new read-only endpoint `GET /api/item-types/:id/due-date-preview` for Custodians (5.1 Pending requests row, 6.6 endpoint list, 7.1 permission matrix). No table, column or migration change |
+| 1.10 | 2026-11-25 | Teerakarn Noiruksa | #73: Sprint 2 columns of 4.2 and CHECKs of 4.3 are now in migration `20261125104833_sprint2_columns`; 4.8 and 9.1 describe `SEED_DEMO_REQUESTS` and the Sprint 2 demo requests. No behaviour change for Sprint 1 |
 
 ## 2. Introduction
 
@@ -519,6 +520,7 @@ The seed script (`server/prisma/seed.ts`, run with `npm run prisma:seed`) is rep
 - It inserts each record only if no record with the same natural key exists (username, category name, item type name, asset tag). It never changes an existing record: a rerun does not reset passwords, unit states or loans.
 - Passwords come from environment variables, never from code. The seed stops with an error naming the missing variable if a password it needs is not set, and it never prints a password.
 - Catalog data and Custodian accounts are always seeded. Borrower demo accounts are seeded only when `SEED_DEMO_DATA=true`.
+- Sprint 2 demo requests (#73), one in each state from `PENDING` to `RETURNED` with their loans, unit states and history, are seeded only when `SEED_DEMO_REQUESTS=true` (which needs `SEED_DEMO_DATA=true`) and only into a database with no request, so a database in use is never changed. Their times are hours before the seed time, so the approval is still inside the 48-hour window (BR-13) and the checked-out loan is not overdue (BR-15); the seed stops with an error if a demo unit is not `AVAILABLE`.
 
 Planned seed content (limits from D-08; several units per item type, as D-17 requires):
 
@@ -823,6 +825,7 @@ Server (`server/.env`):
 | `SEED_CUSTODIAN_PASSWORD` | For the seed | - | Yes | Initial password of the seeded Custodian accounts | Secret Manager `kithub-custodian-password`, given to the migration job only |
 | `SEED_BORROWER_PASSWORD` | For the seed when `SEED_DEMO_DATA=true` | - | Yes | Password of the demo Borrower accounts | Secret Manager `kithub-borrower-password`, given to the migration job only |
 | `SEED_DEMO_DATA` | No | `false` | No | `true` seeds the demo Borrower accounts | Migration job setting |
+| `SEED_DEMO_REQUESTS` | No | `false` | No | `true` seeds the Sprint 2 demo requests into an empty request table (#73); needs `SEED_DEMO_DATA=true` | Local and demo databases; not set on the migration job |
 
 The Docker image also sets `TZ=Asia/Bangkok` (as in the Lab 5 kit). It only affects log timestamps: the application stores UTC instants and the UI formats them.
 
@@ -865,6 +868,10 @@ BCRYPT_COST=12
 
 # true also seeds the demo Borrower accounts (needed for UAT). Default: false.
 SEED_DEMO_DATA=true
+
+# true also seeds one demo request in every Sprint 2 state, but only into a database with
+# no request yet (#73). Needs SEED_DEMO_DATA=true. Default: false.
+SEED_DEMO_REQUESTS=false
 
 # Initial password of the seeded Custodian accounts. Secret. Required to run the seed.
 SEED_CUSTODIAN_PASSWORD="<choose-a-local-password>"

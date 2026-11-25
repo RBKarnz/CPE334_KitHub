@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { UnitStatus } from "@prisma/client";
 import { beforeEach, describe, expect, it } from "vitest";
-import { seed } from "../../prisma/seed-lib.js";
+import { seed, seedDemoRequests } from "../../prisma/seed-lib.js";
 import { prisma } from "../helpers/app.js";
 import { resetDb } from "../helpers/db.js";
 
@@ -78,6 +78,87 @@ describe("seed (SDS 4.8)", () => {
     await seed(prisma, { ...config, seedDemoData: false, borrowerPassword: undefined });
 
     expect((await prisma.user.findMany()).map((u) => u.username).sort()).toEqual(["custodian1", "custodian2"]);
+  });
+
+  it("seeds one demo request in every Sprint 2 state, with consistent loans, units and history (#73)", async () => {
+    await seed(prisma, config);
+
+    expect(await seedDemoRequests(prisma)).toBe(6);
+
+    const requests = await prisma.borrowRequest.findMany({ include: { lines: { include: { loans: true } } }, orderBy: { id: "asc" } });
+    expect(requests.map((r) => r.status).sort()).toEqual(["APPROVED", "CANCELLED", "CHECKED_OUT", "PENDING", "REJECTED", "RETURNED"]);
+    for (const r of requests) expect(r.loanDays).toBeGreaterThanOrEqual(1);
+
+    const rejected = requests.find((r) => r.status === "REJECTED")!;
+    expect(rejected.rejectionReason?.trim()).not.toBe("");
+    for (const r of requests.filter((x) => x.status === "APPROVED" || x.status === "REJECTED")) {
+      expect(r.decidedById).not.toBeNull();
+      expect(r.decidedAt).not.toBeNull();
+    }
+
+    // Loans: ACTIVE for CHECKED_OUT, RETURNED (with returnedAt) for RETURNED; units match.
+    const checkedOut = requests.find((r) => r.status === "CHECKED_OUT")!;
+    const activeLoans = checkedOut.lines.flatMap((l) => l.loans);
+    expect(activeLoans.length).toBeGreaterThanOrEqual(2);
+    for (const loan of activeLoans) {
+      expect(loan.status).toBe("ACTIVE");
+      expect((await prisma.unit.findUniqueOrThrow({ where: { id: loan.unitId } })).status).toBe(UnitStatus.ON_LOAN);
+    }
+    const returned = requests.find((r) => r.status === "RETURNED")!;
+    for (const loan of returned.lines.flatMap((l) => l.loans)) {
+      expect(loan.status).toBe("RETURNED");
+      expect(loan.returnedAt).not.toBeNull();
+      expect((await prisma.unit.findUniqueOrThrow({ where: { id: loan.unitId } })).status).toBe(UnitStatus.AVAILABLE);
+    }
+    expect(await prisma.unit.count({ where: { status: UnitStatus.ON_LOAN } })).toBe(activeLoans.length);
+
+    // BR-16: every seeded request has history; the newest entry ends in its current state.
+    for (const r of requests) {
+      const last = await prisma.historyEntry.findFirst({ where: { requestId: r.id, entityType: "REQUEST" }, orderBy: { id: "desc" } });
+      expect(last?.toStatus).toBe(r.status);
+    }
+  });
+
+  it("dates the demo requests relative to the seed time, so they do not age into expiry or overdue (review of PR #80)", async () => {
+    await seed(prisma, config);
+    const now = new Date("2026-12-02T03:00:00.000Z"); // Wed 2 Dec 2026, 10:00 ICT
+
+    expect(await seedDemoRequests(prisma, now)).toBe(6);
+
+    const requests = await prisma.borrowRequest.findMany({ include: { lines: { include: { loans: true } } } });
+    const HOUR = 3_600_000;
+    const approved = requests.find((r) => r.status === "APPROVED")!;
+    // BR-13: the 48-hour pickup window starts at approval and must still be open.
+    expect(approved.decidedAt!.getTime()).toBe(now.getTime() - 2 * HOUR);
+    for (const r of requests) expect(r.createdAt.getTime()).toBeLessThan(now.getTime());
+    for (const loan of requests.flatMap((r) => r.lines.flatMap((l) => l.loans))) {
+      expect(loan.checkedOutAt.getTime()).toBeLessThan(now.getTime());
+      if (loan.status === "ACTIVE") expect(loan.dueAt.getTime()).toBeGreaterThan(now.getTime()); // not overdue (BR-15)
+      if (loan.returnedAt) expect(loan.returnedAt.getTime()).toBeLessThanOrEqual(now.getTime());
+    }
+    const entries = await prisma.historyEntry.findMany();
+    for (const e of entries) expect(e.occurredAt.getTime()).toBeLessThan(now.getTime());
+  });
+
+  it("refuses to seed demo loans on a unit that is not AVAILABLE and changes nothing (review of PR #80)", async () => {
+    await seed(prisma, config);
+    await prisma.unit.update({ where: { assetTag: "KH-DHT-0001" }, data: { status: UnitStatus.MAINTENANCE } });
+
+    await expect(seedDemoRequests(prisma)).rejects.toThrow("KH-DHT-0001 is MAINTENANCE, not AVAILABLE");
+
+    expect(await prisma.borrowRequest.count()).toBe(0);
+    expect(await prisma.historyEntry.count()).toBe(0);
+    expect((await prisma.unit.findUniqueOrThrow({ where: { assetTag: "KH-DHT-0001" } })).status).toBe(UnitStatus.MAINTENANCE);
+    expect(await prisma.unit.count({ where: { status: UnitStatus.ON_LOAN } })).toBe(0);
+  });
+
+  it("adds no demo request when any request already exists, so a used database is never changed (#73)", async () => {
+    await seed(prisma, config);
+    expect(await seedDemoRequests(prisma)).toBe(6);
+    const before = await prisma.borrowRequest.count();
+
+    expect(await seedDemoRequests(prisma)).toBe(0);
+    expect(await prisma.borrowRequest.count()).toBe(before);
   });
 
   it("changes nothing when run a second time, even after records were changed", async () => {

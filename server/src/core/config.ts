@@ -20,6 +20,8 @@ export interface AppConfig {
 export interface SeedConfig {
   bcryptCost: number;
   seedDemoData: boolean;
+  /** Sprint 2 demo requests in every state (#73); only into a database with no request */
+  seedDemoRequests: boolean;
   custodianPassword: string;
   borrowerPassword: string | undefined;
 }
@@ -68,6 +70,7 @@ const serverSchema = z.object({
 const seedSchema = z.object({
   BCRYPT_COST: optional(intInRange(4, 31)),
   SEED_DEMO_DATA: optional(booleanString),
+  SEED_DEMO_REQUESTS: optional(booleanString),
   SEED_CUSTODIAN_PASSWORD: optional(z.string()),
   SEED_BORROWER_PASSWORD: optional(z.string()),
 });
@@ -106,6 +109,7 @@ export function loadSeedConfig(env: Env = process.env): SeedConfig {
   if (!parsed.success) throw new ConfigError(describeIssues(parsed.error, env));
   const v = parsed.data;
   const seedDemoData = v.SEED_DEMO_DATA ?? false;
+  const seedDemoRequests = v.SEED_DEMO_REQUESTS ?? false;
 
   const problems: string[] = [];
   const checkPassword = (name: string, value: string | undefined) => {
@@ -115,11 +119,14 @@ export function loadSeedConfig(env: Env = process.env): SeedConfig {
   };
   checkPassword("SEED_CUSTODIAN_PASSWORD", v.SEED_CUSTODIAN_PASSWORD);
   if (seedDemoData) checkPassword("SEED_BORROWER_PASSWORD", v.SEED_BORROWER_PASSWORD);
+  // The demo requests belong to the demo Borrower accounts.
+  if (seedDemoRequests && !seedDemoData) problems.push("SEED_DEMO_REQUESTS needs SEED_DEMO_DATA=true");
   if (problems.length > 0) throw new ConfigError(problems);
 
   return {
     bcryptCost: v.BCRYPT_COST ?? 12,
     seedDemoData,
+    seedDemoRequests,
     custodianPassword: v.SEED_CUSTODIAN_PASSWORD as string,
     borrowerPassword: seedDemoData ? v.SEED_BORROWER_PASSWORD : undefined,
   };
