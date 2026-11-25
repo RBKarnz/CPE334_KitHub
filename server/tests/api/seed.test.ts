@@ -119,6 +119,39 @@ describe("seed (SDS 4.8)", () => {
     }
   });
 
+  it("dates the demo requests relative to the seed time, so they do not age into expiry or overdue (review of PR #80)", async () => {
+    await seed(prisma, config);
+    const now = new Date("2026-12-02T03:00:00.000Z"); // Wed 2 Dec 2026, 10:00 ICT
+
+    expect(await seedDemoRequests(prisma, now)).toBe(6);
+
+    const requests = await prisma.borrowRequest.findMany({ include: { lines: { include: { loans: true } } } });
+    const HOUR = 3_600_000;
+    const approved = requests.find((r) => r.status === "APPROVED")!;
+    // BR-13: the 48-hour pickup window starts at approval and must still be open.
+    expect(approved.decidedAt!.getTime()).toBe(now.getTime() - 2 * HOUR);
+    for (const r of requests) expect(r.createdAt.getTime()).toBeLessThan(now.getTime());
+    for (const loan of requests.flatMap((r) => r.lines.flatMap((l) => l.loans))) {
+      expect(loan.checkedOutAt.getTime()).toBeLessThan(now.getTime());
+      if (loan.status === "ACTIVE") expect(loan.dueAt.getTime()).toBeGreaterThan(now.getTime()); // not overdue (BR-15)
+      if (loan.returnedAt) expect(loan.returnedAt.getTime()).toBeLessThanOrEqual(now.getTime());
+    }
+    const entries = await prisma.historyEntry.findMany();
+    for (const e of entries) expect(e.occurredAt.getTime()).toBeLessThan(now.getTime());
+  });
+
+  it("refuses to seed demo loans on a unit that is not AVAILABLE and changes nothing (review of PR #80)", async () => {
+    await seed(prisma, config);
+    await prisma.unit.update({ where: { assetTag: "KH-DHT-0001" }, data: { status: UnitStatus.MAINTENANCE } });
+
+    await expect(seedDemoRequests(prisma)).rejects.toThrow("KH-DHT-0001 is MAINTENANCE, not AVAILABLE");
+
+    expect(await prisma.borrowRequest.count()).toBe(0);
+    expect(await prisma.historyEntry.count()).toBe(0);
+    expect((await prisma.unit.findUniqueOrThrow({ where: { assetTag: "KH-DHT-0001" } })).status).toBe(UnitStatus.MAINTENANCE);
+    expect(await prisma.unit.count({ where: { status: UnitStatus.ON_LOAN } })).toBe(0);
+  });
+
   it("adds no demo request when any request already exists, so a used database is never changed (#73)", async () => {
     await seed(prisma, config);
     expect(await seedDemoRequests(prisma)).toBe(6);
