@@ -1,7 +1,7 @@
 // TEST-88 (AC-88): the All requests view on /requests for a Custodian, and My requests unchanged
 // for a Borrower (contract F-06 4.2, F06-D8). The requests module is mocked with a vi.mock factory,
 // so this file does not import functions before they exist (F-06 8.1).
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../src/App";
@@ -105,11 +105,19 @@ describe("TEST-88 (AC-88): All requests page", () => {
     renderAt(custodian, "/requests");
     await screen.findByRole("link", { name: "#1" });
 
-    fetchRequests.mockResolvedValue([r2]);
+    const second = deferred<BorrowRequest[]>();
+    fetchRequests.mockReturnValue(second.promise);
     fireEvent.change(screen.getByLabelText("State"), { target: { value: "APPROVED" } });
 
     await waitFor(() => expect(fetchRequests).toHaveBeenLastCalledWith("APPROVED"));
-    await waitFor(() => expect(screen.queryByRole("link", { name: "#1" })).not.toBeInTheDocument());
+    // Review of PR #91: while the new filter loads, the previous filter's rows are not shown.
+    expect(screen.queryByRole("link", { name: "#1" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "#2" })).not.toBeInTheDocument();
+    expect(screen.getByText("Loading…")).toBeInTheDocument();
+
+    await act(async () => second.resolve([r2]));
+    expect(await screen.findByRole("link", { name: "#2" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "#1" })).not.toBeInTheDocument();
   });
 
   it("TEST-88 (f): a Borrower on /requests still sees My requests, without a state filter", async () => {

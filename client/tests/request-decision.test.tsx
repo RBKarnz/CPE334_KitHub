@@ -1,7 +1,7 @@
 // TEST-89 (AC-89) and TEST-83 (c) (AC-83): approve and reject on the request detail, and the
 // decision shown to each role (contract F-06 4.3, 4.4). The requests module is mocked with a
 // vi.mock factory, so this file does not import functions before they exist (F-06 8.1).
-import { act, fireEvent, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "../src/api/client";
 import type { BorrowRequest } from "../src/api/requests";
@@ -136,6 +136,43 @@ describe("TEST-89 (AC-89): approve and reject on the request detail", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent("because it is APPROVED, not PENDING.");
     await waitFor(() => expect(fetchRequest).toHaveBeenCalledTimes(2));
+  });
+});
+
+describe("TEST-89: dialog behaviour while a call runs and on 400 (review of PR #91)", () => {
+  it("TEST-89 (e): while approve is pending, Cancel and Close are disabled and Escape does not close the dialog", async () => {
+    fetchRequest.mockResolvedValue(pending);
+    const slow = deferred<BorrowRequest>();
+    approveRequest.mockReturnValue(slow.promise);
+    renderDetail();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Approve" }));
+    fireEvent.click(screen.getByRole("button", { name: "Approve Request #12" }));
+
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Close" })).toBeDisabled();
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    await act(async () => slow.resolve(approved));
+  });
+
+  it("TEST-89 (f): a 400 from reject keeps the dialog open with the typed reason and shows the message there", async () => {
+    fetchRequest.mockResolvedValue(pending);
+    rejectRequest.mockRejectedValue(
+      new ApiError(400, "VALIDATION_FAILED", "The request is not valid.", [
+        { field: "reason", issue: "Must be at most 500 characters" },
+      ]),
+    );
+    renderDetail();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Reject" }));
+    fireEvent.change(screen.getByLabelText("Reason"), { target: { value: "Broken cable." } });
+    fireEvent.click(screen.getByRole("button", { name: "Reject Request #12" }));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent("The request is not valid.");
+    expect(within(dialog).getByLabelText("Reason")).toHaveValue("Broken cable.");
+    expect(fetchRequest).toHaveBeenCalledTimes(1);
   });
 });
 
