@@ -303,7 +303,29 @@ Evidence EV-D-01 (RED), EV-D-02 (GREEN) and EV-D-03 (regression) are in the Lab 
 
 ### 4.7 Lab 7: change request #71 (due date on a business day at 17:00)
 
-Status on 2026-11-25: specified in F-03 contract v1.3, SRS v1.4 (D-21) and SDS v1.9; not implemented yet. AC-54 to AC-60 and the revised AC-19, TEST-19, TEST-49 and TEST-50 are **Planned**: their RED run on the pre-change code and their GREEN run are recorded here after the implementation PR. Impact analysis: `docs/labs/lab-07/change-71.md`.
+Status on 2026-11-25: specified in F-03 contract v1.3, SRS v1.4 (D-21) and SDS v1.9 (PR #72); implemented in PR #88. Impact analysis: `docs/labs/lab-07/change-71.md`. Raw output: `docs/labs/lab-07/evidence/` (`regression-summary.md` lists every file).
+
+| Run | Commit | Command | Result |
+| --- | --- | --- | --- |
+| RED, server (three changed files) | `e08dbb2` (tests only, on `staging` `5508f49`) | `npx vitest run tests/unit/due-date.test.ts tests/api/checkout.test.ts tests/api/due-date-preview.test.ts` | 22 failed, 27 passed, 0 skipped; every failure an assertion |
+| RED, client | `e08dbb2` | `npx vitest run` | 2 failed (TEST-58 (f), (g)), 40 passed, 0 skipped |
+| GREEN, server | `b1898d5` | `npm run typecheck && npx vitest run` | typecheck OK; 185 passed, 0 failed, 0 skipped |
+| GREEN, client | `b1898d5` | `npx tsc --noEmit -p . && npx vitest run` | typecheck OK; 42 passed, 0 failed, 0 skipped |
+| GREEN, end-to-end | `b1898d5` | `npm run test:e2e` | 4 passed (TEST-30 to TEST-32, TEST-53) |
+
+| AC | Tests | Status |
+| --- | --- | --- |
+| AC-19 (revised) | TEST-19, TEST-50 (revised), TEST-51 | **Implemented**: pass on `b1898d5` |
+| AC-49 (revised example) | TEST-49 (e) | **Implemented**: pass on `b1898d5` |
+| AC-54 | TEST-54 | **Implemented**: failed on `e08dbb2`, pass on `b1898d5` |
+| AC-55 | TEST-55 | **Implemented**: failed on `e08dbb2`, pass on `b1898d5` |
+| AC-56 | TEST-56 | **Implemented**: failed on `e08dbb2`, pass on `b1898d5` |
+| AC-57 | TEST-57 | **Implemented**: failed on `e08dbb2`, pass on `b1898d5` |
+| AC-58 | TEST-58 (a) to (g) | **Implemented**: failed on `e08dbb2`, pass on `b1898d5` |
+| AC-59 | TEST-59 (integration) | **Implemented**: pass on `e08dbb2` and `b1898d5` (stored values were never recalculated); the manual production check of Request #5 follows the deploy |
+| AC-60 | TEST-60 | **Implemented**: pass on `e08dbb2` and `b1898d5` (display of the stored value) |
+
+"Implemented" means the tests pass on the GREEN commit. The rows move to **Verified** after the release into `main`, when the post-deploy checks (17:00 business-day due date on a new checkout, Request #5 keeps its old due date, a Borrower gets `403` on the preview) are recorded.
 
 ## 5. Sprint 2 acceptance criteria and planned tests
 

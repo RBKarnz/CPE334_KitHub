@@ -10,3 +10,8 @@ const DATE_TIME = new Intl.DateTimeFormat("en-GB", {
 });
 
 export const formatDateTime = (iso: string) => DATE_TIME.format(new Date(iso));
+
+// With the weekday, for the due-date preview: "Fri 20 Nov 2026, 17:00" (contract F-03 4.3, #71).
+const WEEKDAY = new Intl.DateTimeFormat("en-GB", { weekday: "short", timeZone: "Asia/Bangkok" });
+
+export const formatWeekdayDateTime = (iso: string) => `${WEEKDAY.format(new Date(iso))} ${formatDateTime(iso)}`;

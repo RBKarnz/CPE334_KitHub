@@ -1,7 +1,8 @@
-// TEST-49 (AC-49): the checkout dialog (contract F-03 4.3). The units, checkout and requests API
-// modules are mocked.
+// TEST-49 (AC-49) and TEST-58 (AC-58) (f), (g): the checkout dialog (contract F-03 4.3). The units,
+// checkout and requests API modules are mocked. The due-date preview (#71) is mocked with a
+// vi.mock factory, so this file does not import a preview function before it exists (F-03 8.1).
 import { act, fireEvent, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as checkoutApi from "../src/api/checkout";
 import { ApiError } from "../src/api/client";
 import * as requestsApi from "../src/api/requests";
@@ -17,6 +18,20 @@ const units: UnitSummary[] = [
   { id: 6, assetTag: "KH-ARD-0006", status: "AVAILABLE" },
   { id: 7, assetTag: "KH-ARD-0007", status: "AVAILABLE" },
 ];
+
+const { fetchDueDatePreview } = vi.hoisted(() => ({ fetchDueDatePreview: vi.fn() }));
+vi.mock("../src/api/units", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../src/api/units")>()),
+  fetchDueDatePreview,
+}));
+
+/** The 5.5 example: item type 3 at Fri 6 Nov 2026, 14:30 ICT. */
+const preview = { itemTypeId: 3, maxLoanDays: 14, at: "2026-11-06T07:30:00.000Z", dueAt: "2026-11-20T10:00:00.000Z" };
+
+beforeEach(() => {
+  fetchDueDatePreview.mockReset();
+  fetchDueDatePreview.mockResolvedValue(preview);
+});
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -107,7 +122,7 @@ describe("TEST-49 (AC-49): checkout dialog", () => {
     fireEvent.click(await screen.findByRole("radio", { name: "KH-ARD-0007" }));
     fireEvent.click(screen.getByRole("button", { name: "Check out KH-ARD-0007 for Request #12" }));
 
-    expect(await screen.findByText("Request #12 checked out: KH-ARD-0007, due 20 Nov 2026, 14:30")).toBeInTheDocument();
+    expect(await screen.findByText("Request #12 checked out: KH-ARD-0007, due 20 Nov 2026, 17:00")).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     await waitFor(() => expect(fetchPending).toHaveBeenCalledTimes(2));
     expect(await screen.findByText("No pending requests.")).toBeInTheDocument();
@@ -121,6 +136,32 @@ describe("TEST-49 (AC-49): checkout dialog", () => {
     fireEvent.click(await screen.findByRole("radio", { name: "KH-ARD-0007" }));
     fireEvent.click(screen.getByRole("button", { name: "Check out KH-ARD-0007 for Request #12" }));
 
+    await waitFor(() => expect(handlers.onCheckedOut).toHaveBeenCalledWith(checkedOut12));
+  });
+});
+
+describe("TEST-58 (AC-58): due-date preview in the checkout dialog (#71)", () => {
+  it("TEST-58 (f): shows the due date a checkout now would get, with weekday, in ICT", async () => {
+    vi.spyOn(unitsApi, "fetchUnits").mockResolvedValue(units);
+    renderDialog();
+
+    expect(await screen.findByText("Due if checked out now: Fri 20 Nov 2026, 17:00")).toBeInTheDocument();
+    expect(fetchDueDatePreview).toHaveBeenCalledWith(3);
+  });
+
+  it("TEST-58 (g): a preview error shows 'Due date not available.' and checkout still works", async () => {
+    vi.spyOn(unitsApi, "fetchUnits").mockResolvedValue(units);
+    fetchDueDatePreview.mockRejectedValue(new ApiError(0, "NETWORK_ERROR", "Cannot reach KitHub. Check your connection and try again."));
+    const checkout = vi.spyOn(checkoutApi, "checkoutRequest").mockResolvedValue(checkedOut12);
+    const handlers = renderDialog();
+
+    expect(await screen.findByText("Due date not available.")).toBeInTheDocument();
+    expect(fetchDueDatePreview).toHaveBeenCalledWith(3);
+    fireEvent.click(await screen.findByRole("radio", { name: "KH-ARD-0007" }));
+    const button = screen.getByRole("button", { name: "Check out KH-ARD-0007 for Request #12" });
+    expect(button).toBeEnabled();
+    fireEvent.click(button);
+    expect(checkout).toHaveBeenCalledWith(12, { units: [{ lineId: 5, unitId: 7 }] });
     await waitFor(() => expect(handlers.onCheckedOut).toHaveBeenCalledWith(checkedOut12));
   });
 });

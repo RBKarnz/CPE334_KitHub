@@ -19,3 +19,6 @@ export const listUnitsQuery = z.object({
 });
 
 export type ListUnitsQuery = z.infer<typeof listUnitsQuery>;
+
+// The due-date preview takes no query field; validate() makes this strict (contract F-03 5.5, #71).
+export const dueDatePreviewQuery = z.object({});
