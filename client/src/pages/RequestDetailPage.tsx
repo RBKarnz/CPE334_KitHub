@@ -81,10 +81,10 @@ export function RequestDetailPage() {
       }
     }
   };
-  // /requests is Borrower-only, so a Custodian goes back to Pending requests instead.
+  // /requests is My requests for a Borrower and All requests for a Custodian (F06-D8).
   const back =
     user?.role === "CUSTODIAN"
-      ? { to: "/pending", label: "Back to Pending requests" }
+      ? { to: "/requests", label: "Back to All requests" }
       : { to: "/requests", label: "Back to My requests" };
 
   if (!valid) return <NotFoundPage />;
