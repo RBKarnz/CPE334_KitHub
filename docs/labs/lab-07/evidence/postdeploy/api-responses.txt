@@ -1,0 +1,25 @@
+Lab 7 #71 post-deploy checks, revision kithub-00010-slp (main 6ada56d), https://kithub-899467106955.asia-southeast1.run.app
+Recorded 2026-11-25 about 21:20 ICT, demo accounts only.
+
+1) No session: GET /api/item-types/3/due-date-preview -> 401
+{"error":{"code":"UNAUTHENTICATED","message":"You are not signed in.","requestId":"0281b0e9-b51c-4950-be38-8a1d59c9b970"}}
+
+2) As borrower1: GET /api/item-types/3/due-date-preview -> 403
+{"error":{"code":"FORBIDDEN","message":"You do not have permission to do this.","requestId":"15880c58-7787-48ae-9a26-a4c7ceebf9a7"}}
+
+3) borrower1 created Request #7 (Arduino Uno R3) in the catalog: "Request #7 submitted."
+   custodian1 opened the checkout dialog: "Due if checked out now: Thu 10 Dec 2026, 17:00"
+   Expected before the checkout (Wed 25 Nov after 16:00 ICT, 14 days): Thu 10 Dec 2026, 17:00 = 2026-12-10T10:00:00.000Z
+   After checkout: "Request #7 checked out: KH-ARD-0001, due 10 Dec 2026, 17:00"
+
+4) As custodian1: GET /api/requests/7
+{"id":7,"status":"CHECKED_OUT","createdAt":"2026-11-25T14:19:59.912Z","dueAt":"2026-12-10T10:00:00.000Z","borrower":{"id":3,"username":"borrower1","displayName":"Borrower One"},"lines":[{"id":7,"itemType":{"id":1,"name":"Arduino Uno R3"},"quantity":1,"loans":[{"id":5,"status":"ACTIVE","checkedOutAt":"2026-11-25T14:21:21.418Z","dueAt":"2026-12-10T10:00:00.000Z","unit":{"id":1,"assetTag":"KH-ARD-0001"},"checkedOutBy":{"id":1,"username":"custodian1","displayName":"Custodian One"}}]}]}
+   checkedOutAt 14:21:21Z = Wed 25 Nov 21:21 ICT (after the 16:00 cutoff) -> start Thu 26 Nov -> due Thu 10 Dec 17:00 ICT. Matches D-21.
+
+5) As custodian1: GET /api/requests/5 (old rule, checked out before #71)
+{"id":5,"status":"CHECKED_OUT","createdAt":"2026-11-22T18:27:05.554Z","dueAt":"2026-12-08T15:07:38.200Z","borrower":{"id":4,"username":"borrower2","displayName":"Borrower Two"},"lines":[{"id":5,"itemType":{"id":4,"name":"HC-SR04 ultrasonic sensor"},"quantity":1,"loans":[{"id":4,"status":"ACTIVE","checkedOutAt":"2026-11-24T15:07:38.200Z","dueAt":"2026-12-08T15:07:38.200Z","unit":{"id":14,"assetTag":"KH-SR04-0002"},"checkedOutBy":{"id":1,"username":"custodian1","displayName":"Custodian One"}}]}]}
+   dueAt 2026-12-08T15:07:38.200Z = 8 Dec 2026, 22:07 ICT = checkedOutAt + 14 x 24 h (old rule). Not recalculated (TEST-59 manual part).
+
+Note: borrower1 opening /requests/5 sees "Request not found." because Request #5 belongs to borrower2 (BR-05).
+
+6) As borrower1: /requests/7 shows "Checked out", "Due 10 Dec 2026, 17:00", "Unit KH-ARD-0001 · Checked out 25 Nov 2026, 21:21" (04-borrower1-request7-checked-out.jpg). The journey Borrower requests -> Custodian checks out -> Borrower sees Checked out works on the deployed revision.
