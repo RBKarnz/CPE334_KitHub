@@ -46,6 +46,7 @@ export function RequestDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [alert, setAlert] = useState<string | null>(null);
+  const [dialogError, setDialogError] = useState<string | null>(null);
   // Blocks a second call even before React re-renders the disabled button.
   const inFlight = useRef(false);
 
@@ -55,6 +56,9 @@ export function RequestDetailPage() {
     setSubmitting(true);
     setAlert(null);
     setNotice(null);
+    setDialogError(null);
+    // Closed and reloaded after a success, 409 or 404 (the request changed); kept open on 400.
+    let close = true;
     try {
       if (kind === "approve") await approveRequest(requestId);
       else await rejectRequest(requestId, reason!);
@@ -62,13 +66,19 @@ export function RequestDetailPage() {
     } catch (err) {
       const apiError = err instanceof ApiError ? err : new ApiError(0, "INTERNAL_ERROR", "Something went wrong.");
       // A 401 is handled by AuthProvider (session ended, SDS 5.3).
-      if (apiError.code === "UNAUTHENTICATED") return;
-      setAlert(apiError.message);
+      if (apiError.code === "UNAUTHENTICATED") close = false;
+      else if (apiError.status === 400) {
+        // Keep the typed reason and show the message in the dialog (contract F-06 4.4, review of PR #91).
+        close = false;
+        setDialogError(apiError.message);
+      } else setAlert(apiError.message);
     } finally {
       inFlight.current = false;
       setSubmitting(false);
-      setDialog(null);
-      detail.reload();
+      if (close) {
+        setDialog(null);
+        detail.reload();
+      }
     }
   };
   // /requests is Borrower-only, so a Custodian goes back to Pending requests instead.
@@ -180,7 +190,11 @@ export function RequestDetailPage() {
                 kind={dialog}
                 request={r}
                 submitting={submitting}
-                onCancel={() => setDialog(null)}
+                error={dialogError}
+                onCancel={() => {
+                  setDialog(null);
+                  setDialogError(null);
+                }}
                 onConfirm={(reason) => decide(dialog, reason)}
               />
             )}

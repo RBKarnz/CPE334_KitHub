@@ -40,7 +40,8 @@ export function AllRequestsPage() {
         </select>
       </div>
       <AsyncState
-        loading={requests.loading && !requests.data}
+        // Also while a new filter loads, so the previous filter's rows are never shown under it.
+        loading={requests.loading}
         error={requests.error}
         onRetry={requests.reload}
         isEmpty={items.length === 0}

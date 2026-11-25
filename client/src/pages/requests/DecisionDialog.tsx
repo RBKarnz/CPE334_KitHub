@@ -9,12 +9,14 @@ export interface DecisionDialogProps {
   kind: "approve" | "reject";
   request: BorrowRequest;
   submitting: boolean;
+  /** A 400 from the API: shown inside the dialog, which stays open with the reason (contract F-06 4.4). */
+  error?: string | null;
   onCancel: () => void;
   /** The reason is the trimmed text for a reject, undefined for an approve. */
   onConfirm: (reason?: string) => void;
 }
 
-export function DecisionDialog({ kind, request, submitting, onCancel, onConfirm }: DecisionDialogProps) {
+export function DecisionDialog({ kind, request, submitting, error, onCancel, onConfirm }: DecisionDialogProps) {
   const [reason, setReason] = useState("");
   const dialogRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
@@ -32,7 +34,8 @@ export function DecisionDialog({ kind, request, submitting, onCancel, onConfirm 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "Escape") {
       event.stopPropagation();
-      onCancel();
+      // The dialog cannot be closed while the call runs (review of PR #91).
+      if (!submitting) onCancel();
     }
   };
 
@@ -58,8 +61,15 @@ export function DecisionDialog({ kind, request, submitting, onCancel, onConfirm 
                   ? `Approve Request #${request.id} for ${borrower}?`
                   : `Reject Request #${request.id} for ${borrower}`}
               </h2>
-              <button type="button" className="btn-close" aria-label="Close" onClick={onCancel} />
+              <button type="button" className="btn-close" aria-label="Close" onClick={onCancel} disabled={submitting} />
             </div>
+            {error && (
+              <div className="modal-body pb-0">
+                <div className="alert alert-warning mb-0" role="alert">
+                  {error}
+                </div>
+              </div>
+            )}
             {kind === "reject" && (
               <div className="modal-body">
                 <label htmlFor={reasonId} className="form-label">
@@ -79,7 +89,7 @@ export function DecisionDialog({ kind, request, submitting, onCancel, onConfirm 
               </div>
             )}
             <div className="modal-footer">
-              <button type="button" className="btn btn-outline-secondary" onClick={onCancel}>
+              <button type="button" className="btn btn-outline-secondary" onClick={onCancel} disabled={submitting}>
                 Cancel
               </button>
               <button
