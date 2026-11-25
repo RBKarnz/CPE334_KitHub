@@ -80,7 +80,7 @@ Outstanding items (do not block READY):
 | Student | Lab 7 work |
 | --- | --- |
 | Teerakarn Noiruksa (67070501062) | Change request #71; impact table and contract revisions (PR #72); RED/GREEN implementation (PR #88); release PR #89; post-deploy checks (PR #90); metrics and readiness (this page, PR #92) |
-| Methipat Mansap (67070501071) | Reviewed every Lab 7 PR before it merged: #72 (changes requested twice, then approved before any code), #80, #88 (changes requested for the raw RED/GREEN evidence and trace records, then approved), #89 (release approval), #90 (changes requested for the AC-59 record, then approved) and #92. Checked `computeDueAt` against an independent D-21 reference over 18,265 timestamps, re-ran the client RED/GREEN suites, and recomputed M1 to M5 from GitHub. Merged #72 and the release PR #89 into `main`, which started the deploy of `kithub-00010-slp`. |
+| Methipat Mansap (67070501071) | Reviewed every Lab 7 PR before it merged: #72 (changes requested twice, then approved before any code), #80, #88 (changes requested for the raw RED/GREEN evidence and trace records, then approved), #89 (release approval), #90 (changes requested for the AC-59 record, then approved) and #92. Checked `computeDueAt` against an independent D-21 reference over 18,265 timestamps, re-ran the client RED/GREEN suites, and recomputed M1 to M5 from GitHub. Merged #72 into `staging` and the release PR #89 into `main`, which started the deploy of `kithub-00010-slp`. |
 
 ### D.5 AI-use declaration
 
