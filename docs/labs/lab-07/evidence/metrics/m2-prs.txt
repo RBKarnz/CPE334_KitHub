@@ -1,0 +1,17 @@
+# M2 merged PRs. Snapshot: 2026-11-26 00:43 ICT (2026-11-25T17:43:00Z)
+Window: merged created/closed/merged between 2026-11-24T17:00:00Z and 2026-11-25T17:00:00Z (25 Nov 2026, 00:00 to 24:00 ICT)
+Command: gh pr list --state merged --limit 100 --search "merged:>=2026-11-24T17:00:00Z merged:<2026-11-25T17:00:00Z" --json number,title,mergedAt,baseRefName
+----
+number	mergedAt (UTC)	base	title
+72	2026-11-25T12:53:30Z	staging	docs(#71): specify the business-day due date before code (Lab 7)
+80	2026-11-25T13:08:44Z	staging	SR(#73): Sprint 2 schema migration and demo seed
+81	2026-11-25T13:13:42Z	staging	docs(#76): F-06 approve and reject contract
+82	2026-11-25T13:09:37Z	staging	docs(#77): F-07 multi-unit checkout and loan lists contract
+83	2026-11-25T13:09:51Z	staging	docs(#78): F-08 returns contract
+84	2026-11-25T13:08:17Z	staging	docs(#74): F-04 multi-line requests and item type detail contract
+85	2026-11-25T13:07:21Z	staging	docs(#75): F-05 edit and cancel requests contract
+86	2026-11-25T13:10:57Z	staging	docs(#79): F-09 catalog management contract
+87	2026-11-25T13:38:17Z	staging	docs: Sprint 2 AC and planned tests in features.md and traceability.md
+88	2026-11-25T13:54:02Z	staging	Lab 7 #71: due date at 17:00 ICT on a business day, with a checkout preview
+89	2026-11-25T14:05:55Z	main	Release: Lab 7 change request #71 (due date on a business day at 17:00)
+90	2026-11-25T14:44:03Z	staging	docs(#71): post-deploy checks passed, AC-54 to AC-60 Verified

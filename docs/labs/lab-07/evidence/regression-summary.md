@@ -31,7 +31,7 @@ All 24 failures are assertions about behaviour that does not exist yet: the old 
 | Server, whole suite (27 files) | `npx vitest run` | `b1898d5` | 185 | 0 | 0 | `green-server.txt` |
 | Client typecheck | `npx tsc --noEmit -p .` | `b1898d5` | exit 0 | - | - | `green-client.txt` |
 | Client, whole suite (5 files) | `npx vitest run` | `b1898d5` | 42 | 0 | 0 | `green-client.txt` |
-| End-to-end (Playwright, not run by CI) | `npm run test:e2e` | `b1898d5` | 4 | 0 | 0 | `green-e2e.txt` |
+| End-to-end (Playwright) | `npm run test:e2e` | `b1898d5` | 4 | 0 | 0 | `green-e2e.txt` |
 
 The implementation diff is `green-diff.txt` (`git diff e08dbb2 b1898d5 -- server/src client/src`, 7 files, 104 insertions, 10 deletions).
 
@@ -47,3 +47,5 @@ The implementation diff is `green-diff.txt` (`git diff e08dbb2 b1898d5 -- server
 | UI: pending list, checkout dialog, catalog, My requests, narrow screens | client suite (42), E2E TEST-30 (revised due-date assertion only) and TEST-53 | All pass |
 
 No test was deleted, skipped or weakened. The expected values that changed (TEST-19, TEST-49 (e), TEST-50, TEST-30) are listed with their old values in F-03 contract v1.3 section 8.2.
+
+Correction (2026-11-26): an earlier version of this summary, the PR #88 and #89 bodies and the title line of `green-e2e.txt` said the E2E tests are not run by CI. That was wrong: `ci-docker.yml` runs `npm run test:e2e` (lines 172 to 174), and the Deploy demo run 45630366597 on `main` `6ada56d` shows "4 passed" (`metrics/m3-tests.txt`). The local E2E run above is still the record for `b1898d5`.

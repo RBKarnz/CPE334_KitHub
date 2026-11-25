@@ -1,0 +1,7 @@
+# M1 completed Issues. Snapshot: 2026-11-26 00:43 ICT (2026-11-25T17:43:00Z)
+Window: closed created/closed/merged between 2026-11-24T17:00:00Z and 2026-11-25T17:00:00Z (25 Nov 2026, 00:00 to 24:00 ICT)
+Command: gh issue list --state closed --limit 100 --search "closed:>=2026-11-24T17:00:00Z closed:<2026-11-25T17:00:00Z" --json number,title,closedAt,stateReason,labels
+----
+number	closedAt (UTC)	stateReason	labels	title
+71	2026-11-25T14:27:32Z	COMPLETED	lab7,change-request	[Change] Due date on a business day at 17:00 with a 16:00 checkout cutoff (Lab 7)
+64	2026-11-25T08:15:18Z	COMPLETED	test,lab6	Run the partner team's Sprint 1 UAT (LECTRA) and record our decision

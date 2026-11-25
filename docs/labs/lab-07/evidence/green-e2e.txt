@@ -1,4 +1,4 @@
-# GREEN, end-to-end (Playwright, not run by CI)
+# GREEN, end-to-end (Playwright; CI also runs it, see regression-summary.md correction)
 Command: npm run test:e2e
 Commit: b1898d540f233882730a08f779de55d6da2b1e7c feat(#71): due date at 17:00 ICT on a business day, with a checkout preview
 Date: 2026-11-25 20:42:18 ICT
