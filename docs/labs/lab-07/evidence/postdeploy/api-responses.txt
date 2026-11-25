@@ -20,6 +20,7 @@ The service URL above and https://kithub-itgltxbgxa-as.a.run.app (the form used 
 5) As custodian1: GET /api/requests/5 (old rule, checked out before #71)
 {"id":5,"status":"CHECKED_OUT","createdAt":"2026-11-22T18:27:05.554Z","dueAt":"2026-12-08T15:07:38.200Z","borrower":{"id":4,"username":"borrower2","displayName":"Borrower Two"},"lines":[{"id":5,"itemType":{"id":4,"name":"HC-SR04 ultrasonic sensor"},"quantity":1,"loans":[{"id":4,"status":"ACTIVE","checkedOutAt":"2026-11-24T15:07:38.200Z","dueAt":"2026-12-08T15:07:38.200Z","unit":{"id":14,"assetTag":"KH-SR04-0002"},"checkedOutBy":{"id":1,"username":"custodian1","displayName":"Custodian One"}}]}]}
    dueAt 2026-12-08T15:07:38.200Z = 8 Dec 2026, 22:07 ICT = checkedOutAt + 14 x 24 h (old rule). Not recalculated (TEST-59 manual part).
+   UI, full window with the address bar: custodian1 on https://kithub-itgltxbgxa-as.a.run.app/requests/5 shows "Checked out" and "Due 8 Dec 2026, 22:07", taken 21:36 ICT after the deploy (05-custodian-request5-old-due.png).
 
 Note: borrower1 opening /requests/5 sees "Request not found." because Request #5 belongs to borrower2 (BR-05).
 
