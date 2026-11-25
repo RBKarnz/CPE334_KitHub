@@ -1,0 +1,42 @@
+# M5 CI run outcomes. Snapshot: 2026-11-26 00:43 ICT (2026-11-25T17:43:00Z)
+Scope: workflow ci-docker.yml (test-and-docker), all branches, runs created/closed/merged between 2026-11-24T17:00:00Z and 2026-11-25T17:00:00Z (25 Nov 2026, 00:00 to 24:00 ICT); plus Deploy demo (deploy.yml) in the same window
+Command: gh run list --workflow ci-docker.yml --limit 100 --created "2026-11-24T17:00:00Z..2026-11-25T17:00:00Z" --json databaseId,createdAt,event,headBranch,headSha,status,conclusion
+----
+runId	createdAt (UTC)	event	branch	sha	conclusion
+45636804497	2026-11-25T14:41:28Z	pull_request	docs/71-postdeploy-verified	b54da8a	success
+45634969268	2026-11-25T14:31:21Z	pull_request	docs/71-postdeploy-verified	ced327b	success
+45634225290	2026-11-25T14:27:16Z	pull_request	docs/71-postdeploy-verified	8b3da24	success
+45628753471	2026-11-25T13:56:49Z	pull_request	staging	51e97cc	success
+45628685666	2026-11-25T13:56:25Z	pull_request	staging	d2cce0d	cancelled
+45627788308	2026-11-25T13:51:05Z	pull_request	feature/71-due-date	d69420f	success
+45624329603	2026-11-25T13:30:44Z	pull_request	docs/sprint2-trace	c4f40ae	success
+45623759638	2026-11-25T13:27:23Z	pull_request	feature/71-due-date	b1898d5	success
+45621686653	2026-11-25T13:15:14Z	pull_request	docs/sprint2-trace	bdbdef4	success
+45620839866	2026-11-25T13:10:12Z	pull_request	docs/76-contract-f06	c0c6e1c	success
+45620797106	2026-11-25T13:09:58Z	pull_request	docs/76-contract-f06	ae45eff	cancelled
+45620057022	2026-11-25T13:05:27Z	pull_request	setup/73-sprint2-schema	a038d4e	success
+45619821046	2026-11-25T13:04:02Z	pull_request	docs/79-contract-f09	f3b4aff	success
+45618760627	2026-11-25T12:57:34Z	pull_request	docs/74-contract-f04	a0a0044	success
+45618741439	2026-11-25T12:57:27Z	pull_request	docs/78-contract-f08	1609916	success
+45618710232	2026-11-25T12:57:14Z	pull_request	docs/79-contract-f09	e75783d	success
+45618486626	2026-11-25T12:55:48Z	pull_request	docs/78-contract-f08	dde1f00	cancelled
+45618479663	2026-11-25T12:55:46Z	pull_request	docs/77-contract-f07	6229d37	success
+45617769722	2026-11-25T12:51:20Z	pull_request	docs/76-contract-f06	8d4e509	success
+45616880679	2026-11-25T12:45:46Z	pull_request	docs/75-contract-f05	f33a7b2	success
+45616730635	2026-11-25T12:44:52Z	pull_request	docs/75-contract-f05	74aa436	cancelled
+45616722907	2026-11-25T12:44:49Z	pull_request	docs/79-contract-f09	6638511	success
+45616660303	2026-11-25T12:44:26Z	pull_request	docs/74-contract-f04	a6f0b24	success
+45616324003	2026-11-25T12:42:20Z	pull_request	docs/79-contract-f09	cbeb0b7	success
+45615848840	2026-11-25T12:39:24Z	pull_request	docs/75-contract-f05	642825e	success
+45615414781	2026-11-25T12:36:43Z	pull_request	docs/74-contract-f04	85e27a1	success
+45613883590	2026-11-25T12:27:11Z	pull_request	setup/73-sprint2-schema	f28b495	success
+45613076197	2026-11-25T12:22:07Z	pull_request	docs/71-due-date-contract	768aa78	success
+45611995765	2026-11-25T12:15:18Z	pull_request	docs/78-contract-f08	f42a788	success
+45611766028	2026-11-25T12:13:53Z	pull_request	docs/77-contract-f07	ef35d42	success
+45611431325	2026-11-25T12:11:44Z	pull_request	docs/76-contract-f06	4b63998	success
+45600919941	2026-11-25T11:04:05Z	pull_request	docs/71-due-date-contract	af63adb	success
+45600244988	2026-11-25T10:59:58Z	pull_request	setup/73-sprint2-schema	3ef56f8	success
+45596687443	2026-11-25T10:37:01Z	pull_request	docs/71-due-date-contract	3e3f3f5	success
+----
+deploy.yml:
+45630366597	2026-11-25T14:05:59Z	push	main	6ada56d	success

@@ -1,0 +1,13 @@
+# M3 automated test results. Snapshot: 2026-11-26 00:43 ICT (2026-11-25T17:43:00Z)
+Suite: job 'test / test-and-docker' of Deploy demo run 45630366597 on main 6ada56dff8c9b0a4175987e8b7f38698205b803f (the deployed release)
+Command: gh run view 45630366597 --log (lines with the vitest and playwright summaries)
+----
+[UNKNOWN STEP] 2026-11-25T14:06:35.1388471Z > vitest run
+[UNKNOWN STEP] 2026-11-25T14:06:57.3581177Z  Test Files  27 passed (27)
+[UNKNOWN STEP] 2026-11-25T14:06:57.3582232Z       Tests  185 passed (185)
+[UNKNOWN STEP] 2026-11-25T14:07:01.1889496Z > vitest run
+[UNKNOWN STEP] 2026-11-25T14:07:04.1310715Z  Test Files  5 passed (5)
+[UNKNOWN STEP] 2026-11-25T14:07:04.1312214Z       Tests  42 passed (42)
+[UNKNOWN STEP] 2026-11-25T14:07:07.3285682Z npm run test:e2e
+[UNKNOWN STEP] 2026-11-25T14:07:34.2101081Z > playwright test
+[UNKNOWN STEP] 2026-11-25T14:07:48.9655426Z   4 passed (14.1s)
