@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.11 |
-| Date | 2026-11-24 |
-| Source requirements | `docs/srs.md` v1.3 |
-| Features and AC/TEST definitions | `docs/features.md` v1.9 |
+| Version | 1.12 |
+| Date | 2026-11-25 |
+| Source requirements | `docs/srs.md` v1.4 |
+| Features and AC/TEST definitions | `docs/features.md` v1.10 |
 | Feature and SR IDs | Same as `docs/sprints/plan.md` section 3 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 
@@ -41,7 +41,7 @@ Sprint 1 rows link to planned AC and tests from `docs/features.md`. Sprint 2 and
 | FR-13 | Custodian approves a whole request | F-06 | 2 | Contract F-06 | - | Planned |
 | FR-14 | Custodian rejects a request with a reason | F-06 | 2 | Contract F-06 | - | Planned |
 | FR-15 | Approved request expires after 48 hours | F-10 | 3 | Contract F-10 | - | Planned |
-| FR-16 | Sprint 1 checkout of a pending request; rejected if no unit is available (D-17) | F-03 | 1 | AC-19, AC-20, AC-26, AC-42 to AC-49 | TEST-19, TEST-20, TEST-26, TEST-30, TEST-42 to TEST-51 | Verified (TEST-19, TEST-20, TEST-26, TEST-42 to TEST-51 on `1891aa0`, TEST-30 on `16fdb7f`) |
+| FR-16 | Sprint 1 checkout of a pending request; rejected if no unit is available (D-17); due date by D-21 since #71 | F-03 | 1 | AC-19, AC-20, AC-26, AC-42 to AC-49, AC-54 to AC-60 | TEST-19, TEST-20, TEST-26, TEST-30, TEST-42 to TEST-51, TEST-54 to TEST-60 | Verified for the v1.2 rule (TEST-19, TEST-20, TEST-26, TEST-42 to TEST-51 on `1891aa0`, TEST-30 on `16fdb7f`); change #71: AC-54 to AC-60 and the revised TEST-19, TEST-49, TEST-50 Planned |
 | FR-17 | Checkout of an approved request, one unit per quantity | F-07 | 2 | Contract F-07 | - | Planned |
 | FR-18 | Borrower sees own active loans | F-07 | 2 | Contract F-07 | - | Planned |
 | FR-19 | Custodian sees all active loans | F-07 | 2 | Contract F-07 | - | Planned |
@@ -125,3 +125,4 @@ None. Notes on three rows:
 | 2026-11-07 | FR-01, FR-07, FR-08, FR-16, BR-04 and NFR-02 move to Verified: their last tests, the E2E checks TEST-30, TEST-31 and TEST-32, pass on `16fdb7f` (`npm run test:e2e`: 4 passed, 0 failed, 0 skipped, in each of 3 runs in a row; `npm run typecheck:e2e` no errors; server 160 passed, client 39 passed on the same commit). No Sprint 1 row is Specified any more: every Sprint 1 row is Verified except NFR-06, which stays Planned until the Lab 5 redeploy check. New system check TEST-53 (E2E, SR-04) guards the #38 fix: Check out reachable at 640 and 760 px, Sign out visible at 600 px; it is listed under SR-04 in `docs/features.md` 3.1 and 4.4, since SR-04 adds no requirement row here. E2E runs at the repository root against `kithub_test` only (SDS 10); no application code, schema or existing test assertion changes. Results per test and the Part F evidence screenshots (`docs/sprints/sprint-1/img/e2e/`) are in `docs/features.md` 4.4.1. SDS v1.5 corrects the E2E database wording in section 10 | Sprint 1 E2E tests (#20); Deliverable 1 Part F needs a full journey, a rule rejection and a forbidden operation with backend evidence | #20, PR #40 |
 | 2026-11-07 | Release candidate check: every Sprint 1 test passes on `b864ecd` (`staging` after PR #40): server 160 passed, client 39 passed, E2E 4 passed, 0 failed and 0 skipped in each, and the client build, server build and both type checks have no errors. `docs/features.md` 4.5 maps all 43 Sprint 1 AC and the system checks to their test files, test names and results on that commit. No status changes: the Verified rows stay Verified, and NFR-06 stays Planned until the Lab 5 redeploy check | Deliverable 1 Part F needs one AC-to-test results table with the tested commit of the release | #21, PR #41 |
 | 2026-11-24 | UAT finding #68 corrected. Exercise commit `a964d8e` (PR #67) stopped the open-request check from reaching `requestRuleViolation`; LECTRA found it independently on `f5aa46e` (UAT-02 step 3, Major). PR #69 adds TEST-11b to AC-11 and BR-04 (F-02 contract v1.3 section 8.2; ID rule for UAT regression tests in `docs/features.md` v1.9 section 1) and restores the original line, a clean revert of `a964d8e`; `git diff 55d3f55 -- server/src client/src` is empty. RED `6fbcb53`: TEST-11 (×2), TEST-11b and TEST-36 get `201` instead of `409`, TEST-38 `ITEM_TYPE_UNAVAILABLE`, TEST-37 `[201, 201]`, and E2E TEST-31 shows no BR-04 alert. GREEN `d9fab1e`: server 161 passed, client 40 passed, E2E 4 passed, 0 failed and 0 skipped in each. BR-04 stays Verified. Results in `docs/features.md` 4.6 | Lab 6 Part D, the instructor's "no UAT defects" procedure; handout 3.4 asks for traceability from each Issue to its correction | #66, #68, PR #67, PR #69 |
+| 2026-11-25 | Change request #71 (Lab 7) specified before code: the due date is 17:00 ICT on a business day with a 16:00 checkout cutoff (new SRS decision D-21, SRS v1.4; SDS v1.9 4.2, 4.5, 5.1, 6.6, 7.1; F-03 contract v1.3 sections 3.4, 4.3, 5.5, 7.3, 8.1, 8.2; plan v1.6; manual test guide MT-12 to MT-14). New AC-54 to AC-60 with TEST-54 to TEST-60 (block claimed in #71); AC-19 wording and TEST-19, TEST-49, TEST-50 expected values revised because the requirement changed, old values kept in the contract history. Status Planned until the implementation PR | Changed requirement, team decision (no approval needed per the Lab 7 announcement of 2026-11-25) | #71, `docs/labs/lab-07/change-71.md` |

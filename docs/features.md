@@ -2,9 +2,9 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.9 |
-| Date | 2026-11-24 |
-| Source requirements | `docs/srs.md` v1.3 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
+| Version | 1.10 |
+| Date | 2026-11-25 |
+| Source requirements | `docs/srs.md` v1.4 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
 | Traceability | `docs/traceability.md` |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 
@@ -104,7 +104,7 @@ AC-33 to AC-40 with TEST-33 to TEST-40 were added by the F-02 contract (`docs/tr
 | AC | Expected outcome | Requirements | Test | Level |
 | --- | --- | --- | --- | --- |
 | AC-18 | A Custodian sees every `PENDING` request with its Borrower, line and creation time | FR-09 | TEST-18 | API |
-| AC-19 | A Custodian checks out an `AVAILABLE` unit of the requested item type; one `ACTIVE` loan is created with due date = checkout time + the item type's maximum loan length, the unit becomes `ON_LOAN` and the request becomes `CHECKED_OUT` | FR-16 | TEST-19, TEST-50, TEST-51 | API + Unit |
+| AC-19 | A Custodian checks out an `AVAILABLE` unit of the requested item type; one `ACTIVE` loan is created with the due date of F-03 contract 3.4 (since #71: 17:00 ICT on a business day, from the item type's maximum loan length; before #71: checkout time + the item type's maximum loan length), the unit becomes `ON_LOAN` and the request becomes `CHECKED_OUT` | FR-16, D-21 | TEST-19, TEST-50, TEST-51 | API + Unit |
 | AC-20 | Checkout is rejected, no loan is created, the request stays `PENDING` and every unit keeps its state in both cases: (a) the chosen unit is not `AVAILABLE`; (b) no unit of the item type is `AVAILABLE` (D-17), so the unit list for the item type has no `AVAILABLE` unit and checkout with any of its units is rejected | FR-16, BR-02 | TEST-20, TEST-51 | API + Unit |
 | AC-21 | Checkout with a unit of a different item type is rejected and no loan is created | BR-02 | TEST-21 | API |
 | AC-22 | Two simultaneous checkouts of the same unit produce exactly one `ACTIVE` loan; the other checkout is rejected | BR-03, NFR-05 | TEST-22, TEST-52 | Integration + Unit |
@@ -121,8 +121,17 @@ AC-33 to AC-40 with TEST-33 to TEST-40 were added by the F-02 contract (`docs/tr
 | AC-47 | Two simultaneous checkouts of the same request with two different `AVAILABLE` units produce exactly one loan; the other checkout is rejected with `409 INVALID_STATE` and its unit stays `AVAILABLE` | FR-16 | TEST-47 | Integration |
 | AC-48 | A Custodian who lists the units of an item type with `status=AVAILABLE` receives only that item type's `AVAILABLE` units, ordered by asset tag; an unknown item type gives `404 NOT_FOUND` and an invalid `status` gives `400 VALIDATION_FAILED` | FR-16, D-17 | TEST-48 | API |
 | AC-49 | In the checkout dialog the Custodian chooses one of the listed `AVAILABLE` units and confirms with a button that names the request and the unit. With no unit available, the dialog says so and sends no checkout. A `409` is shown as an alert with the API message and the unit list is fetched again. On success the dialog shows the asset tag and due date and the request leaves the pending list | FR-16, D-17 | TEST-49 | UI |
+| AC-54 | A checkout on a business day before 16:00 ICT gets `dueAt` = checkout date + `maxLoanDays` at 17:00 ICT, when that date is a business day | FR-16, D-21 | TEST-54 | Unit + API |
+| AC-55 | Cutoff boundary: a checkout at 15:59:59 ICT counts from the checkout date; at 16:00:00 ICT it counts from the next business day | FR-16, D-21 | TEST-55 | Unit |
+| AC-56 | A due day that falls on Saturday or Sunday moves to the following Monday at 17:00 ICT | FR-16, D-21 | TEST-56 | Unit |
+| AC-57 | A checkout on Saturday or Sunday counts from the following Monday | FR-16, D-21 | TEST-57 | Unit |
+| AC-58 | Before confirming, the checkout dialog shows the due date that a checkout now would get, and with the same server time the stored `dueAt` equals it; the preview endpoint answers a Borrower with `403`, no session with `401`, an unknown item type with `404`, and writes nothing | FR-16, D-21, NFR-01, NFR-02 | TEST-58 | API + UI |
+| AC-59 | Loans that existed before the change keep their stored `dueAt`; the change adds no migration and recalculates nothing | FR-16, D-21 | TEST-59 | Integration + manual |
+| AC-60 | The Borrower's request detail shows the stored `dueAt` in ICT ("Due 20 Nov 2026, 17:00") | FR-08, FR-16 | TEST-60 | UI |
 
 AC-41 to AC-49 with TEST-41 to TEST-49, and the supporting tests TEST-50 (unit test of the due-date rule, D-16), TEST-51 (unit test of the F-03 state transitions) and TEST-52 (unit test of the unique-violation conversion), were added by the F-03 contract (`docs/traceability.md` 5.2). The F-03 cases of AC-06 (a Borrower calling the unit list or checkout) are TEST-41 (b), as the F-01 contract (section 8.1) states.
+
+AC-54 to AC-60 with TEST-54 to TEST-60 were added by change request #71 (Lab 7, F-03 contract v1.3 section 7.3; block claimed in #71, Sprint 2 contracts start at 62). AC-19 keeps its number; its due-date wording and the expected values of TEST-19, TEST-49 and TEST-50 were revised for D-21, because the requirement changed.
 
 #### 4.3.1 F-03 results (#19)
 
@@ -291,3 +300,7 @@ PR #69 adds TEST-11b (AC-11, F-02 contract v1.3 section 8.2), which follows the 
 | AC-11 | TEST-11b | `server/tests/api/requests-create.test.ts` | "TEST-11b (UAT finding #68): a second request for the same item type through the API is 409 and stores nothing" | Pass (1) |
 
 Evidence EV-D-01 (RED), EV-D-02 (GREEN) and EV-D-03 (regression) are in the Lab 6 report. The deployed release and LECTRA's retest of UAT-02 are recorded in #68.
+
+### 4.7 Lab 7: change request #71 (due date on a business day at 17:00)
+
+Status on 2026-11-25: specified in F-03 contract v1.3, SRS v1.4 (D-21) and SDS v1.9; not implemented yet. AC-54 to AC-60 and the revised AC-19, TEST-19, TEST-49 and TEST-50 are **Planned**: their RED run on the pre-change code and their GREEN run are recorded here after the implementation PR. Impact analysis: `docs/labs/lab-07/change-71.md`.
