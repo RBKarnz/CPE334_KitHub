@@ -1,10 +1,12 @@
 // Checkout of an APPROVED request with one unit per quantity on each line (contract F-07 3, SDS
-// 4.7; replaces the Sprint 1 checkout of a PENDING request, F07-D1), and the loan lists (F-07 5.2).
+// 4.7; replaces the Sprint 1 checkout of a PENDING request, F07-D1), the loan lists (F-07 5.2), and
+// returns: return all and early return of one unit (contract F-08 3).
 import {
   ActorType,
   HistoryEntity,
   LoanStatus,
   RequestStatus,
+  ReturnCondition,
   Role,
   UnitStatus,
   type Prisma,
@@ -17,7 +19,7 @@ import { assertTransition } from "../../domain/transitions.js";
 import { requestsService } from "../requests/requests.service.js";
 import { requestSelect } from "../requests/requests.view.js";
 import { toLoanInsertConflict, unitNotAvailable } from "./checkout-errors.js";
-import type { CheckoutBody, ListLoansQuery } from "./loans.schemas.js";
+import type { CheckoutBody, ListLoansQuery, ReturnAllBody } from "./loans.schemas.js";
 
 const lineField = (i: number) => `units[${i}].lineId`;
 const unitField = (i: number) => `units[${i}].unitId`;
@@ -31,6 +33,8 @@ const loanSelect = {
   checkedOutAt: true,
   dueAt: true,
   returnedAt: true,
+  returnCondition: true,
+  returnedBy: userSummary,
   unit: { select: { id: true, assetTag: true } },
   requestLine: {
     select: { itemType: { select: { id: true, name: true } }, request: { select: { id: true, borrower: userSummary } } },
@@ -222,12 +226,169 @@ export function loansService(prisma: PrismaClient) {
         orderBy: [{ dueAt: "asc" }, { id: "asc" }],
         select: loanSelect,
       });
-      return rows.map(({ requestLine, ...loan }) => ({
+      return rows.map(({ requestLine, returnedBy, ...loan }) => ({
         ...loan,
         itemType: requestLine.itemType,
         request: { id: requestLine.request.id },
-        ...(custodian ? { borrower: requestLine.request.borrower } : {}),
+        ...(custodian ? { borrower: requestLine.request.borrower, returnedBy } : {}),
       }));
     },
+
+    /**
+     * Returns every ACTIVE loan of a CHECKED_OUT request (FR-20, F08-D1). Check order after the
+     * schema (contract F-08 3.5): request exists (404); request CHECKED_OUT (409); every named loan
+     * is a loan of this request and appears once (400); every named loan is ACTIVE (409); no
+     * ACTIVE loan is missing (400). The request row is locked first, so returns of one request run
+     * one after another (3.7).
+     */
+    async returnAll(user: AuthUser, requestId: number, body: ReturnAllBody) {
+      await prisma.$transaction(async (tx) => {
+        const now = new Date();
+        const status = await lockRequest(tx, requestId);
+        if (status === null) throw new NotFoundError(`Request ${requestId} does not exist.`);
+        if (status !== RequestStatus.CHECKED_OUT) throw requestNotReturnable(requestId, status);
+
+        const loans = await tx.loan.findMany({
+          where: { requestLine: { requestId } },
+          select: { id: true, status: true },
+        });
+        const byId = new Map(loans.map((l) => [l.id, l]));
+        const seen = new Set<number>();
+        for (const [i, entry] of body.loans.entries()) {
+          if (!byId.has(entry.loanId))
+            throw new ValidationError(
+              [{ field: `loans[${i}].loanId`, issue: `Loan ${entry.loanId} is not a loan of request #${requestId}` }],
+              `Loan ${entry.loanId} is not a loan of request #${requestId}.`,
+            );
+          if (seen.has(entry.loanId))
+            throw new ValidationError(
+              [{ field: `loans[${i}].loanId`, issue: `Loan ${entry.loanId} is listed twice` }],
+              `Loan ${entry.loanId} is listed twice.`,
+            );
+          seen.add(entry.loanId);
+        }
+        for (const entry of body.loans) {
+          const loan = byId.get(entry.loanId)!;
+          if (loan.status !== LoanStatus.ACTIVE) throw loanNotReturnable(loan.id, loan.status);
+        }
+        const missing = loans.filter((l) => l.status === LoanStatus.ACTIVE && !seen.has(l.id)).length;
+        if (missing > 0) {
+          const issue = `${missing} active loan${missing === 1 ? " is" : "s are"} missing`;
+          throw new ValidationError([{ field: "loans", issue }], `${issue}.`);
+        }
+
+        const ordered = [...body.loans].sort((a, b) => a.loanId - b.loanId);
+        for (const entry of ordered) await returnOne(tx, user, requestId, entry.loanId, entry.condition, now);
+        await endRequest(tx, user, requestId, now);
+      });
+      return this.requestDetail(user, requestId);
+    },
+
+    /**
+     * Early return of one ACTIVE loan (FR-21). When it was the request's last ACTIVE loan, the
+     * request becomes RETURNED (F08-D2). The request row is locked before the count, so of two
+     * simultaneous last returns exactly one ends the request (3.7).
+     */
+    async returnLoan(user: AuthUser, loanId: number, condition: ReturnCondition | undefined) {
+      const requestId = await prisma.$transaction(async (tx) => {
+        const now = new Date();
+        const loan = await tx.loan.findUnique({ where: { id: loanId }, select: { requestLine: { select: { requestId: true } } } });
+        if (!loan) throw new NotFoundError(`Loan ${loanId} does not exist.`);
+        const owner = loan.requestLine.requestId;
+        const status = await lockRequest(tx, owner);
+        // The call names a loan, so its own state answers first (contract F-08 3.5).
+        const current = await tx.loan.findUniqueOrThrow({ where: { id: loanId }, select: { status: true } });
+        if (current.status !== LoanStatus.ACTIVE) throw loanNotReturnable(loanId, current.status);
+        if (status !== RequestStatus.CHECKED_OUT) throw requestNotReturnable(owner, String(status));
+        await returnOne(tx, user, owner, loanId, condition, now);
+        const left = await tx.loan.count({ where: { requestLine: { requestId: owner }, status: LoanStatus.ACTIVE } });
+        if (left === 0) await endRequest(tx, user, owner, now);
+        return owner;
+      });
+      return this.requestDetail(user, requestId);
+    },
+
+    /** The request in the caller's detail shape (F08-D4). */
+    async requestDetail(user: AuthUser, requestId: number) {
+      const row = await prisma.borrowRequest.findUniqueOrThrow({ where: { id: requestId }, select: requestSelect });
+      return requestsService(prisma).detail(user, row);
+    },
   };
+}
+
+type Tx = Prisma.TransactionClient;
+
+/** Locks the request row for the rest of the transaction and returns its state, or null. */
+async function lockRequest(tx: Tx, requestId: number): Promise<RequestStatus | null> {
+  const rows = await tx.$queryRaw<{ status: RequestStatus }[]>`
+    SELECT status FROM borrow_requests WHERE id = ${requestId} FOR UPDATE`;
+  return rows[0]?.status ?? null;
+}
+
+const requestNotReturnable = (requestId: number, status: string) =>
+  new ConflictError("INVALID_STATE", `Request #${requestId} cannot be returned because it is ${status}, not CHECKED_OUT.`);
+
+const loanNotReturnable = (loanId: number, status: string) =>
+  new ConflictError("INVALID_STATE", `Loan ${loanId} cannot be returned because it is ${status}, not ACTIVE.`);
+
+/**
+ * One loan ACTIVE -> RETURNED with its unit ON_LOAN -> AVAILABLE (GOOD) or MAINTENANCE (DAMAGED,
+ * BR-11), and their two history entries (contract F-08 3.2, 3.6). Conditional updates: a loan
+ * returned by another call meanwhile gives 409 with its state from a fresh read.
+ */
+async function returnOne(
+  tx: Tx,
+  user: AuthUser,
+  requestId: number,
+  loanId: number,
+  condition: ReturnCondition | undefined,
+  now: Date,
+) {
+  const chosen = condition ?? ReturnCondition.GOOD;
+  const unitTo = chosen === ReturnCondition.DAMAGED ? UnitStatus.MAINTENANCE : UnitStatus.AVAILABLE;
+  assertTransition("LOAN", LoanStatus.ACTIVE, LoanStatus.RETURNED);
+  assertTransition("UNIT", UnitStatus.ON_LOAN, unitTo);
+  const moved = await tx.loan.updateMany({
+    where: { id: loanId, status: LoanStatus.ACTIVE },
+    data: { status: LoanStatus.RETURNED, returnedAt: now, returnedById: user.id, returnCondition: chosen },
+  });
+  if (moved.count === 0) {
+    const current = await tx.loan.findUniqueOrThrow({ where: { id: loanId }, select: { status: true } });
+    throw loanNotReturnable(loanId, current.status);
+  }
+  const { unitId } = await tx.loan.findUniqueOrThrow({ where: { id: loanId }, select: { unitId: true } });
+  await tx.unit.updateMany({ where: { id: unitId, status: UnitStatus.ON_LOAN }, data: { status: unitTo } });
+  const actor = { occurredAt: now, actorType: ActorType.USER, actorUserId: user.id, requestId, unitId };
+  await tx.historyEntry.createMany({
+    data: [
+      {
+        ...actor,
+        entityType: HistoryEntity.LOAN,
+        loanId,
+        action: "STATUS_CHANGED",
+        fromStatus: LoanStatus.ACTIVE,
+        toStatus: LoanStatus.RETURNED,
+        details: { condition: chosen },
+      },
+      { ...actor, entityType: HistoryEntity.UNIT, action: "STATUS_CHANGED", fromStatus: UnitStatus.ON_LOAN, toStatus: unitTo },
+    ],
+  });
+}
+
+/** CHECKED_OUT -> RETURNED with its history entry, once no ACTIVE loan is left (FR-20, FR-21). */
+async function endRequest(tx: Tx, user: AuthUser, requestId: number, now: Date) {
+  assertTransition("REQUEST", RequestStatus.CHECKED_OUT, RequestStatus.RETURNED);
+  await tx.borrowRequest.update({ where: { id: requestId }, data: { status: RequestStatus.RETURNED } });
+  await tx.historyEntry.create({
+    data: {
+      occurredAt: now,
+      actorType: ActorType.USER,
+      actorUserId: user.id,
+      entityType: HistoryEntity.REQUEST,
+      requestId,
+      action: "STATUS_CHANGED",
+      fromStatus: RequestStatus.CHECKED_OUT,
+      toStatus: RequestStatus.RETURNED,
+    },
+  });
 }
