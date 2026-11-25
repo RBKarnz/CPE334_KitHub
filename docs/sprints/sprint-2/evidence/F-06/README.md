@@ -13,8 +13,13 @@ Raw output files are kept exactly as recorded. Corrections are written here, not
 | `green2-server.txt` | `6e4361e` | Server typecheck and full suite after the fixes | 215 passed, 0 failed, 0 skipped |
 | `green2-client.txt` | `6e4361e` | Client typecheck and full suite after the fixes | 55 passed, 0 failed, 0 skipped |
 | `green2-e2e.txt` | `6e4361e` | `npm run test:e2e` | 4 passed |
+| `red3-client.txt` | `428b6d3` (tests only) | Review of PR #91: a Custodian's 404 page links back to All requests (F06-D8); whole client suite before the fix | 1 failed / 54 passed, an assertion |
+| `green3-server.txt` | `81b861c` | Server typecheck and full suite after the fix | 215 passed, 0 failed, 0 skipped |
+| `green3-client.txt` | `81b861c` | Client typecheck and full suite after the fix | 55 passed, 0 failed, 0 skipped |
+| `green3-e2e.txt` | `81b861c` | `npm run test:e2e` | 4 passed |
 
 Corrections:
 
 - `green-e2e.txt` line 1 says "not run by CI". That is wrong: `ci-docker.yml` (lines 172 to 174) runs `npm run test:e2e` in `test-and-docker`. The line was briefly edited in `8e92a14` and restored to the recorded text in `d946252` (review of PR #91). The local run above is still the record for `be5e11c`.
 - `55db3d9` changed one RED assertion: TEST-84's path case expected the field `id`; the validator names it `params.id`, which TEST-48 (f) already accepts. The `400` check is unchanged.
+- `428b6d3` changes the expected link of an existing Sprint 1 test ("a Custodian's 404 links back to Pending requests" in `my-requests.test.tsx`) to All requests. The requirement changed with F06-D8 (`/requests` is All requests for a Custodian); the test still checks the link and its target.
