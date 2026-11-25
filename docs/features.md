@@ -2,9 +2,9 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.10 |
+| Version | 1.11 |
 | Date | 2026-11-25 |
-| Source requirements | `docs/srs.md` v1.4 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
+| Source requirements | `docs/srs.md` v1.5 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
 | Traceability | `docs/traceability.md` |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 
@@ -89,13 +89,13 @@ Test levels: **Unit** (domain logic), **API** (HTTP + database), **Integration**
 | AC-16 | Creating a request writes a history entry with the Borrower as actor and a timestamp | BR-16, NFR-09 | TEST-16 | Integration |
 | AC-17 | The catalog and the Borrower's request list show a loading, an empty and an error state | NFR-12 | TEST-17 | UI |
 | AC-33 | A call without a valid session to the catalog, request creation, the request list or a request's detail is rejected with `401 UNAUTHENTICATED`, returns no catalog or request data, and nothing is stored | NFR-01 | TEST-33 | API |
-| AC-34 | A create body that fails the schema (missing `lines`, zero or two lines, `quantity` other than 1, a non-integer or non-positive `itemTypeId`, an unknown field such as `loanDays`) is rejected with `400 VALIDATION_FAILED` naming each problem in `details`, and nothing is stored | FR-07 | TEST-34 | API |
+| AC-34 | A create body that fails the schema (missing `lines`, zero or more than 10 lines, a repeated item type, a `quantity` that is not an integer from 1 to 10, a non-integer or non-positive `itemTypeId`, a missing or out-of-range `loanDays`, an unknown field such as `borrowerId`) is rejected with `400 VALIDATION_FAILED` naming each problem in `details`, and nothing is stored (revised by F-04 8.4, F04-D9; Sprint 1 text in `docs/traceability.md` 5.2) | FR-07, FR-10 | TEST-34 | API |
 | AC-35 | A create with an `itemTypeId` that does not exist is rejected with `404 NOT_FOUND` naming `lines[0].itemTypeId`, and nothing is stored | FR-07 | TEST-35 | API |
 | AC-36 | BR-04 blocks only the Borrower's own open requests with the same item type: with an open request for item type A, the Borrower can still request item type B; after their request for A is `CHECKED_OUT`, they can request A again; another Borrower's open request for A does not block them | BR-04 | TEST-36 | API |
 | AC-37 | Two simultaneous create calls by the same Borrower for the same item type store exactly one request; the other is rejected with `409 DUPLICATE_OPEN_REQUEST` | BR-04 | TEST-37 | Integration |
 | AC-38 | When the item type has 0 available units and the Borrower already has an open request for it, the rejection is `409 DUPLICATE_OPEN_REQUEST`; each `409` message names the item type, and the duplicate message also names the open request | BR-01, BR-04 | TEST-38 | Unit + API |
 | AC-39 | A Borrower's list holds their own requests in every state, newest first, and `?status=PENDING` narrows it to their own pending requests; a Custodian's list is oldest first; an unknown `status` or query parameter, or a non-integer request ID, gives `400 VALIDATION_FAILED`; a request ID that does not exist gives `404 NOT_FOUND` in the same form as another Borrower's request: the same `code`, only the `error` object, and the message "Request <id> does not exist." with the requested ID | FR-08, BR-05 | TEST-39 | API |
-| AC-40 | In the catalog, a Borrower's Request button is disabled with "None available" when the count is 0; pressing an enabled button once sends one request, shows "Request #n submitted" and refreshes the catalog; a `409` is shown as an alert with the API message; a Custodian sees no Request button | FR-07, BR-01, BR-17 | TEST-40 | UI |
+| AC-40 | In the catalog, a Borrower's Request button is disabled with "None available" when the count is 0; pressing an enabled button opens the new request form with that item type (F04-D5); a Custodian sees no Request button (revised by F-04 8.4, F04-D9; Sprint 1 text in `docs/traceability.md` 5.2) | FR-07, FR-10, BR-01, BR-17 | TEST-40 | UI |
 
 AC-33 to AC-40 with TEST-33 to TEST-40 were added by the F-02 contract (`docs/traceability.md` 5.2). Numbers 33 to 40 are the block reserved for F-02 while the Sprint 1 contracts are written in parallel; F-03 uses 41 to 52 (PR #28).
 
@@ -304,3 +304,97 @@ Evidence EV-D-01 (RED), EV-D-02 (GREEN) and EV-D-03 (regression) are in the Lab 
 ### 4.7 Lab 7: change request #71 (due date on a business day at 17:00)
 
 Status on 2026-11-25: specified in F-03 contract v1.3, SRS v1.4 (D-21) and SDS v1.9; not implemented yet. AC-54 to AC-60 and the revised AC-19, TEST-19, TEST-49 and TEST-50 are **Planned**: their RED run on the pre-change code and their GREEN run are recorded here after the implementation PR. Impact analysis: `docs/labs/lab-07/change-71.md`.
+
+## 5. Sprint 2 acceptance criteria and planned tests
+
+Copied from the Sprint 2 engineering contracts, merged into `staging` before any Sprint 2 feature code. AC-n is verified by TEST-n (section 1). Blocks: F-04 62 to 71, F-05 72 to 79, F-06 80 to 89, F-07 90 to 101, F-08 102 to 109, F-09 110 to 121; Lab 7 change #71 uses 54 to 60 (4.7). Every status is **Planned** until the feature's implementation PR records its RED and GREEN runs and the tested commit here. A contract revised after this copy wins; its revision row names the change.
+
+### 5.1 F-04 Multi-line requests and item type detail (contract `docs/sprints/sprint-2/F-04-multi-line-requests.md` v1.0, #74, PR #84)
+
+| AC | Expected outcome | Requirements | Tests | Status |
+| --- | --- | --- | --- | --- |
+| AC-62 | A signed-in user who opens an item type receives its name, description, kit flag, category, maximum loan length, maximum quantity per request and available unit count, with no unit IDs or asset tags; an item type that does not exist gives `404 NOT_FOUND`, a non-integer ID `400 VALIDATION_FAILED`, and a call without a session `401 UNAUTHENTICATED` | FR-05, NFR-01 | TEST-62 | Planned |
+| AC-63 | The item type detail page shows the description, both limits and the available count, with a loading, a not-found and an error state; a Borrower's Request button is disabled when none is available and otherwise opens the request form with that item type; a Custodian sees no Request button; the catalog links each item type to its detail | FR-05, NFR-12 | TEST-63 | Planned |
+| AC-64 | A Borrower creates a request with several lines (item type and quantity) and one loan length: it is stored `PENDING` with the Borrower as owner, one line per entry with its quantity, the loan length, and exactly one `CREATED` history entry with the Borrower and the creation time | FR-10, BR-05, BR-16 | TEST-64 | Planned |
+| AC-65 | A create body with no lines, more than 10 lines, the same item type twice, a quantity that is not an integer from 1 to 10, a missing or out-of-range `loanDays`, or an unknown field such as `unitId`, `assetTag` or `borrowerId` is rejected with `400 VALIDATION_FAILED` naming each problem, and nothing is stored | FR-10, BR-05, BR-06 | TEST-65 | Planned |
+| AC-66 | A line whose quantity is above its item type's maximum quantity per request is rejected with `409 QUANTITY_LIMIT` naming the line and the maximum, and nothing is stored; a quantity equal to the maximum is accepted | BR-07 | TEST-66 | Planned |
+| AC-67 | A loan length above the smallest maximum loan length among the request's item types is rejected with `409 LOAN_LENGTH_LIMIT` naming the item type that sets the limit, and nothing is stored; a loan length equal to that maximum is accepted | BR-08 | TEST-67 | Planned |
+| AC-68 | A request in which any line asks for more units than its item type has available is rejected with `409 ITEM_TYPE_UNAVAILABLE` naming that line, and nothing is stored, including the lines that had enough units | BR-01 | TEST-68 | Planned |
+| AC-69 | A request in which any line's item type is already on one of the Borrower's own open requests is rejected with `409 DUPLICATE_OPEN_REQUEST` naming the open request; when several rules fail, the code follows the order BR-04, BR-07, BR-08, BR-01; two simultaneous creates by one Borrower that share an item type store exactly one request | BR-04, BR-07, BR-08, BR-01 | TEST-69 | Planned |
+| AC-70 | A Custodian who creates a request gets `403 FORBIDDEN`; a create and an item type read without a session get `401 UNAUTHENTICATED`; each body has only the `error` object and nothing is stored | BR-17, NFR-01, NFR-02 | TEST-70 | Planned |
+| AC-71 | The new request form lets a Borrower add and remove lines (at most 10, each item type once), choose quantities up to each maximum and one loan length up to the smallest maximum, names the item type that sets that maximum and suggests a separate request for an item type that allows longer; Submit sends one call and opens the new request; a `409` is shown as an alert with the API message; a request for one item type takes 2 clicks from the catalog | FR-10, NFR-10, NFR-12 | TEST-71 | Planned |
+
+### 5.2 F-05 Edit and cancel requests (contract `docs/sprints/sprint-2/F-05-edit-cancel.md` v1.0, #75, PR #85)
+
+| AC | Expected outcome | Requirements | Tests | Status |
+| --- | --- | --- | --- | --- |
+| AC-72 | A Borrower edits their own `PENDING` request: its lines, quantities and loan length become the new ones, the line of each item type that stays keeps its ID, the request stays `PENDING`, and exactly one `EDITED` history entry with the Borrower, the time and the before and after lines and loan length is written | FR-11, BR-10, BR-16 | TEST-72 | Planned |
+| AC-73 | An edit is checked against the same rules as a new request: a body that fails the F-04 schema gives `400 VALIDATION_FAILED`, and a quantity, loan length, availability or open-request problem gives the F-04 `409` code in the F-04 order; the request being edited does not count as an open request for BR-04, the Borrower's other open requests do; after a rejection the request, its lines and the history are unchanged | BR-10, BR-01, BR-04, BR-06, BR-07, BR-08 | TEST-73 | Planned |
+| AC-74 | Editing a request that is not `PENDING` gives `409 INVALID_STATE` naming the state; editing a request that does not exist or belongs to another Borrower gives `404 NOT_FOUND` with only the `error` object; an edit that changes nothing returns `200` and writes nothing | BR-10, BR-05, BR-16 | TEST-74 | Planned |
+| AC-75 | A Borrower cancels their own `PENDING` request and their own `APPROVED` request: each becomes `CANCELLED`, exactly one history entry from the old state to `CANCELLED` with the Borrower is written, no unit changes, and the Borrower can then request the same item type again | FR-12, BR-10, BR-04, BR-16 | TEST-75 | Planned |
+| AC-76 | Cancelling a request that is `REJECTED`, `CANCELLED`, `CHECKED_OUT` or `RETURNED` gives `409 INVALID_STATE` naming the state; a cancel body with any field gives `400`; another Borrower's request gives `404`; nothing changes | FR-12, BR-10, BR-05 | TEST-76 | Planned |
+| AC-77 | A Custodian who edits or cancels a request gets `403 FORBIDDEN`; both calls without a session get `401 UNAUTHENTICATED`; each body has only the `error` object and nothing changes | BR-17, NFR-01, NFR-02 | TEST-77 | Planned |
+| AC-78 | Simultaneous calls on one request end in a consistent state: two cancels give one success and one `409`; an edit and a cancel either both succeed (edit first) or the edit gets `409` (cancel first); an edit and an approval either both succeed (edit first) or the edit gets `409` (approval first); a cancel and a rejection give one success and one `409`; history holds one entry per successful call | NFR-05, BR-10, BR-16 | TEST-78 | Planned |
+| AC-79 | On their own request's detail a Borrower sees Edit and Cancel on `PENDING`, only Cancel on `APPROVED` and neither otherwise; the edit page starts with the request's lines and loan length, enables Save only after a change, and returns to the detail with "Request #n updated."; Cancel asks for confirmation, sends one call and shows "Request #n cancelled."; a `409` is shown as an alert with the API message; a Custodian sees neither button | FR-11, FR-12, NFR-12 | TEST-79 | Planned |
+
+### 5.3 F-06 Approve and reject requests; all-requests view (contract `docs/sprints/sprint-2/F-06-approve-reject.md` v1.1, #76, PR #81)
+
+| AC | Expected outcome | Requirements | Tests | Status |
+| --- | --- | --- | --- | --- |
+| AC-80 | A Custodian who lists requests without a filter receives every request of every Borrower in every state, oldest first; with `status=<state>` only that state; each item carries `loanDays`, `decidedAt`, `decidedBy` and `rejectionReason`. A Borrower's list still holds only their own requests, without `decidedBy` | FR-30, BR-05 | TEST-80 | Planned |
+| AC-81 | A Custodian who opens any request receives its lines, Borrower, decision fields and its history entries oldest first, each with time, actor, action and states; a Borrower opening their own request receives `decidedAt` and `rejectionReason`, but no `decidedBy` and no history | FR-30, NFR-09 | TEST-81 | Planned |
+| AC-82 | A Custodian approves a `PENDING` request: it becomes `APPROVED` with `decidedBy` the Custodian and `decidedAt` the decision time, exactly one history entry `PENDING` → `APPROVED` is written with the same time, and no unit, line or loan changes | FR-13, BR-09, BR-16 | TEST-82 | Planned |
+| AC-83 | A Custodian rejects a `PENDING` request with a reason: it becomes `REJECTED` with the trimmed reason, `decidedBy` and `decidedAt`; one history entry `PENDING` → `REJECTED` has the reason in `details`; the owning Borrower sees the state, the decision time and the reason, but not the Custodian | FR-14, BR-09, BR-16 | TEST-83 | Planned |
+| AC-84 | A reject with no reason, a blank reason, a reason over 500 characters after trimming, or an unknown field, and an approve with any field, is rejected with `400 VALIDATION_FAILED` naming the field, and nothing changes | FR-13, FR-14, BR-09 | TEST-84 | Planned |
+| AC-85 | Approving or rejecting a request that is not `PENDING` (`APPROVED`, `REJECTED`, `CHECKED_OUT`) is rejected with `409 INVALID_STATE` naming the current state, and nothing changes; a request ID that does not exist gives `404 NOT_FOUND` | FR-13, FR-14 | TEST-85 | Planned |
+| AC-86 | Two simultaneous decisions on the same `PENDING` request (approve with approve, approve with reject) produce exactly one success and one `409 INVALID_STATE`, and exactly one decision history entry | FR-13, FR-14, NFR-05 | TEST-86 | Planned |
+| AC-87 | Approve and reject called by a Borrower give `403 FORBIDDEN`, and without a session `401 UNAUTHENTICATED`; the body has only the `error` object and nothing changes | NFR-01, NFR-02, BR-17 | TEST-87 | Planned |
+| AC-88 | The All requests page lists requests with Borrower, items, state and creation time, filters by state, and shows a loading, an empty and an error state; a Borrower who opens `/requests` still sees their own My requests page, with no state filter and no other Borrower's request | FR-30, NFR-12, BR-05 | TEST-88 | Planned |
+| AC-89 | On a `PENDING` request a Custodian can approve after confirming, or reject with a reason (confirm disabled while the reason is blank); the detail then shows the new state and the decision; a Borrower's detail of a rejected request shows "Rejected" and the reason, and never shows Approve or Reject | FR-13, FR-14, BR-09 | TEST-89 | Planned |
+
+### 5.4 F-07 Multi-unit checkout and loan lists (contract `docs/sprints/sprint-2/F-07-multi-unit-checkout.md` v1.0, #77, PR #82)
+
+| AC | Expected outcome | Requirements | Tests | Status |
+| --- | --- | --- | --- | --- |
+| AC-90 | A Custodian checks out an `APPROVED` request with one `AVAILABLE` unit per quantity on each line: one `ACTIVE` loan per unit, every unit `ON_LOAN`, the request `CHECKED_OUT`, and every loan and the request share one `dueAt` | FR-17, BR-02, BR-06 | TEST-90 | Planned |
+| AC-91 | The shared `dueAt` is `computeDueAt(checkout time, loanDays)` (D-21); for a request without `loanDays` it uses the smallest `maxLoanDays` among its item types. The due date preview with `days` returns `computeDueAt(now, days)`, also for `days` above the item type's maximum, and rejects a `days` outside 1 to 365 with `400` | FR-17, BR-08, D-16, D-21 | TEST-91 | Planned |
+| AC-92 | Checkout of a request that is not `APPROVED` (`PENDING`, `REJECTED`, `CANCELLED`, `CHECKED_OUT`) is rejected with `409 INVALID_STATE` and nothing changes | FR-17, SRS 8.2 | TEST-92 | Planned |
+| AC-93 | A body whose entries do not give every line exactly its quantity, or names a line of another request, is rejected with `400 VALIDATION_FAILED` naming the problem, and nothing changes | FR-17, BR-06 | TEST-93 | Planned |
+| AC-94 | A body that names the same unit twice, or has more than 100 entries or an unknown field, is rejected with `400 VALIDATION_FAILED`, and nothing changes | FR-17 | TEST-94 | Planned |
+| AC-95 | If any named unit is not `AVAILABLE` (`ON_LOAN`, `MAINTENANCE`, `RETIRED`) or belongs to another item type, the whole checkout is rejected with `409` and no unit, loan, request or history row changes, even for the units that were valid | BR-02, BR-12 | TEST-95 | Planned |
+| AC-96 | Two simultaneous checkouts that share a unit produce exactly one success; the other request stays `APPROVED` and none of its units changes; no deadlock with two shared units | BR-03, NFR-05 | TEST-96 | Planned |
+| AC-97 | A checkout of n units writes one request entry, n unit entries and n loan entries with the Custodian and one timestamp | BR-16, NFR-09 | TEST-97 | Planned |
+| AC-98 | A Borrower's loan list holds only their own loans with item type, asset tag, request, checkout time and due date, earliest due first, and no `borrower` key | FR-18, BR-05 | TEST-98 | Planned |
+| AC-99 | A Custodian's loan list holds every Borrower's loans with the Borrower; `status=RETURNED` lists returned loans; an unknown `status` gives `400` | FR-19 | TEST-99 | Planned |
+| AC-100 | A Borrower calling checkout gets `403`; checkout and the loan list without a session give `401`; the body has only `error` and nothing changes | NFR-01, NFR-02, BR-17 | TEST-100 | Planned |
+| AC-101 | The checkout dialog lists the `AVAILABLE` units per line, enables confirm only when every line has its quantity of distinct units, shows the preview due date for the request's loan length, and shows all asset tags and the due date on success; the loans pages show their rows and a loading, an empty and an error state | FR-17, FR-18, FR-19, NFR-12 | TEST-101 | Planned |
+
+### 5.5 F-08 Returns: return all and early return (contract `docs/sprints/sprint-2/F-08-returns.md` v1.1, #78, PR #83)
+
+| AC | Expected outcome | Requirements | Tests | Status |
+| --- | --- | --- | --- | --- |
+| AC-102 | Return all with every loan `GOOD`: every loan `RETURNED` with `returnedAt` and `returnedBy` the Custodian, every unit `AVAILABLE`, the request `RETURNED`, and the item types' available counts rise by the returned units | FR-20, BR-11 | TEST-102 | Planned |
+| AC-103 | A loan returned `DAMAGED` sends its unit to `MAINTENANCE`, and that unit is not counted as available and cannot be checked out | BR-11, FR-20, FR-21 | TEST-103 | Planned |
+| AC-104 | A condition left out is `GOOD` | FR-20 | TEST-104 | Planned |
+| AC-105 | An early return of one loan returns that loan and unit only; the request stays `CHECKED_OUT` while another loan is `ACTIVE`, and becomes `RETURNED` with the last one | FR-21 | TEST-105 | Planned |
+| AC-106 | Return all that leaves out an active loan, lists a loan twice or names a loan of another request, and any unknown field or condition, is rejected with `400` naming the problem, and nothing changes | FR-20 | TEST-106 | Planned |
+| AC-107 | Returning a request that is not `CHECKED_OUT`, an early return of a loan that is not `ACTIVE`, or a return-all that names a loan of this request which is no longer `ACTIVE`, gives `409 INVALID_STATE` naming the state; an unknown request or loan gives `404`; nothing changes | FR-20, FR-21 | TEST-107 | Planned |
+| AC-108 | Concurrent returns of the same loans return each loan once; exactly one call moves the request to `RETURNED`; every call writes history only for what it changed | NFR-05, BR-16, NFR-09 | TEST-108 | Planned |
+| AC-109 | A Borrower calling either return endpoint gets `403`, a call without a session `401`, nothing changes; the Return all and Return this unit controls appear only for Custodians on `CHECKED_OUT` requests and `ACTIVE` loans, and the dialogs default every condition to Good | NFR-01, NFR-02, BR-17, NFR-12 | TEST-109 | Planned |
+
+### 5.6 F-09 Catalog management (contract `docs/sprints/sprint-2/F-09-catalog-management.md` v1.0, #79, PR #86)
+
+| AC | Expected outcome | Requirements | Tests | Status |
+| --- | --- | --- | --- | --- |
+| AC-110 | A Custodian creates a category with a name, an optional description and default limits; it is returned with `201` and appears in the catalog with no item types | FR-23 | TEST-110 | Planned |
+| AC-111 | A Custodian edits a category's name, description or default limits; only the sent fields change; changed defaults do not change the limits of its existing item types | FR-23, D-08 | TEST-111 | Planned |
+| AC-112 | A category or item type body with a blank or over-long name, a limit outside its bounds, an unknown field or no field on an edit is rejected with `400 VALIDATION_FAILED` naming the field; a name already used, in any letter case, gives `409 NAME_TAKEN`; an unknown category or item type ID gives `404`; nothing changes | FR-23 | TEST-112 | Planned |
+| AC-113 | A Custodian creates an item type in a category with a description and limits; limits left out are copied from the category's defaults; it appears in the catalog and its detail with 0 available; an unknown `categoryId` gives `404` and nothing is stored | FR-23, D-08 | TEST-113 | Planned |
+| AC-114 | A Custodian edits an item type's description, kit flag, limits or category; the new limits are stored and are what the next request create and edit read (checked in F-04 TEST-66 (e) and TEST-67 (e)); existing `PENDING` and `APPROVED` requests keep their lines | FR-23, BR-07, BR-08 | TEST-114 | Planned |
+| AC-115 | A Custodian adds a unit with an asset tag: it is stored in upper case as `AVAILABLE`, the item type's available count rises by one, and one `UNIT` history entry `CREATED` → `AVAILABLE` with the Custodian is written | FR-24, BR-16 | TEST-115 | Planned |
+| AC-116 | Adding a unit with a badly formed asset tag gives `400`; with a tag already used by any unit of any item type, in any letter case, `409 ASSET_TAG_TAKEN`; for an unknown item type `404`; nothing is stored | FR-24, A-07 | TEST-116 | Planned |
+| AC-117 | A Custodian marks a `MAINTENANCE` unit repaired: it becomes `AVAILABLE`, counts as available and can be checked out, and one history entry `MAINTENANCE` → `AVAILABLE` is written; repairing a unit in any other state gives `409 INVALID_STATE` and nothing changes | FR-25, BR-11, BR-16 | TEST-117 | Planned |
+| AC-118 | A Custodian retires an `AVAILABLE` or a `MAINTENANCE` unit: it becomes `RETIRED`, no longer counts as available and one history entry is written; retiring an `ON_LOAN` or `RETIRED` unit gives `409 INVALID_STATE` and nothing changes; a checkout that names a retired unit is rejected with `409 UNIT_NOT_AVAILABLE` | FR-26, BR-12, BR-16 | TEST-118 | Planned |
+| AC-119 | A retire racing a checkout of the same unit, two adds of the same asset tag, and two creates of the same category name, also in another letter case, each end with exactly one success and one `409`, with history only for the success | BR-12, NFR-05, A-07 | TEST-119 | Planned |
+| AC-120 | Each of the seven catalog management endpoints answers a Borrower with `403 FORBIDDEN` and a call without a session with `401 UNAUTHENTICATED`, with only the `error` object, and nothing changes | NFR-01, NFR-02 | TEST-120 | Planned |
+| AC-121 | The Manage catalog page lists categories with their defaults and item types with their limits and available counts, with loading, empty and error states; the forms create and edit categories and item types and show `NAME_TAKEN` under the name; the units page lists units with their state, adds a unit, offers Mark repaired only on `MAINTENANCE` and Retire only on `AVAILABLE` and `MAINTENANCE` with a confirmation; a Borrower sees the Forbidden page at `/manage` | FR-23 to FR-26, NFR-12 | TEST-121 | Planned |

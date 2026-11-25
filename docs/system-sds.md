@@ -6,10 +6,10 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part C |
-| Version | 1.10 |
+| Version | 1.11 |
 | Date | 2026-11-25 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
-| Baseline | [SRS v1.4](srs.md) |
+| Baseline | [SRS v1.5](srs.md) |
 | Related | [Three-sprint plan](sprints/plan.md), feature contracts in `docs/sprints/sprint-N/` |
 
 ### Revision history
@@ -27,6 +27,7 @@
 | 1.8 | 2026-11-12 | Teerakarn Noiruksa | Lab 5 CI (#4): 9.6 says what `test-and-docker` runs on PRs into `staging` and `main`, including the backend typecheck and the end-to-end tests. No behavior, API or schema change |
 | 1.9 | 2026-11-25 | Teerakarn Noiruksa | Change request #71 (Lab 7), baseline SRS v1.4: the due-date rule in 4.5 and the `loans.dueAt` note in 4.2 follow D-21 (17:00 ICT on a business day, 16:00 cutoff); new read-only endpoint `GET /api/item-types/:id/due-date-preview` for Custodians (5.1 Pending requests row, 6.6 endpoint list, 7.1 permission matrix). No table, column or migration change |
 | 1.10 | 2026-11-25 | Teerakarn Noiruksa | #73: Sprint 2 columns of 4.2 and CHECKs of 4.3 are now in migration `20261125104833_sprint2_columns`; 4.8 and 9.1 describe `SEED_DEMO_REQUESTS` and the Sprint 2 demo requests. No behaviour change for Sprint 1 |
+| 1.11 | 2026-11-25 | Teerakarn Noiruksa | Review of PR #87: 6.2 adds the Sprint 2 create example with several lines and `loanDays` (F-04 5.2). Baseline SRS v1.5. No behaviour change |
 
 ## 2. Introduction
 
@@ -623,6 +624,12 @@ Feature contracts define each endpoint's exact body and errors. This section set
 
 ```json
 { "lines": [ { "itemTypeId": 3, "quantity": 1 } ] }
+```
+
+From Sprint 2 (F-04 5.2, FR-10, BR-08), the same body holds several lines and one loan length:
+
+```json
+{ "lines": [ { "itemTypeId": 3, "quantity": 2 }, { "itemTypeId": 7, "quantity": 1 } ], "loanDays": 7 }
 ```
 
 ### 6.3 Responses
