@@ -19,7 +19,7 @@
 
 | Version | Date | Author | Change |
 | --- | --- | --- | --- |
-| 1.0 | 2026-11-25 | Teerakarn Noiruksa | First contract: AC-90 to AC-101, TEST-90 to TEST-101, decisions F07-D1 to F07-D8. Replaces the Sprint 1 checkout rule FR-16 by FR-17 |
+| 1.0 | 2026-11-25 | Teerakarn Noiruksa | First contract: AC-90 to AC-101, TEST-90 to TEST-101, decisions F07-D1 to F07-D8. Replaces the Sprint 1 checkout rule FR-16 by FR-17. Review of PR #82: checkout body cap 100 derived from F04-D2 (3.4); `415` comes first (3.5); F07-D4 and 5.3 define `days` on the preview and F07-D8 lists TEST-58 (e) as revised, with new cases in TEST-91; F-06 merged is an entry condition (9) |
 
 ## 2. Requirements and dependencies
 
@@ -41,7 +41,7 @@
 | #71 | `computeDueAt(checkedOutAt, days)` with the D-21 rule | Specified (PR #72) |
 | #73 | `borrow_requests.loanDays` | PR #80 |
 | F-04 (#74) | Requests with several lines, quantities and `loanDays` | Contract pending |
-| F-06 (#76) | `APPROVED` requests | Contract PR #81 |
+| F-06 (#76) | `APPROVED` requests; the approve UI that the E2E journeys use (F07-D8) | Contract PR #81; must be merged before F-07 code starts (9) |
 
 ### 2.3 Out of scope
 
@@ -86,7 +86,7 @@ The Sprint 1 row `PENDING` → `CHECKED_OUT` is removed from the transition tabl
 | --- | --- | --- | --- | --- | --- |
 | Custodian only (BR-17, NFR-02) | Pages and buttons for Custodians only | `requireRole("CUSTODIAN")` | - | - | - |
 | Only `APPROVED` (SRS 8.2, FR-17) | Only approved requests listed | - | Conditional update `WHERE status = 'APPROVED'` → `409 INVALID_STATE` | `assertTransition("REQUEST", "APPROVED", "CHECKED_OUT")` | - |
-| One unit per quantity per line (FR-17, BR-06) | Confirm disabled until each line is complete | Strict schema: 1 to 20 entries | Count per `lineId` equals `quantity`; every line present; no duplicate `unitId` → `400` | - | - |
+| One unit per quantity per line (FR-17, BR-06) | Confirm disabled until each line is complete | Strict schema: 1 to 100 entries (3.4) | Count per `lineId` equals `quantity`; every line present; no duplicate `unitId` → `400` | - | - |
 | Unit `AVAILABLE` and of the line's item type (BR-02, BR-12) | Only `AVAILABLE` units of the line's item type listed | - | Conditional unit update per unit | `assertTransition("UNIT", "AVAILABLE", "ON_LOAN")` | FK |
 | One `ACTIVE` loan per unit (BR-03, NFR-05) | Submit disabled while running | - | Conditional updates; units locked in ascending ID order | - | `loans_one_active_per_unit` |
 | Due date (BR-08, D-16, D-21) | Preview before confirming | - | One `dueAt = computeDueAt(now, loanDays)` for every loan of the request (F07-D3) | `computeDueAt` | `loans.dueAt` not null |
@@ -98,14 +98,14 @@ The Sprint 1 row `PENDING` → `CHECKED_OUT` is removed from the transition tabl
 | Input | Rule | Error |
 | --- | --- | --- |
 | Checkout path `id` | Integer ≥ 1 | `400` naming `id` |
-| Checkout body | Strict `{ units }`; `units` 1 to 20 strict entries `{ lineId: int ≥ 1, unitId: int ≥ 1 }` (20 = 6 item types × the largest maximum quantity 4, rounded up) | `400` naming the field |
+| Checkout body | Strict `{ units }`; `units` 1 to 100 strict entries `{ lineId: int ≥ 1, unitId: int ≥ 1 }`. 100 = at most 10 lines × at most 10 per line (F04-D2, adopted by F-09 as F09-D3), so every request F-04 accepts fits. The bound only limits the body size; the rule is the service check that each line gets exactly its `quantity` | `400` naming the field |
 | Lines (service) | Every `lineId` is a line of this request; each line gets exactly `quantity` entries; every line of the request appears | `400` naming `units[i].lineId` ("Not a line of request #12") or `units` ("Line 5 needs 2 units, got 1") |
 | Units (service) | No `unitId` twice | `400` naming `units[i].unitId` ("Unit 7 is listed twice") |
 | `GET /api/loans` query | Strict `{ status? }`, `status` one of `ACTIVE`, `RETURNED`; default `ACTIVE` | `400` naming the parameter |
 
 ### 3.5 Check order
 
-`401` → `403` → `415` → `400` (shape) → `404` (request, then each unit in body order) → `400` (lines and duplicates) → `409 INVALID_STATE` (request not `APPROVED`) → per unit in ascending ID: `409 UNIT_WRONG_ITEM_TYPE`, `409 UNIT_NOT_AVAILABLE`. As in F-03 3.7, messages that name a current state come from a re-read inside the transaction.
+`415` → `401` → `403` → `400` (shape) → `404` (request, then each unit in body order) → `400` (lines and duplicates) → `409 INVALID_STATE` (request not `APPROVED`) → per unit in ascending ID: `409 UNIT_WRONG_ITEM_TYPE`, `409 UNIT_NOT_AVAILABLE`. As in F-03 3.7, messages that name a current state come from a re-read inside the transaction. `415` comes first because SR-01 mounts `requireJson` on the whole `/api` router before any feature router (`server/src/app.ts`, F-02 3.3).
 
 ### 3.6 History entries
 
@@ -132,11 +132,11 @@ A request with 3 units writes 1 + 3 + 3 = 7 entries.
 | F07-D1 | Checkout requires `APPROVED`; the Sprint 1 `PENDING` path is removed in the same PR | FR-16 says it is replaced by FR-17 from Sprint 2; keeping both would skip BR-09 |
 | F07-D2 | All-or-nothing: one transaction for every unit of the request | D-06 and D-13: one due date and one state per request |
 | F07-D3 | `dueAt = computeDueAt(now, loanDays)`. When `loanDays` is null (a request created in Sprint 1 and approved in Sprint 2), the loan length is the smallest `maxLoanDays` among the request's item types, as D-16 did for one line | Every loan of the request shares one due date (SDS 4.5); old requests still get a valid due date |
-| F07-D4 | The preview endpoint (#71, F-03 5.5) gains an optional query `days` (integer 1 to 365); without it the item type's `maxLoanDays` is used. The dialog sends the request's loan length (F07-D3) | One preview function for both releases; the dialog shows the real due date |
+| F07-D4 | The preview endpoint (#71, F-03 5.5) gains an optional query `days` (integer 1 to 365, the F-04 `loanDays` bound); without it the item type's `maxLoanDays` is used. `days` above the item type's `maxLoanDays` is accepted, because the preview only computes a date and the limit is checked when the request is created (BR-08, F-04). Any other query parameter is still `400`. The response shape is unchanged: `maxLoanDays` stays the item type's value and `dueAt` uses `days`. The dialog sends the request's loan length (F07-D3) | One preview function for both releases; the dialog shows the real due date. An old request whose `loanDays` is above a limit lowered later (F09-D5) still gets its real due date |
 | F07-D5 | `GET /api/loans` returns `{ items: [ loan ] }`; a loan item has `id`, `status`, `checkedOutAt`, `dueAt`, `returnedAt`, `unit { id, assetTag }`, `itemType { id, name }`, `request { id }`; the Custodian view adds `borrower { id, username, displayName }`. Order: `dueAt` ascending, then `id` | The earliest due loans first, which is what both roles look for |
 | F07-D6 | The Custodian page `/pending` is renamed "Ready for checkout" and lists `APPROVED` requests; `PENDING` requests are decided from All requests (F-06) | The Sprint 1 page existed to check out pending requests; that step now needs approval first |
 | F07-D7 | The navigation bar adds "My loans" (Borrower) and "Loans" (Custodian), both `/loans` | One route, scope by role, as `/requests` for F-02 |
-| F07-D8 | Sprint 1 tests that check out a `PENDING` request change their precondition to `APPROVED` (TEST-19 to TEST-26, TEST-41 to TEST-47, TEST-49, TEST-52, TEST-54, TEST-58, and E2E TEST-30, TEST-32, TEST-53 through an approve step); their assertions on rules stay. TEST-43 now checks an `APPROVED` → `CHECKED_OUT` request checked out again | The requirement changed (FR-16 → FR-17); the rules those tests protect did not |
+| F07-D8 | Sprint 1 tests that check out a `PENDING` request change their precondition to `APPROVED` (TEST-19 to TEST-26, TEST-41 to TEST-47, TEST-49, TEST-52, TEST-54, TEST-58, and E2E TEST-30, TEST-32, TEST-53 through an approve step); their assertions on rules stay. TEST-43 now checks an `APPROVED` → `CHECKED_OUT` request checked out again. TEST-58 (e) is revised for F07-D4: `?x=1` still gives `400` naming `x`, and `days` is no longer an unknown parameter; the `days` cases are in TEST-91 (c) to (e) | The requirement changed (FR-16 → FR-17); the rules those tests protect did not |
 
 ## 4. UI specification
 
@@ -157,7 +157,7 @@ Planned files: `client/src/pages/pending/PendingRequestsPage.tsx`, `client/src/p
 | Aspect | Specification |
 | --- | --- |
 | Who | Custodian only |
-| Body | `{ "units": [ { "lineId", "unitId" }, ... ] }`, 1 to 20 entries |
+| Body | `{ "units": [ { "lineId", "unitId" }, ... ] }`, 1 to 100 entries (3.4) |
 | Success | `201` with the request (`CHECKED_OUT`) in the Custodian detail shape; every line's `loans` holds its new loans; all loans and the top-level `dueAt` share one value |
 | Errors | `400`, `404`, `409 INVALID_STATE`, `409 UNIT_WRONG_ITEM_TYPE`, `409 UNIT_NOT_AVAILABLE` (as 3.5) |
 
@@ -187,7 +187,7 @@ The Borrower view has no `borrower` key.
 
 ### 5.3 `GET /api/item-types/:id/due-date-preview` (changed by F07-D4)
 
-Optional query `days` (integer 1 to 365). Otherwise as F-03 5.5.
+Optional query `days`, integer 1 to 365 (F07-D4). A value above the item type's `maxLoanDays` is accepted. `days` that is not an integer from 1 to 365 (for example `0`, `366`, `1.5`, `abc`), or any other parameter, gives `400 VALIDATION_FAILED` naming it. The response is the F-03 5.5 shape; `dueAt` = `computeDueAt(now, days)`. Otherwise as F-03 5.5.
 
 ## 6. Data specification
 
@@ -198,10 +198,10 @@ No migration. Uses `borrow_requests.loanDays` (#73). Writes: `borrow_requests.st
 | AC | Expected outcome | Requirements |
 | --- | --- | --- |
 | AC-90 | A Custodian checks out an `APPROVED` request with one `AVAILABLE` unit per quantity on each line: one `ACTIVE` loan per unit, every unit `ON_LOAN`, the request `CHECKED_OUT`, and every loan and the request share one `dueAt` | FR-17, BR-02, BR-06 |
-| AC-91 | The shared `dueAt` is `computeDueAt(checkout time, loanDays)` (D-21); for a request without `loanDays` it uses the smallest `maxLoanDays` among its item types | FR-17, BR-08, D-16, D-21 |
+| AC-91 | The shared `dueAt` is `computeDueAt(checkout time, loanDays)` (D-21); for a request without `loanDays` it uses the smallest `maxLoanDays` among its item types. The due date preview with `days` returns `computeDueAt(now, days)`, also for `days` above the item type's maximum, and rejects a `days` outside 1 to 365 with `400` | FR-17, BR-08, D-16, D-21 |
 | AC-92 | Checkout of a request that is not `APPROVED` (`PENDING`, `REJECTED`, `CANCELLED`, `CHECKED_OUT`) is rejected with `409 INVALID_STATE` and nothing changes | FR-17, SRS 8.2 |
 | AC-93 | A body whose entries do not give every line exactly its quantity, or names a line of another request, is rejected with `400 VALIDATION_FAILED` naming the problem, and nothing changes | FR-17, BR-06 |
-| AC-94 | A body that names the same unit twice, or has more than 20 entries or an unknown field, is rejected with `400 VALIDATION_FAILED`, and nothing changes | FR-17 |
+| AC-94 | A body that names the same unit twice, or has more than 100 entries or an unknown field, is rejected with `400 VALIDATION_FAILED`, and nothing changes | FR-17 |
 | AC-95 | If any named unit is not `AVAILABLE` (`ON_LOAN`, `MAINTENANCE`, `RETIRED`) or belongs to another item type, the whole checkout is rejected with `409` and no unit, loan, request or history row changes, even for the units that were valid | BR-02, BR-12 |
 | AC-96 | Two simultaneous checkouts that share a unit produce exactly one success; the other request stays `APPROVED` and none of its units changes; no deadlock with two shared units | BR-03, NFR-05 |
 | AC-97 | A checkout of n units writes one request entry, n unit entries and n loan entries with the Custodian and one timestamp | BR-16, NFR-09 |
@@ -217,10 +217,10 @@ Conventions as F-03 8.1 and F-06 8.1 (factories, "Unchanged" snapshot, fake `Dat
 | Test | AC | Level | Preconditions and input | Action | Expected result | Planned file |
 | --- | --- | --- | --- | --- | --- | --- |
 | TEST-90 **TDD** | AC-90 | API | `APPROVED` request R of Borrower B, `loanDays` 7, line L1 Arduino × 2, line L2 HC-SR04 × 1; units A1, A2, S1 `AVAILABLE`. Time fixed at `2026-11-30T03:00:00.000Z` | Checkout R with (L1, A1), (L1, A2), (L2, S1) | `201`; R `CHECKED_OUT`; 3 `ACTIVE` loans, each with its unit, `checkedOutBy` C; A1, A2, S1 `ON_LOAN`; every loan and the top-level `dueAt` `2026-12-07T10:00:00.000Z` | `server/tests/api/checkout-multi.test.ts` |
-| TEST-91 **TDD** | AC-91 | Unit + API | (a) as TEST-90 with `loanDays` 3; (b) `APPROVED` request with `loanDays` null, lines Arduino (14) and Digital multimeter (3), time Mon 30 Nov 10:00 ICT | Checkout | (a) `dueAt` `2026-12-03T10:00:00.000Z`; (b) uses 3 days: `2026-12-03T10:00:00.000Z` | `server/tests/api/checkout-multi.test.ts` |
+| TEST-91 **TDD** | AC-91 | Unit + API | (a) as TEST-90 with `loanDays` 3; (b) `APPROVED` request with `loanDays` null, lines Arduino (14) and Digital multimeter (3), time Mon 30 Nov 10:00 ICT | Checkout. Preview as Custodian, Arduino (14), same time: (c) `?days=7`; (d) `?days=20`; (e) `?days=0`, `?days=366`, `?days=1.5`, then `?days=7&x=1` | (a) `dueAt` `2026-12-03T10:00:00.000Z`; (b) uses 3 days: `2026-12-03T10:00:00.000Z`. (c) `200`, `maxLoanDays` 14, `dueAt` `2026-12-07T10:00:00.000Z`. (d) `200`, `dueAt` `2026-12-21T10:00:00.000Z` (Sun 20 Dec moves to Mon 21 Dec, D-21). (e) each `400 VALIDATION_FAILED` naming `days`, the last naming `x` | `server/tests/api/checkout-multi.test.ts` |
 | TEST-92 **TDD** | AC-92 | API | Requests in `PENDING`, `REJECTED`, `CANCELLED`, `CHECKED_OUT`, each with an `AVAILABLE` unit of its item type | Checkout each | Each `409 INVALID_STATE` naming the state; Unchanged | `server/tests/api/checkout-multi.test.ts` |
 | TEST-93 **TDD** | AC-93 | API | R as TEST-90 | (a) only (L1, A1), (L2, S1); (b) (L1, A1), (L1, A2) without L2; (c) a `lineId` of another request; (d) three entries for L1 | Each `400`; (a) and (d) "Line L1 needs 2 units, got 1/3"; (b) names `units` ("Line L2 needs 1 unit, got 0"); (c) names `units[i].lineId`; Unchanged | `server/tests/api/checkout-multi.test.ts` |
-| TEST-94 **TDD** | AC-94 | API | R as TEST-90 | (a) (L1, A1), (L1, A1), (L2, S1); (b) 21 entries; (c) an entry with `borrowerId` | Each `400`; (a) "Unit A1 is listed twice"; Unchanged | `server/tests/api/checkout-multi.test.ts` |
+| TEST-94 **TDD** | AC-94 | API | R as TEST-90 | (a) (L1, A1), (L1, A1), (L2, S1); (b) 101 entries; (c) an entry with `borrowerId` | Each `400`; (a) "Unit A1 is listed twice"; Unchanged | `server/tests/api/checkout-multi.test.ts` |
 | TEST-95 **TDD** | AC-95 | API | R as TEST-90 with S1 replaced by: (a) S1 `ON_LOAN`; (b) `MAINTENANCE`; (c) `RETIRED`; (d) a unit of another item type | Checkout with A1, A2 and the bad unit | (a) to (c) `409 UNIT_NOT_AVAILABLE`, (d) `409 UNIT_WRONG_ITEM_TYPE`; A1 and A2 still `AVAILABLE`; R `APPROVED`; no loan; history count unchanged | `server/tests/api/checkout-multi.test.ts` |
 | TEST-96 **TDD** | AC-96 | Integration | Two `APPROVED` requests R1 and R2 that both name units U1 and U2 (in opposite body order); two Custodians | `Promise.all` of both checkouts, 5 rounds | Each round: one `201`, one `409 UNIT_NOT_AVAILABLE`; the loser `APPROVED` with no loan; U1 and U2 `ON_LOAN` with exactly one `ACTIVE` loan each; both calls finish within the test timeout (no deadlock) | `server/tests/api/checkout-multi-concurrency.test.ts` |
 | TEST-97 | AC-97 | Integration | As TEST-90 | Checkout | Exactly 7 new history entries: 1 request (`APPROVED` → `CHECKED_OUT`), 3 unit, 3 loan; all actor C, one `occurredAt` equal to `checkedOutAt` | `server/tests/api/checkout-multi.test.ts` |
@@ -232,6 +232,8 @@ Conventions as F-03 8.1 and F-06 8.1 (factories, "Unchanged" snapshot, fake `Dat
 Regression: the Sprint 1 checkout and E2E tests listed in F07-D8 are updated to approve first and must pass; no rule assertion is removed.
 
 ## 9. Definition of Done (F-07)
+
+Entry condition: F-06 (#76) is merged into `staging` before the F-07 RED commit. Checkout now needs an `APPROVED` request, and the E2E journeys TEST-30, TEST-32 and TEST-53 reach it through the F-06 approve UI (F07-D8).
 
 | # | Item | Evidence |
 | --- | --- | --- |
