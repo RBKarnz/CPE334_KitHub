@@ -1,5 +1,6 @@
 Lab 7 #71 post-deploy checks, revision kithub-00010-slp (main 6ada56d), https://kithub-899467106955.asia-southeast1.run.app
 Recorded 2026-11-25 about 21:20 ICT, demo accounts only.
+The service URL above and https://kithub-itgltxbgxa-as.a.run.app (the form used in the README and earlier labs) are two URLs of the same Cloud Run service `kithub`; the Deploy demo log of run 45630366597 prints both.
 
 1) No session: GET /api/item-types/3/due-date-preview -> 401
 {"error":{"code":"UNAUTHENTICATED","message":"You are not signed in.","requestId":"0281b0e9-b51c-4950-be38-8a1d59c9b970"}}
