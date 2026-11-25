@@ -4,10 +4,10 @@ import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } f
 import { checkoutRequest } from "../../api/checkout";
 import { ApiError } from "../../api/client";
 import type { BorrowRequest } from "../../api/requests";
-import { fetchUnits } from "../../api/units";
+import { fetchDueDatePreview, fetchUnits } from "../../api/units";
 import { useLoad } from "../../api/useLoad";
 import { AsyncState } from "../../components/AsyncState";
-import { formatDateTime } from "../../format";
+import { formatDateTime, formatWeekdayDateTime } from "../../format";
 
 export interface CheckoutDialogProps {
   request: BorrowRequest;
@@ -32,6 +32,9 @@ export function CheckoutDialog({ request, onClose, onCheckedOut, onStale }: Chec
   const line = request.lines[0];
   const loadUnits = useCallback(() => fetchUnits(line.itemType.id, "AVAILABLE"), [line.itemType.id]);
   const units = useLoad(loadUnits);
+  // The due date a checkout now would get (#71). Only a hint: the server computes dueAt again at checkout.
+  const loadPreview = useCallback(() => fetchDueDatePreview(line.itemType.id), [line.itemType.id]);
+  const preview = useLoad(loadPreview);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [alert, setAlert] = useState<string | null>(null);
@@ -122,6 +125,13 @@ export function CheckoutDialog({ request, onClose, onCheckedOut, onStale }: Chec
             <div className="modal-body">
               <p>
                 {request.borrower.displayName} ({request.borrower.username}) · {line.itemType.name}
+              </p>
+              <p className="text-body-secondary">
+                {preview.data
+                  ? `Due if checked out now: ${formatWeekdayDateTime(preview.data.dueAt)}`
+                  : preview.error
+                    ? "Due date not available."
+                    : "Calculating due date…"}
               </p>
               {alert && (
                 <div className="alert alert-warning" role="alert">
