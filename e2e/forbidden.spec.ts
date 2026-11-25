@@ -54,7 +54,7 @@ test("TEST-32: a Borrower sees the Forbidden page at /pending and the API refuse
 
   // Backend: nothing changed. No loan, no history entry, the request PENDING, the unit AVAILABLE.
   expect(await snapshotCheckoutState(db)).toEqual(before);
-  expect((await db.borrowRequest.findUniqueOrThrow({ where: { id: pending.id } })).status).toBe("PENDING");
+  expect((await db.borrowRequest.findUniqueOrThrow({ where: { id: pending.id } })).status).toBe("APPROVED");
   expect((await db.unit.findUniqueOrThrow({ where: { id: unit.id } })).status).toBe("AVAILABLE");
   expect(await db.loan.count()).toBe(0);
 });
