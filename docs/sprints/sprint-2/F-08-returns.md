@@ -6,7 +6,7 @@
 | --- | --- |
 | Feature | F-08 Returns: return all and early return |
 | Sprint | 2 (due 2026-11-29) |
-| Version | 1.0 |
+| Version | 1.1 |
 | Status | Proposed (PR for #78); implementation starts only after this contract is reviewed and merged |
 | Date | 2026-11-25 |
 | Authors | Teerakarn Noiruksa (67070501062); reviewer Methipat Mansap (67070501071) |
@@ -20,6 +20,7 @@
 | Version | Date | Author | Change |
 | --- | --- | --- | --- |
 | 1.0 | 2026-11-25 | Teerakarn Noiruksa | First contract: AC-102 to AC-109, TEST-102 to TEST-109, decisions F08-D1 to F08-D6. Review of PR #82: return-all body cap 100 derived from F04-D2, as F-07 3.4 (3.4); `415` comes first (3.5) |
+| 1.1 | 2026-11-25 | Teerakarn Noiruksa | Review of PR #83: a return-all that names a loan of this request which is no longer `ACTIVE` gives `409 INVALID_STATE` with the loan's state, not `400`, so 3.5 and 3.7 agree for a return-all racing an early return (3.4, 3.5, AC-107, TEST-107 (b), new TEST-108 (c)). `400` stays for loans of another request, duplicates and missing active loans |
 
 ## 2. Requirements and dependencies
 
@@ -95,12 +96,12 @@ Any failure rolls back every write.
 | --- | --- | --- |
 | Path `id` | Integer ≥ 1 | `400` naming `id` |
 | Return-all body | Strict `{ loans }`; 1 to 100 strict entries `{ loanId: int ≥ 1, condition?: "GOOD" \| "DAMAGED" }`. 100 is the largest checkout F-07 accepts (10 lines × 10 per line, F04-D2), so every checked-out request fits; the rule is the service set check below | `400` naming the field |
-| Return-all loans (service) | Every `loanId` is an `ACTIVE` loan of this request; every `ACTIVE` loan appears once | `400` naming `loans[i].loanId` ("Loan 31 is not an active loan of request #12", "Loan 31 is listed twice") or `loans` ("2 active loans are missing") |
+| Return-all loans (service) | Every `loanId` is a loan of this request and appears once; every named loan is `ACTIVE`; every `ACTIVE` loan of the request appears | `400` naming `loans[i].loanId` for a loan of another request or an unknown loan ("Loan 31 is not a loan of request #12") or a duplicate ("Loan 31 is listed twice"); `409 INVALID_STATE` for a named loan of this request that is no longer `ACTIVE` ("Loan 31 cannot be returned because it is RETURNED, not ACTIVE."); `400` naming `loans` when active loans are missing ("2 active loans are missing") |
 | Early-return body | Strict `{ condition?: "GOOD" \| "DAMAGED" }` | `400` naming the field |
 
 ### 3.5 Check order
 
-`415` → `401` → `403` → `400` (shape) → `404` (request or loan) → `409 INVALID_STATE` (request not `CHECKED_OUT`, or loan not `ACTIVE`) → `400` (return all: the loan set does not match). The state check comes before the set check so that a request returned by someone else answers `409`, not a confusing `400`. `415` comes first because SR-01 mounts `requireJson` on the whole `/api` router before any feature router (`server/src/app.ts`, F-02 3.3).
+`415` → `401` → `403` → `400` (shape) → `404` (request or loan) → `409 INVALID_STATE` (request not `CHECKED_OUT`, or, for an early return, the loan not `ACTIVE`) → return all: `400` (a named loan is not a loan of this request, or is listed twice) → `409 INVALID_STATE` (a named loan of this request is no longer `ACTIVE`, read inside the transaction) → `400` (an `ACTIVE` loan of the request is missing). The state checks come before the missing-loan check so that a request or loan returned by someone else answers `409`, not a confusing `400`; a return-all that races an early return of one of its loans therefore gets `409`, as 3.7 says.
 
 ### 3.6 History entries
 
@@ -116,7 +117,7 @@ Loan and unit entries carry `requestId`, `unitId` and, for loan entries, `loanId
 
 ### 3.7 Concurrency
 
-- Two return-all calls on the same request, or a return-all and an early return of one of its loans: the conditional loan updates let each loan be returned once; the later call gets `409 INVALID_STATE` and rolls back completely.
+- Two return-all calls on the same request, or a return-all and an early return of one of its loans: the conditional loan updates let each loan be returned once; the later call gets `409 INVALID_STATE` (the request is `RETURNED`, or a named loan is no longer `ACTIVE`, 3.5) and rolls back completely.
 - Two early returns of the last two loans at the same time: each locks the request row (`SELECT … FOR UPDATE`) before counting the `ACTIVE` loans, so exactly one of them moves the request to `RETURNED`.
 
 ### 3.8 Decisions made in this contract
@@ -180,7 +181,7 @@ No migration. Writes `loans.status`, `returnedAt`, `returnedById`, `returnCondit
 | AC-104 | A condition left out is `GOOD` | FR-20 |
 | AC-105 | An early return of one loan returns that loan and unit only; the request stays `CHECKED_OUT` while another loan is `ACTIVE`, and becomes `RETURNED` with the last one | FR-21 |
 | AC-106 | Return all that leaves out an active loan, lists a loan twice or names a loan of another request, and any unknown field or condition, is rejected with `400` naming the problem, and nothing changes | FR-20 |
-| AC-107 | Returning a request that is not `CHECKED_OUT`, or a loan that is not `ACTIVE`, gives `409 INVALID_STATE`; an unknown request or loan gives `404`; nothing changes | FR-20, FR-21 |
+| AC-107 | Returning a request that is not `CHECKED_OUT`, an early return of a loan that is not `ACTIVE`, or a return-all that names a loan of this request which is no longer `ACTIVE`, gives `409 INVALID_STATE` naming the state; an unknown request or loan gives `404`; nothing changes | FR-20, FR-21 |
 | AC-108 | Concurrent returns of the same loans return each loan once; exactly one call moves the request to `RETURNED`; every call writes history only for what it changed | NFR-05, BR-16, NFR-09 |
 | AC-109 | A Borrower calling either return endpoint gets `403`, a call without a session `401`, nothing changes; the Return all and Return this unit controls appear only for Custodians on `CHECKED_OUT` requests and `ACTIVE` loans, and the dialogs default every condition to Good | NFR-01, NFR-02, BR-17, NFR-12 |
 
@@ -195,8 +196,8 @@ Conventions as F-07 8 (factories create `CHECKED_OUT` requests with `ACTIVE` loa
 | TEST-104 **TDD** | AC-104 | API | `CHECKED_OUT` request with one loan L | (a) Return all with `{ loanId: L }`; (b) another request, `POST /api/loans/:id/return` with `{}` | Both loans `returnCondition` `GOOD`, units `AVAILABLE` | `server/tests/api/returns.test.ts` |
 | TEST-105 **TDD** | AC-105 | API | R with L1, L2 | (a) early return L1; (b) early return L2 `DAMAGED` | (a) `200`, L1 `RETURNED`, A1 `AVAILABLE`, R `CHECKED_OUT`, L2 `ACTIVE`; (b) L2 `RETURNED`, unit `MAINTENANCE`, R `RETURNED` | `server/tests/api/returns.test.ts` |
 | TEST-106 **TDD** | AC-106 | API | R with L1, L2; R2 with L9 | Return all R with (a) only L1; (b) L1, L1, L2; (c) L1, L2, L9; (d) L1, L2 with `condition: "LOST"`; (e) an extra field | Each `400` naming the problem; Unchanged | `server/tests/api/returns.test.ts` |
-| TEST-107 **TDD** | AC-107 | API | Requests `APPROVED`, `RETURNED`; a `RETURNED` loan; no request or loan 999 999 | Return all on each request; early return of the returned loan; both on 999 999 | `409 INVALID_STATE` naming the state, or `404`; Unchanged | `server/tests/api/returns.test.ts` |
-| TEST-108 **TDD** | AC-108 | Integration | R with L1, L2; Custodians C1, C2 | (a) `Promise.all` of two return-all calls; (b) early returns of L1 and L2 at once; 5 rounds each | (a) one `200`, one `409`; each loan returned once; one request entry. (b) both `200`; R `RETURNED`; exactly one request history entry `CHECKED_OUT` → `RETURNED` | `server/tests/api/returns-concurrency.test.ts` |
+| TEST-107 **TDD** | AC-107 | API | Requests `APPROVED`, `RETURNED`; a `RETURNED` loan; `CHECKED_OUT` request R with L1 already returned early and L2 `ACTIVE`; no request or loan 999 999 | (a) Return all on each request; early return of the returned loan; both on 999 999; (b) return all on R naming L1 and L2 | (a) `409 INVALID_STATE` naming the state, or `404`; (b) `409 INVALID_STATE` "Loan L1 cannot be returned because it is RETURNED, not ACTIVE.", L2 still `ACTIVE`; Unchanged after each | `server/tests/api/returns.test.ts` |
+| TEST-108 **TDD** | AC-108 | Integration | R with L1, L2; Custodians C1, C2 | (a) `Promise.all` of two return-all calls; (b) early returns of L1 and L2 at once; (c) a return-all naming L1 and L2 and an early return of L1 at once; 5 rounds each | (a) one `200`, one `409`; each loan returned once; one request entry. (b) both `200`; R `RETURNED`; exactly one request history entry `CHECKED_OUT` → `RETURNED`. (c) one `200`, one `409 INVALID_STATE` (never `400`); if the early return won, R stays `CHECKED_OUT` with L2 `ACTIVE`; if the return-all won, R `RETURNED`; each loan returned once | `server/tests/api/returns-concurrency.test.ts` |
 | TEST-109 | AC-109 | API + UI | R `CHECKED_OUT` of Borrower B | API: as B both endpoints; no cookie. UI (`vi.mock`): detail as Custodian and as B; open Return all | API: `403`, `401`, Unchanged. UI: buttons only for the Custodian; every condition "Good" by default; confirm "Return 2 units"; return mock called once with both loans | `server/tests/api/returns-access.test.ts`, `client/tests/ReturnDialog.test.tsx` |
 
 ## 9. Definition of Done (F-08)
