@@ -1,0 +1,23 @@
+# GREEN, end-to-end (Playwright, not run by CI)
+Command: npm run test:e2e
+Commit: be5e11c10734e72005908337839857b7452b2df6 feat(#76): approve and reject requests; All requests view and Custodian history
+Date: 2026-11-26 00:23:28 ICT
+node -v: v24.14.0   npm -v: 10.8.2
+git status --short (evidence folder is untracked here):
+ M server/prisma/migrations/migration_lock.toml
+?? docs/sprints/sprint-2/evidence/
+----
+
+> kithub-e2e@0.1.0 test:e2e
+> playwright test
+
+
+Running 4 tests using 1 worker
+
+  ok 1 [chromium] › e2e\forbidden.spec.ts:8:1 › TEST-32: a Borrower sees the Forbidden page at /pending and the API refuses checkout with 403 (541ms)
+  ok 2 [chromium] › e2e\journey.spec.ts:9:1 › TEST-30: Borrower requests, Custodian checks out, Borrower sees Checked out (1.5s)
+  ok 3 [chromium] › e2e\narrow-screens.spec.ts:59:1 › TEST-53: Check out is reachable at 640 and 760 px and Sign out is visible at 600 px (1.3s)
+  ok 4 [chromium] › e2e\rejection.spec.ts:8:1 › TEST-31: a second request for an item type with an open request is refused with the BR-04 message (562ms)
+
+  4 passed (22.6s)
+exit code: 0
