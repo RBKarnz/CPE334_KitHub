@@ -1,11 +1,11 @@
 // POST /api/requests/:id/checkout (contract F-03 3 and 5.3): TEST-19, TEST-20, TEST-21, TEST-26
-// and TEST-42 to TEST-46. Every rejection asserts that nothing changed (contract F-03 3.6).
+// TEST-42 to TEST-46, and TEST-54 and TEST-59 of change request #71. Every rejection asserts that nothing changed (contract F-03 3.6).
 import request from "supertest";
-import { beforeEach, describe, expect, it } from "vitest";
+import { readdirSync } from "node:fs";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createTestApp, prisma } from "../helpers/app.js";
 import { signIn } from "../helpers/auth.js";
 import {
-  DAY_MS,
   checkoutBody,
   createActiveLoan,
   createCheckoutWorld,
@@ -29,7 +29,12 @@ const statusOf = {
 };
 
 describe("TEST-19 (AC-19): normal checkout", () => {
-  it("TEST-19: checking out an AVAILABLE unit creates one ACTIVE loan due 14 days later and moves request and unit", async () => {
+  // v1.3 (#71): the server clock is fixed, so the due date of D-21 is an exact value.
+  // Only Date is faked; the sessions use the same faked clock for creation and expiry.
+  afterEach(() => vi.useRealTimers());
+
+  it("TEST-19: checking out an AVAILABLE unit creates one ACTIVE loan due at 17:00 ICT and moves request and unit", async () => {
+    vi.useFakeTimers({ toFake: ["Date"], now: new Date("2026-11-06T07:30:00.000Z") }); // Fri 14:30 ICT
     const w = await createCheckoutWorld(prisma);
     const u = await createUnit(prisma, { itemTypeId: w.arduino.id, assetTag: "KH-ARD-0007" });
     const other = await createUnit(prisma, { itemTypeId: w.arduino.id, assetTag: "KH-ARD-0008" });
@@ -37,9 +42,7 @@ describe("TEST-19 (AC-19): normal checkout", () => {
     const lineId = r.lines[0].id;
     const cookie = await signIn(app, "custodian1");
 
-    const t0 = Date.now();
     const res = await postCheckout(app, cookie, r.id, checkoutBody(lineId, u.id));
-    const t1 = Date.now();
 
     expect(res.status).toBe(201);
     expect(res.body.id).toBe(r.id);
@@ -53,10 +56,9 @@ describe("TEST-19 (AC-19): normal checkout", () => {
       unit: { id: u.id, assetTag: "KH-ARD-0007" },
       checkedOutBy: { id: w.c1.id, username: "custodian1", displayName: "Custodian One" },
     });
-    const checkedOutAt = new Date(loan.checkedOutAt).getTime();
-    expect(checkedOutAt).toBeGreaterThanOrEqual(t0);
-    expect(checkedOutAt).toBeLessThanOrEqual(t1);
-    expect(new Date(loan.dueAt).getTime() - checkedOutAt).toBe(14 * DAY_MS);
+    expect(loan.checkedOutAt).toBe("2026-11-06T07:30:00.000Z");
+    // v1.2 expected checkedOutAt + 14 × 86 400 000 ms; revised by #71 (D-21).
+    expect(loan.dueAt).toBe("2026-11-20T10:00:00.000Z");
     expect(res.body.dueAt).toBe(loan.dueAt);
 
     // Database
@@ -67,12 +69,13 @@ describe("TEST-19 (AC-19): normal checkout", () => {
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ status: "ACTIVE", unitId: u.id, checkedOutById: w.c1.id });
     expect(rows[0].id).toBe(loan.id);
-    expect(rows[0].dueAt.toISOString()).toBe(loan.dueAt);
+    expect(rows[0].dueAt.toISOString()).toBe("2026-11-20T10:00:00.000Z");
     expect(rows[0].checkedOutAt.toISOString()).toBe(loan.checkedOutAt);
     expect(await prisma.loan.count()).toBe(1);
   });
 
-  it("TEST-19: an item type with maxLoanDays 3 gives a loan due 3 days later (D-16)", async () => {
+  it("TEST-19: an item type with maxLoanDays 3 checked out Fri 14:30 ICT is due Mon 17:00 ICT (D-21)", async () => {
+    vi.useFakeTimers({ toFake: ["Date"], now: new Date("2026-11-06T07:30:00.000Z") });
     const w = await createCheckoutWorld(prisma);
     const u = await createUnit(prisma, { itemTypeId: w.multimeter.id, assetTag: "KH-DMM-0001" });
     const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.multimeter.id });
@@ -80,8 +83,25 @@ describe("TEST-19 (AC-19): normal checkout", () => {
     const res = await postCheckout(app, await signIn(app, "custodian1"), r.id, checkoutBody(r.lines[0].id, u.id));
 
     expect(res.status).toBe(201);
-    const loan = res.body.lines[0].loans[0];
-    expect(new Date(loan.dueAt).getTime() - new Date(loan.checkedOutAt).getTime()).toBe(3 * DAY_MS);
+    expect(res.body.lines[0].loans[0].dueAt).toBe("2026-11-09T10:00:00.000Z");
+  });
+});
+
+describe("TEST-54 (AC-54): checkout on a business day before 16:00 ICT (D-21)", () => {
+  afterEach(() => vi.useRealTimers());
+
+  it("TEST-54: Wed 25 Nov 10:00 ICT, 14 days: the response and the loans row are due Wed 9 Dec 17:00 ICT", async () => {
+    vi.useFakeTimers({ toFake: ["Date"], now: new Date("2026-11-25T03:00:00.000Z") });
+    const w = await createCheckoutWorld(prisma);
+    const u = await createUnit(prisma, { itemTypeId: w.arduino.id, assetTag: "KH-ARD-0007" });
+    const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+
+    const res = await postCheckout(app, await signIn(app, "custodian1"), r.id, checkoutBody(r.lines[0].id, u.id));
+
+    expect(res.status).toBe(201);
+    expect(res.body.lines[0].loans[0].dueAt).toBe("2026-12-09T10:00:00.000Z");
+    const row = await prisma.loan.findFirstOrThrow({ where: { requestLineId: r.lines[0].id } });
+    expect(row.dueAt.toISOString()).toBe("2026-12-09T10:00:00.000Z");
   });
 });
 
@@ -424,5 +444,31 @@ describe("TEST-46 (AC-46): unit does not exist", () => {
     expect(await snapshotCheckoutState(prisma)).toEqual(before);
     expect(await statusOf.request(s.r.id)).toBe("PENDING");
     expect(await statusOf.request(s.r2.id)).toBe("PENDING");
+  });
+});
+
+describe("TEST-59 (AC-59): loans from before #71 keep their due date", () => {
+  it("TEST-59: a loan stored under the old rule is not recalculated by a new checkout, and #71 adds no migration", async () => {
+    const w = await createCheckoutWorld(prisma);
+    const oldUnit = await createUnit(prisma, { itemTypeId: w.arduino.id, assetTag: "KH-ARD-0001" });
+    const { loan: l0 } = await createActiveLoan(prisma, {
+      borrowerId: w.b2.id,
+      custodianId: w.c1.id,
+      itemTypeId: w.arduino.id,
+      unitId: oldUnit.id,
+    });
+    // Old rule (D-16): checkout time + 14 × 24 h, not at 17:00.
+    await prisma.loan.update({ where: { id: l0.id }, data: { dueAt: new Date("2026-11-20T07:30:00.000Z") } });
+    const u = await createUnit(prisma, { itemTypeId: w.arduino.id, assetTag: "KH-ARD-0002" });
+    const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+
+    const res = await postCheckout(app, await signIn(app, "custodian1"), r.id, checkoutBody(r.lines[0].id, u.id));
+
+    expect(res.status).toBe(201);
+    const stored = await prisma.loan.findUniqueOrThrow({ where: { id: l0.id } });
+    expect(stored.dueAt.toISOString()).toBe("2026-11-20T07:30:00.000Z");
+    // The migrations on staging 5508f49, before #71: the change adds none.
+    const migrations = readdirSync(new URL("../../prisma/migrations/", import.meta.url)).filter((f) => f !== "migration_lock.toml");
+    expect(migrations.sort()).toEqual(["20261106075705_sprint1_init", "20261125104833_sprint2_columns"]);
   });
 });

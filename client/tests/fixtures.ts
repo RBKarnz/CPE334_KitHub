@@ -11,11 +11,11 @@ export const pending12: BorrowRequest = {
   lines: [{ id: 5, itemType: { id: 3, name: "Arduino Uno R3" }, quantity: 1, loans: [] }],
 };
 
-/** The 201 response of contract F-03 5.3: request #12 checked out with KH-ARD-0007. */
+/** The 201 response of contract F-03 5.3: request #12 checked out with KH-ARD-0007, due 17:00 ICT (D-21, #71). */
 export const checkedOut12: BorrowRequest = {
   ...pending12,
   status: "CHECKED_OUT",
-  dueAt: "2026-11-20T07:30:00.000Z",
+  dueAt: "2026-11-20T10:00:00.000Z",
   lines: [
     {
       ...pending12.lines[0],
@@ -25,7 +25,7 @@ export const checkedOut12: BorrowRequest = {
           status: "ACTIVE",
           unit: { id: 7, assetTag: "KH-ARD-0007" },
           checkedOutAt: "2026-11-06T07:30:00.000Z",
-          dueAt: "2026-11-20T07:30:00.000Z",
+          dueAt: "2026-11-20T10:00:00.000Z",
           checkedOutBy: { id: 1, username: "custodian1", displayName: "Custodian One" },
         },
       ],

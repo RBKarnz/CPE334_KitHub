@@ -69,7 +69,7 @@ describe("Request detail (contract F-02 section 5)", () => {
     expect(screen.getByText("Created 6 Nov 2026, 13:10")).toBeInTheDocument();
   });
 
-  it("after checkout the Borrower sees Checked out, the due date, the asset tag and the checkout time (contract F-03 4.4)", async () => {
+  it("TEST-60 (AC-60): after checkout the Borrower sees Checked out, the stored due date in ICT, the asset tag and the checkout time (contract F-03 4.4)", async () => {
     // Borrower view: the loan has no checkedOutBy (F03-D7).
     const { checkedOutBy: _hidden, ...loan } = checkedOut12.lines[0].loans[0];
     vi.spyOn(requestsApi, "fetchRequest").mockResolvedValue({
@@ -79,7 +79,7 @@ describe("Request detail (contract F-02 section 5)", () => {
     renderAs(borrower, <RequestDetailPage />, { path: "/requests/:id", at: "/requests/12" });
 
     expect(await screen.findByRole("heading", { name: /Request #12/ })).toHaveTextContent("Checked out");
-    expect(screen.getByText("Due 20 Nov 2026, 14:30")).toBeInTheDocument();
+    expect(screen.getByText("Due 20 Nov 2026, 17:00")).toBeInTheDocument();
     expect(screen.getByText("KH-ARD-0007")).toBeInTheDocument();
     expect(screen.getByText("Checked out 6 Nov 2026, 14:30")).toBeInTheDocument();
   });
