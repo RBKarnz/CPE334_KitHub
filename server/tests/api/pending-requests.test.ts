@@ -40,7 +40,10 @@ describe("TEST-18 (AC-18): Custodian's pending list", () => {
     const owners = { [r1.id]: w.b1, [r2.id]: w.b2, [r3.id]: w.b1 };
     const itemTypes = { [r1.id]: w.arduino, [r2.id]: w.arduino, [r3.id]: w.esp32 };
     for (const item of res.body.items) {
-      expect(Object.keys(item).sort()).toEqual(["borrower", "createdAt", "dueAt", "id", "lines", "status"]);
+      // F-06 (F06-D4) adds the decision fields; a Custodian also sees decidedBy.
+      expect(Object.keys(item).sort()).toEqual(
+        ["borrower", "createdAt", "decidedAt", "decidedBy", "dueAt", "id", "lines", "loanDays", "rejectionReason", "status"],
+      );
       expect(item.status).toBe("PENDING");
       expect(item.dueAt).toBeNull();
       const owner = owners[item.id];

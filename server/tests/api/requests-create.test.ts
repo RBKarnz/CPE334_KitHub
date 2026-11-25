@@ -43,6 +43,10 @@ describe("TEST-09 (AC-09): a Borrower requests one available unit", () => {
       id: expect.any(Number),
       status: "PENDING",
       createdAt: expect.any(String),
+      // F-06 (F06-D4): decision fields, null until decided; a Borrower never sees decidedBy.
+      loanDays: null,
+      decidedAt: null,
+      rejectionReason: null,
       dueAt: null,
       borrower: { id: b1.id, username: "borrower1", displayName: expect.any(String) },
       lines: [{ id: expect.any(Number), itemType: { id: arduino.id, name: "Arduino Uno R3" }, quantity: 1, loans: [] }],
