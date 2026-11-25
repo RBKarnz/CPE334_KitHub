@@ -1,7 +1,8 @@
 // KitHub data model, Sprint 1 columns (SDS 4.2).
 // CHECK constraints, the partial unique index on loans and the append-only trigger on
 // history_entries cannot be written in Prisma; they are raw SQL in the migration (SDS 4.3).
-// Columns marked Sprint 2 or 3 in the SDS are added by later additive migrations (DD-14).
+// Columns marked Sprint 2 or 3 in the SDS are added by later additive migrations (DD-14);
+// the Sprint 2 columns come from 20261125_sprint2_columns (#73).
 
 generator client {
   provider = "prisma-client-js"
@@ -72,6 +73,9 @@ model User {
   borrowRequests  BorrowRequest[] @relation("RequestBorrower")
   checkedOutLoans Loan[]          @relation("LoanCheckedOutBy")
   historyEntries  HistoryEntry[]  @relation("HistoryActor")
+  // Sprint 2 (#73)
+  decidedRequests BorrowRequest[] @relation("RequestDecidedBy")
+  returnedLoans   Loan[]          @relation("LoanReturnedBy")
 
   @@map("users")
 }
@@ -142,14 +146,25 @@ model Unit {
 
 /// Called BorrowRequest in code so it does not clash with the HTTP request type.
 model BorrowRequest {
-  id         Int           @id @default(autoincrement())
+  id              Int           @id @default(autoincrement())
   /// Owner: always the signed-in Borrower; never changes (BR-05)
-  borrowerId Int
-  status     RequestStatus @default(PENDING)
-  createdAt  DateTime      @default(now()) @db.Timestamptz(3)
-  updatedAt  DateTime      @updatedAt @db.Timestamptz(3)
+  borrowerId      Int
+  status          RequestStatus @default(PENDING)
+  createdAt       DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime      @updatedAt @db.Timestamptz(3)
+  // Sprint 2 (#73, SDS 4.2). CHECKs in the migration: loanDays >= 1; a non-blank
+  // rejectionReason when status is REJECTED (BR-09).
+  /// Null in Sprint 1 (D-16); required by the API from Sprint 2 (BR-08)
+  loanDays        Int?
+  /// Custodian who approved or rejected
+  decidedById     Int?
+  /// Approval or rejection time; approval starts the 48-hour pickup window (BR-13)
+  decidedAt       DateTime?     @db.Timestamptz(3)
+  /// Visible to the Borrower (BR-09)
+  rejectionReason String?
 
   borrower       User           @relation("RequestBorrower", fields: [borrowerId], references: [id], onDelete: Restrict)
+  decidedBy      User?          @relation("RequestDecidedBy", fields: [decidedById], references: [id], onDelete: Restrict)
   lines          RequestLine[]
   historyEntries HistoryEntry[]
 
@@ -176,19 +191,27 @@ model RequestLine {
 }
 
 model Loan {
-  id             Int        @id @default(autoincrement())
-  requestLineId  Int
+  id              Int              @id @default(autoincrement())
+  requestLineId   Int
   /// At most one ACTIVE loan per unit: partial unique index in the migration (BR-03)
-  unitId         Int
-  status         LoanStatus @default(ACTIVE)
-  checkedOutAt   DateTime   @db.Timestamptz(3)
-  checkedOutById Int
-  dueAt          DateTime   @db.Timestamptz(3)
-  createdAt      DateTime   @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime   @updatedAt @db.Timestamptz(3)
+  unitId          Int
+  status          LoanStatus       @default(ACTIVE)
+  checkedOutAt    DateTime         @db.Timestamptz(3)
+  checkedOutById  Int
+  dueAt           DateTime         @db.Timestamptz(3)
+  createdAt       DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime         @updatedAt @db.Timestamptz(3)
+  // Sprint 2 (#73, SDS 4.2). CHECK in the migration: returnedAt is set exactly when
+  // status is RETURNED (SRS 8.3).
+  returnedAt      DateTime?        @db.Timestamptz(3)
+  /// Custodian who recorded the return
+  returnedById    Int?
+  /// DAMAGED sends the unit to MAINTENANCE (BR-11)
+  returnCondition ReturnCondition?
 
   requestLine    RequestLine    @relation(fields: [requestLineId], references: [id], onDelete: Restrict)
   unit           Unit           @relation(fields: [unitId], references: [id], onDelete: Restrict)
+  returnedBy     User?          @relation("LoanReturnedBy", fields: [returnedById], references: [id], onDelete: Restrict)
   checkedOutBy   User           @relation("LoanCheckedOutBy", fields: [checkedOutById], references: [id], onDelete: Restrict)
   historyEntries HistoryEntry[]
 
