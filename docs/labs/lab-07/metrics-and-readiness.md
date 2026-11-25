@@ -75,19 +75,19 @@ Outstanding items (do not block READY):
 | The Sprint 1 checkout of a `PENDING` request stays until F-07 (#77) | A request can still be checked out without approval on the deployed release | F-06 contract 2.3, F-07 contract F07-D1 |
 | Request #7 and unit KH-ARD-0001 stay on loan on production | Post-deploy check data; one Arduino Uno R3 shows as on loan until returns exist | D.1 outstanding items; returned with F-08 (#78) |
 
-### D.4 Contributions (to be confirmed by each student)
+### D.4 Contributions
 
 | Student | Lab 7 work |
 | --- | --- |
 | Teerakarn Noiruksa (67070501062) | Change request #71; impact table and contract revisions (PR #72); RED/GREEN implementation (PR #88); release PR #89; post-deploy checks (PR #90); metrics and readiness (this page, PR #92) |
-| Methipat Mansap (67070501071) | Reviews with requested changes and approvals of PR #72, #88, #89, #90 and #92, including the cap, check-order and evidence corrections; *(add any other work)* |
+| Methipat Mansap (67070501071) | Reviewed every Lab 7 PR before it merged: #72 (changes requested twice, then approved before any code), #80, #88 (changes requested for the raw RED/GREEN evidence and trace records, then approved), #89 (release approval), #90 (changes requested for the AC-59 record, then approved) and #92. Checked `computeDueAt` against an independent D-21 reference over 18,265 timestamps, re-ran the client RED/GREEN suites, and recomputed M1 to M5 from GitHub. Merged #72 and the release PR #89 into `main`, which started the deploy of `kithub-00010-slp`. |
 
-### D.5 AI-use declaration (to be confirmed by each student)
+### D.5 AI-use declaration
 
 | Student | Declaration |
 | --- | --- |
 | Teerakarn Noiruksa | Claude Code (Anthropic) was used to draft the change request, the impact table, contract and test text, the test and implementation code, the evidence scripts and this page, and to collect the GitHub data for the metrics. Every output was checked by running the tests and commands recorded in the evidence, by comparing the due dates with a separate reference calculation, and through Methipat's reviews; I decided the change and approved each commit. |
-| Methipat Mansap | *(to fill)* |
+| Methipat Mansap | I used Claude Code (Anthropic) during Lab 7 to read PR diffs against the SRS, SDS, contracts and code, draft my review comments, write and run the checks above (the D-21 reference comparison, test runs, recomputing the metrics with `gh`), and post the reviews from my GitHub account on my instruction. I decided every Request changes / Approve myself, and each approval was posted only after I confirmed it. Every number in my reviews comes from real command output or GitHub data, not from the tool's own claims; where the tool was wrong (it said CI does not run E2E), the record was corrected in `regression-summary.md`. |
 
 ### D.6 Retrospective
 
