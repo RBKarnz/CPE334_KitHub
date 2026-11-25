@@ -10,6 +10,8 @@ const TRANSITIONS: Record<TransitionEntity, readonly (readonly [string | null, s
   REQUEST: [
     [null, "PENDING"], // SRS 8.2: a Borrower submits a request (F-02)
     ["PENDING", "CHECKED_OUT"], // SRS 8.2, Sprint 1 only: checkout by a Custodian (F-03)
+    ["PENDING", "APPROVED"], // SRS 8.2, Sprint 2: approved by a Custodian (F-06)
+    ["PENDING", "REJECTED"], // SRS 8.2, Sprint 2: rejected with a reason by a Custodian (F-06)
   ],
   UNIT: [
     ["AVAILABLE", "ON_LOAN"], // SRS 8.1: checkout (F-03)

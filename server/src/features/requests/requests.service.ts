@@ -1,4 +1,5 @@
-// Borrow requests: create, list and detail (contract F-02 3 and 4).
+// Borrow requests: create, list and detail (contract F-02 3 and 4); approve and reject, and the
+// Custodian detail with history (contract F-06 3 and 5).
 import {
   ActorType,
   HistoryEntity,
@@ -11,8 +12,9 @@ import {
 import type { AuthUser } from "../../core/middleware/authenticate.js";
 import { ConflictError, NotFoundError } from "../../core/errors.js";
 import { requestRuleViolation } from "../../domain/request-rules.js";
+import { assertTransition } from "../../domain/transitions.js";
 import type { CreateRequestBody, ListRequestsQuery } from "./requests.schemas.js";
-import { requestSelect, toRequestView } from "./requests.view.js";
+import { historySelect, requestSelect, toHistoryView, toRequestView, type RequestRow } from "./requests.view.js";
 
 /** Open requests block a second request for the same item type (BR-04, SRS glossary). */
 const OPEN_STATUSES = [RequestStatus.PENDING, RequestStatus.APPROVED];
@@ -22,6 +24,14 @@ const ITEM_TYPE_FIELD = "lines[0].itemTypeId";
 /** A Borrower sees only their own requests; a Custodian sees all (BR-05, DD-06). */
 const scopeFor = (user: AuthUser): Prisma.BorrowRequestWhereInput =>
   user.role === Role.BORROWER ? { borrowerId: user.id } : {};
+
+/** A decision and the words of its messages (contract F-06 F06-D6). */
+const DECISIONS = {
+  approve: { to: RequestStatus.APPROVED, verb: "approved" },
+  reject: { to: RequestStatus.REJECTED, verb: "rejected" },
+} as const;
+
+export type Decision = keyof typeof DECISIONS;
 
 export function requestsService(prisma: PrismaClient) {
   return {
@@ -104,11 +114,74 @@ export function requestsService(prisma: PrismaClient) {
       return rows.map((row) => toRequestView(row, user.role));
     },
 
-    /** Another Borrower's request gets the same 404 as one that does not exist (DD-06). */
+    /**
+     * Another Borrower's request gets the same 404 as one that does not exist (DD-06). A Custodian
+     * also gets the request's history, oldest first (FR-30, F06-D5).
+     */
     async get(user: AuthUser, id: number) {
       const row = await prisma.borrowRequest.findFirst({ where: { id, ...scopeFor(user) }, select: requestSelect });
       if (!row) throw new NotFoundError(`Request ${id} does not exist.`);
-      return toRequestView(row, user.role);
+      return this.detail(user, row);
+    },
+
+    /** The detail shape: the request view, plus `history` for a Custodian (F06-D4, F06-D5). */
+    async detail(user: AuthUser, row: RequestRow) {
+      const view = toRequestView(row, user.role);
+      if (user.role !== Role.CUSTODIAN) return view;
+      const history = await prisma.historyEntry.findMany({
+        where: { requestId: row.id },
+        orderBy: [{ occurredAt: "asc" }, { id: "asc" }],
+        select: historySelect,
+      });
+      return { ...view, history: history.map(toHistoryView) };
+    },
+
+    /**
+     * Approves or rejects a PENDING request as a whole (FR-13, FR-14, BR-09). In one transaction:
+     * a conditional update WHERE status = 'PENDING', then one history entry with the same time
+     * (contract F-06 3.1, 3.6). 0 rows updated → re-read: 404 if missing, else 409 INVALID_STATE
+     * with the state another call set (3.5, 3.7).
+     */
+    async decide(user: AuthUser, id: number, decision: Decision, reason?: string) {
+      const { to, verb } = DECISIONS[decision];
+      assertTransition("REQUEST", RequestStatus.PENDING, to);
+      await prisma.$transaction(async (tx) => {
+        // One timestamp for decidedAt and occurredAt (contract F-06 3.6).
+        const now = new Date();
+        const moved = await tx.borrowRequest.updateMany({
+          where: { id, status: RequestStatus.PENDING },
+          data: {
+            status: to,
+            decidedById: user.id,
+            decidedAt: now,
+            ...(decision === "reject" ? { rejectionReason: reason } : {}),
+          },
+        });
+        if (moved.count === 0) {
+          const current = await tx.borrowRequest.findUnique({ where: { id }, select: { status: true } });
+          if (!current) throw new NotFoundError(`Request ${id} does not exist.`);
+          throw new ConflictError(
+            "INVALID_STATE",
+            `Request #${id} cannot be ${verb} because it is ${current.status}, not PENDING.`,
+          );
+        }
+        // History in the same transaction (BR-16, contract F-06 3.6).
+        await tx.historyEntry.create({
+          data: {
+            occurredAt: now,
+            actorType: ActorType.USER,
+            actorUserId: user.id,
+            entityType: HistoryEntity.REQUEST,
+            requestId: id,
+            action: "STATUS_CHANGED",
+            fromStatus: RequestStatus.PENDING,
+            toStatus: to,
+            ...(decision === "reject" ? { details: { reason: reason! } } : {}),
+          },
+        });
+      });
+      const row = await prisma.borrowRequest.findUniqueOrThrow({ where: { id }, select: requestSelect });
+      return this.detail(user, row);
     },
   };
 }
