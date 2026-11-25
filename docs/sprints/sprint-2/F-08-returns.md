@@ -19,7 +19,7 @@
 
 | Version | Date | Author | Change |
 | --- | --- | --- | --- |
-| 1.0 | 2026-11-25 | Teerakarn Noiruksa | First contract: AC-102 to AC-109, TEST-102 to TEST-109, decisions F08-D1 to F08-D6 |
+| 1.0 | 2026-11-25 | Teerakarn Noiruksa | First contract: AC-102 to AC-109, TEST-102 to TEST-109, decisions F08-D1 to F08-D6. Review of PR #82: return-all body cap 100 derived from F04-D2, as F-07 3.4 (3.4); `415` comes first (3.5) |
 
 ## 2. Requirements and dependencies
 
@@ -94,13 +94,13 @@ Any failure rolls back every write.
 | Input | Rule | Error |
 | --- | --- | --- |
 | Path `id` | Integer ≥ 1 | `400` naming `id` |
-| Return-all body | Strict `{ loans }`; 1 to 20 strict entries `{ loanId: int ≥ 1, condition?: "GOOD" \| "DAMAGED" }` | `400` naming the field |
+| Return-all body | Strict `{ loans }`; 1 to 100 strict entries `{ loanId: int ≥ 1, condition?: "GOOD" \| "DAMAGED" }`. 100 is the largest checkout F-07 accepts (10 lines × 10 per line, F04-D2), so every checked-out request fits; the rule is the service set check below | `400` naming the field |
 | Return-all loans (service) | Every `loanId` is an `ACTIVE` loan of this request; every `ACTIVE` loan appears once | `400` naming `loans[i].loanId` ("Loan 31 is not an active loan of request #12", "Loan 31 is listed twice") or `loans` ("2 active loans are missing") |
 | Early-return body | Strict `{ condition?: "GOOD" \| "DAMAGED" }` | `400` naming the field |
 
 ### 3.5 Check order
 
-`401` → `403` → `415` → `400` (shape) → `404` (request or loan) → `409 INVALID_STATE` (request not `CHECKED_OUT`, or loan not `ACTIVE`) → `400` (return all: the loan set does not match). The state check comes before the set check so that a request returned by someone else answers `409`, not a confusing `400`.
+`415` → `401` → `403` → `400` (shape) → `404` (request or loan) → `409 INVALID_STATE` (request not `CHECKED_OUT`, or loan not `ACTIVE`) → `400` (return all: the loan set does not match). The state check comes before the set check so that a request returned by someone else answers `409`, not a confusing `400`. `415` comes first because SR-01 mounts `requireJson` on the whole `/api` router before any feature router (`server/src/app.ts`, F-02 3.3).
 
 ### 3.6 History entries
 
