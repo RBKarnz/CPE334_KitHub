@@ -25,6 +25,11 @@ export interface DueDatePreview {
   dueAt: string;
 }
 
-/** GET /item-types/:id/due-date-preview (contract F-03 5.5, #71). */
-export const fetchDueDatePreview = (itemTypeId: number) =>
-  apiFetch<DueDatePreview>(`/item-types/${itemTypeId}/due-date-preview`);
+/**
+ * GET /item-types/:id/due-date-preview (contract F-03 5.5, #71). With `days`, that loan length is
+ * used (contract F-07 5.3, F07-D4); without it, the item type's maximum.
+ */
+export const fetchDueDatePreview = (itemTypeId: number, days?: number) =>
+  apiFetch<DueDatePreview>(
+    `/item-types/${itemTypeId}/due-date-preview${days === undefined ? "" : `?days=${days}`}`,
+  );

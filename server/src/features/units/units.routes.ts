@@ -2,7 +2,13 @@ import { Router } from "express";
 import { Role, type PrismaClient } from "@prisma/client";
 import { authenticate, requireRole } from "../../core/middleware/authenticate.js";
 import { validate } from "../../core/middleware/validate.js";
-import { dueDatePreviewQuery, itemTypeIdParams, listUnitsQuery, type ListUnitsQuery } from "./units.schemas.js";
+import {
+  dueDatePreviewQuery,
+  itemTypeIdParams,
+  listUnitsQuery,
+  type DueDatePreviewQuery,
+  type ListUnitsQuery,
+} from "./units.schemas.js";
 import { unitsService } from "./units.service.js";
 
 /**
@@ -36,7 +42,7 @@ export function unitsRouter(prisma: PrismaClient): Router {
     async (req, res, next) => {
       try {
         const { id } = req.params as unknown as { id: number };
-        res.status(200).json(await service.dueDatePreview(id));
+        res.status(200).json(await service.dueDatePreview(id, (req.query as DueDatePreviewQuery).days));
       } catch (err) {
         next(err);
       }

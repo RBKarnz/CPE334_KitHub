@@ -68,6 +68,10 @@ export const approveRequest = (id: number) =>
 export const rejectRequest = (id: number, reason: string) =>
   apiFetch<BorrowRequest>(`/requests/${id}/reject`, { method: "POST", body: { reason } });
 
+/** Custodian: APPROVED requests, oldest first, for Ready for checkout (contract F-07 4, F07-D6). */
+export const fetchApprovedRequests = () =>
+  apiFetch<{ items: BorrowRequest[] }>("/requests?status=APPROVED").then((r) => r.items);
+
 /** Custodian: every Borrower's PENDING requests, oldest first (contract F-03 5.1, F03-D2). */
 export const fetchPendingRequests = () =>
   apiFetch<{ items: BorrowRequest[] }>("/requests?status=PENDING").then((r) => r.items);

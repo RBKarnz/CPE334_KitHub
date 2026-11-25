@@ -1,8 +1,9 @@
-// Pending requests, the Custodian landing page (contract F-03 4.2). Rows in the API order:
-// oldest first (F03-D2). "Check out" opens the checkout dialog for that request.
+// Ready for checkout, the Custodian landing page (contract F-03 4.2, renamed by F-07 F07-D6): the
+// APPROVED requests in the API order, oldest first (F03-D2). "Check out" opens the checkout dialog.
+// PENDING requests are decided on All requests (F-06).
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchPendingRequests, type BorrowRequest } from "../../api/requests";
+import { fetchApprovedRequests, type BorrowRequest } from "../../api/requests";
 import { useLoad } from "../../api/useLoad";
 import { AsyncState } from "../../components/AsyncState";
 import { PageHeader } from "../../components/PageHeader";
@@ -10,7 +11,7 @@ import { formatDateTime } from "../../format";
 import { CheckoutDialog, checkoutConfirmation } from "./CheckoutDialog";
 
 export function PendingRequestsPage() {
-  const pending = useLoad(fetchPendingRequests);
+  const pending = useLoad(fetchApprovedRequests);
   const [active, setActive] = useState<BorrowRequest | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -23,7 +24,7 @@ export function PendingRequestsPage() {
   const items = pending.data ?? [];
   return (
     <main className="container kh-main">
-      <PageHeader>Pending requests</PageHeader>
+      <PageHeader>Ready for checkout</PageHeader>
       {notice && (
         <div className="alert alert-success" role="status">
           {notice}
@@ -34,7 +35,7 @@ export function PendingRequestsPage() {
         error={pending.error}
         onRetry={pending.reload}
         isEmpty={items.length === 0}
-        empty="No pending requests."
+        empty="No approved requests."
       >
         {/* Below 768 px each row shows as a card (theme.css); data-label names the column there.
             The explicit roles keep the table semantics that some browsers drop with display: block.
@@ -47,16 +48,14 @@ export function PendingRequestsPage() {
                 <tr role="row">
                   <th scope="col" role="columnheader">Request</th>
                   <th scope="col" role="columnheader">Borrower</th>
-                  <th scope="col" role="columnheader">Item type</th>
-                  <th scope="col" role="columnheader">Quantity</th>
-                  <th scope="col" role="columnheader">Created</th>
+                  <th scope="col" role="columnheader">Items</th>
+                  <th scope="col" role="columnheader">Loan length</th>
+                  <th scope="col" role="columnheader">Approved</th>
                   <th scope="col" role="columnheader">Action</th>
                 </tr>
               </thead>
               <tbody role="rowgroup">
                 {items.map((request) => {
-                  // Every Sprint 1 request has exactly one line (BR-01).
-                  const line = request.lines[0];
                   return (
                     <tr key={request.id} role="row">
                       <td role="cell">
@@ -67,11 +66,15 @@ export function PendingRequestsPage() {
                       <td role="cell" data-label="Borrower">
                         {request.borrower.displayName} <span className="text-body-secondary">({request.borrower.username})</span>
                       </td>
-                      <td role="cell" data-label="Item type" className="fw-semibold">
-                        {line?.itemType.name}
+                      <td role="cell" data-label="Items" className="fw-semibold">
+                        {request.lines.map((l) => `${l.itemType.name} × ${l.quantity}`).join(", ")}
                       </td>
-                      <td role="cell" data-label="Quantity">{line?.quantity}</td>
-                      <td role="cell" data-label="Created">{formatDateTime(request.createdAt)}</td>
+                      <td role="cell" data-label="Loan length">
+                        {request.loanDays != null ? `${request.loanDays} days` : "Not set"}
+                      </td>
+                      <td role="cell" data-label="Approved">
+                        {request.decidedAt ? formatDateTime(request.decidedAt) : ""}
+                      </td>
                       <td role="cell">
                         <button
                           type="button"

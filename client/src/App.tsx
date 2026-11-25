@@ -4,6 +4,7 @@ import { AuthProvider, landingPath, useAuth } from "./auth/AuthProvider";
 import { LoadingScreen, RequireAuth, RequireRole } from "./auth/guards";
 import { NavBar } from "./components/NavBar";
 import { CatalogPage } from "./pages/CatalogPage";
+import { LoansPage } from "./pages/loans/LoansPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MyRequestsPage } from "./pages/MyRequestsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
@@ -43,6 +44,8 @@ function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/requests" element={<RequestsPage />} />
+        {/* My loans or Loans, scoped by role (F07-D7). */}
+        <Route path="/loans" element={<LoansPage />} />
         {/* Borrower (own) and Custodian; the API scopes it (DD-06). */}
         <Route path="/requests/:id" element={<RequestDetailPage />} />
         <Route

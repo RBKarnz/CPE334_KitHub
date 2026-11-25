@@ -20,5 +20,15 @@ export const listUnitsQuery = z.object({
 
 export type ListUnitsQuery = z.infer<typeof listUnitsQuery>;
 
-// The due-date preview takes no query field; validate() makes this strict (contract F-03 5.5, #71).
-export const dueDatePreviewQuery = z.object({});
+// The due-date preview takes only an optional `days`, an integer 1 to 365 (contract F-07 5.3,
+// F07-D4); validate() makes this strict, so any other field is an error (F-03 5.5, #71).
+export const dueDatePreviewQuery = z.object({
+  days: z
+    .string()
+    .regex(/^[1-9]\d*$/, { error: "Must be an integer from 1 to 365" })
+    .transform(Number)
+    .pipe(z.number().max(365, { error: "Must be an integer from 1 to 365" }))
+    .optional(),
+});
+
+export type DueDatePreviewQuery = z.infer<typeof dueDatePreviewQuery>;
