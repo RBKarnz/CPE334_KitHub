@@ -3,7 +3,8 @@
 // - Inserts a record only if none exists with the same natural key (username, category
 //   name, item type name, asset tag). Never changes an existing record.
 // - Passwords come only from environment variables and are never printed.
-import { PrismaClient, Role, UnitStatus } from "@prisma/client";
+import { ActorType, HistoryEntity, LoanStatus, PrismaClient, RequestStatus, ReturnCondition, Role, UnitStatus } from "@prisma/client";
+import { computeDueAt } from "../src/domain/due-date.js";
 import type { SeedConfig } from "../src/core/config.js";
 import { hashPassword } from "../src/features/auth/password.js";
 
@@ -120,7 +121,7 @@ export interface SeedResult {
 }
 
 /** Inserts missing seed records. Returns how many records of each kind were created. */
-export async function seed(prisma: PrismaClient, config: SeedConfig): Promise<SeedResult> {
+export async function seed(prisma: PrismaClient, config: Omit<SeedConfig, "seedDemoRequests">): Promise<SeedResult> {
   const created: SeedResult = { categories: 0, itemTypes: 0, units: 0, users: 0 };
 
   const accounts = SEED_ACCOUNTS.filter((a) => !a.demoOnly || config.seedDemoData);
@@ -207,4 +208,197 @@ export async function seed(prisma: PrismaClient, config: SeedConfig): Promise<Se
   );
 
   return created;
+}
+
+// ---------------------------------------------------------------------------------------
+// Sprint 2 demo requests (#73), seeded only with SEED_DEMO_REQUESTS=true and only into a
+// database that has no request yet, so a database in use (for example production) is never
+// changed. One request per Sprint 2 state, with the history entries the features write, so
+// every Sprint 2 screen has something to show.
+
+const at = (iso: string) => new Date(iso);
+
+interface DemoLine {
+  itemType: string;
+  quantity: number;
+  /** Asset tags checked out for this line (CHECKED_OUT and RETURNED requests only) */
+  units?: string[];
+}
+
+interface DemoRequest {
+  borrower: string;
+  status: RequestStatus;
+  loanDays: number;
+  createdAt: string;
+  lines: DemoLine[];
+  /** Approval or rejection by custodian1 */
+  decidedAt?: string;
+  rejectionReason?: string;
+  cancelledAt?: string;
+  checkedOutAt?: string;
+  returnedAt?: string;
+}
+
+const DEMO_REQUESTS: DemoRequest[] = [
+  {
+    borrower: "borrower1",
+    status: RequestStatus.PENDING,
+    loanDays: 7,
+    createdAt: "2026-11-20T03:00:00.000Z",
+    lines: [
+      { itemType: "Arduino Uno R3", quantity: 2 },
+      { itemType: "HC-SR04 ultrasonic sensor", quantity: 1 },
+    ],
+  },
+  {
+    borrower: "borrower2",
+    status: RequestStatus.APPROVED,
+    loanDays: 14,
+    createdAt: "2026-11-20T04:00:00.000Z",
+    decidedAt: "2026-11-21T02:00:00.000Z",
+    lines: [{ itemType: "ESP32 DevKitC", quantity: 1 }],
+  },
+  {
+    borrower: "borrower2",
+    status: RequestStatus.REJECTED,
+    loanDays: 14,
+    createdAt: "2026-11-20T05:00:00.000Z",
+    decidedAt: "2026-11-21T03:00:00.000Z",
+    rejectionReason: "All Raspberry Pi units are booked for the IoT workshop this week.",
+    lines: [{ itemType: "Raspberry Pi 4 Model B", quantity: 1 }],
+  },
+  {
+    borrower: "borrower1",
+    status: RequestStatus.CANCELLED,
+    loanDays: 3,
+    createdAt: "2026-11-20T06:00:00.000Z",
+    cancelledAt: "2026-11-21T04:00:00.000Z",
+    lines: [{ itemType: "Digital multimeter", quantity: 1 }],
+  },
+  {
+    borrower: "borrower1",
+    status: RequestStatus.CHECKED_OUT,
+    loanDays: 14,
+    createdAt: "2026-11-21T05:00:00.000Z",
+    decidedAt: "2026-11-22T02:00:00.000Z",
+    checkedOutAt: "2026-11-22T03:00:00.000Z",
+    lines: [{ itemType: "DHT22 temperature and humidity sensor", quantity: 2, units: ["KH-DHT-0001", "KH-DHT-0002"] }],
+  },
+  {
+    borrower: "borrower2",
+    status: RequestStatus.RETURNED,
+    loanDays: 7,
+    createdAt: "2026-11-13T03:00:00.000Z",
+    decidedAt: "2026-11-13T05:00:00.000Z",
+    checkedOutAt: "2026-11-16T03:00:00.000Z",
+    returnedAt: "2026-11-20T03:00:00.000Z",
+    lines: [{ itemType: "Transistor kit (2N2222 ×4)", quantity: 1, units: ["KH-TRK-0001"] }],
+  },
+];
+
+/** Inserts the Sprint 2 demo requests into a database with no request. Returns how many were created. */
+export async function seedDemoRequests(prisma: PrismaClient): Promise<number> {
+  return prisma.$transaction(
+    async (tx) => {
+      if ((await tx.borrowRequest.count()) > 0) return 0;
+
+      const users = await tx.user.findMany({
+        where: { username: { in: ["borrower1", "borrower2", "custodian1"] } },
+        select: { id: true, username: true },
+      });
+      const userId = (username: string) => {
+        const u = users.find((x) => x.username === username);
+        if (!u) throw new Error(`Demo requests need the seeded account ${username}`);
+        return u.id;
+      };
+      const custodian = userId("custodian1");
+
+      for (const demo of DEMO_REQUESTS) {
+        const borrower = userId(demo.borrower);
+        const request = await tx.borrowRequest.create({
+          data: {
+            borrowerId: borrower,
+            status: demo.status,
+            loanDays: demo.loanDays,
+            createdAt: at(demo.createdAt),
+            decidedById: demo.decidedAt ? custodian : null,
+            decidedAt: demo.decidedAt ? at(demo.decidedAt) : null,
+            rejectionReason: demo.rejectionReason ?? null,
+          },
+        });
+        const requestEntry = (occurredAt: string, actorUserId: number, fromStatus: string | null, toStatus: string, action = "STATUS_CHANGED") =>
+          tx.historyEntry.create({
+            data: {
+              occurredAt: at(occurredAt),
+              actorType: ActorType.USER,
+              actorUserId,
+              entityType: HistoryEntity.REQUEST,
+              requestId: request.id,
+              action,
+              fromStatus,
+              toStatus,
+            },
+          });
+        await requestEntry(demo.createdAt, borrower, null, RequestStatus.PENDING, "CREATED");
+        if (demo.decidedAt) {
+          const decided = demo.status === RequestStatus.REJECTED ? RequestStatus.REJECTED : RequestStatus.APPROVED;
+          await requestEntry(demo.decidedAt, custodian, RequestStatus.PENDING, decided);
+        }
+        if (demo.cancelledAt) await requestEntry(demo.cancelledAt, borrower, RequestStatus.PENDING, RequestStatus.CANCELLED);
+
+        for (const line of demo.lines) {
+          const itemType = await tx.itemType.findUniqueOrThrow({ where: { name: line.itemType }, select: { id: true } });
+          const created = await tx.requestLine.create({
+            data: { requestId: request.id, itemTypeId: itemType.id, quantity: line.quantity, createdAt: at(demo.createdAt) },
+          });
+          if (!demo.checkedOutAt) continue;
+
+          const checkedOutAt = at(demo.checkedOutAt);
+          const returnedAt = demo.returnedAt;
+          for (const tag of line.units ?? []) {
+            const unit = await tx.unit.findUniqueOrThrow({ where: { assetTag: tag }, select: { id: true } });
+            const loan = await tx.loan.create({
+              data: {
+                requestLineId: created.id,
+                unitId: unit.id,
+                status: returnedAt ? LoanStatus.RETURNED : LoanStatus.ACTIVE,
+                checkedOutAt,
+                checkedOutById: custodian,
+                dueAt: computeDueAt(checkedOutAt, demo.loanDays),
+                returnedAt: returnedAt ? at(returnedAt) : null,
+                returnedById: returnedAt ? custodian : null,
+                returnCondition: returnedAt ? ReturnCondition.GOOD : null,
+              },
+            });
+            await tx.unit.update({ where: { id: unit.id }, data: { status: returnedAt ? UnitStatus.AVAILABLE : UnitStatus.ON_LOAN } });
+            const entry = (occurredAt: string, entityType: HistoryEntity, fromStatus: string | null, toStatus: string, action = "STATUS_CHANGED") =>
+              tx.historyEntry.create({
+                data: {
+                  occurredAt: at(occurredAt),
+                  actorType: ActorType.USER,
+                  actorUserId: custodian,
+                  entityType,
+                  requestId: request.id,
+                  unitId: unit.id,
+                  loanId: entityType === HistoryEntity.LOAN ? loan.id : null,
+                  action,
+                  fromStatus,
+                  toStatus,
+                },
+              });
+            await entry(demo.checkedOutAt, HistoryEntity.UNIT, UnitStatus.AVAILABLE, UnitStatus.ON_LOAN);
+            await entry(demo.checkedOutAt, HistoryEntity.LOAN, null, LoanStatus.ACTIVE, "CREATED");
+            if (returnedAt) {
+              await entry(returnedAt, HistoryEntity.UNIT, UnitStatus.ON_LOAN, UnitStatus.AVAILABLE);
+              await entry(returnedAt, HistoryEntity.LOAN, LoanStatus.ACTIVE, LoanStatus.RETURNED);
+            }
+          }
+        }
+        if (demo.checkedOutAt) await requestEntry(demo.checkedOutAt, custodian, RequestStatus.APPROVED, RequestStatus.CHECKED_OUT);
+        if (demo.returnedAt) await requestEntry(demo.returnedAt, custodian, RequestStatus.CHECKED_OUT, RequestStatus.RETURNED);
+      }
+      return DEMO_REQUESTS.length;
+    },
+    { timeout: 30_000 },
+  );
 }

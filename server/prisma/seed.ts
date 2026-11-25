@@ -2,7 +2,7 @@
 // Stops with an error naming any missing password variable; never prints a password.
 import { PrismaClient } from "@prisma/client";
 import { ConfigError, loadEnvFile, loadSeedConfig, type SeedConfig } from "../src/core/config.js";
-import { seed } from "./seed-lib.js";
+import { seed, seedDemoRequests } from "./seed-lib.js";
 
 async function main(): Promise<void> {
   loadEnvFile();
@@ -20,10 +20,16 @@ async function main(): Promise<void> {
   const prisma = new PrismaClient();
   try {
     const result = await seed(prisma, config);
+    const demoRequests = config.seedDemoRequests ? await seedDemoRequests(prisma) : 0;
     console.log(
       `Seed complete. Created ${result.categories} categories, ${result.itemTypes} item types, ` +
         `${result.units} units and ${result.users} accounts; existing records were left unchanged. ` +
-        `Demo Borrower accounts: ${config.seedDemoData ? "included" : "skipped (SEED_DEMO_DATA is not true)"}.`,
+        `Demo Borrower accounts: ${config.seedDemoData ? "included" : "skipped (SEED_DEMO_DATA is not true)"}. ` +
+        `Sprint 2 demo requests: ${
+          config.seedDemoRequests
+            ? `${demoRequests} created (none when the database already has a request)`
+            : "skipped (SEED_DEMO_REQUESTS is not true)"
+        }.`,
     );
   } finally {
     await prisma.$disconnect();
