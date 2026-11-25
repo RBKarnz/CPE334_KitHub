@@ -1,6 +1,7 @@
 // TEST-32 (AC-06, NFR-02): a Borrower cannot reach a Custodian operation. The UI shows the
 // Forbidden page, and the API refuses the same signed-in Borrower with 403 FORBIDDEN in the
 // JSON error shape (SDS 6.5) and changes nothing (contract F-03 3.8; MT-09).
+// F-07 (F07-D8): the request is APPROVED, the state a checkout now needs, so only the role refuses it.
 import { createRequest, snapshotCheckoutState } from "./support/db.js";
 import { evidence, expect, expectSignedInAs, signIn, test } from "./support/fixtures.js";
 import { createJourneyWorld } from "./support/world.js";
@@ -10,8 +11,8 @@ test("TEST-32: a Borrower sees the Forbidden page at /pending and the API refuse
   db,
 }, testInfo) => {
   const { borrower, arduino } = await createJourneyWorld(db);
-  // A real PENDING request of this Borrower and an AVAILABLE unit, so a checkout would change data.
-  const pending = await createRequest(db, { borrowerId: borrower.id, itemTypeId: arduino.itemType.id });
+  // A real APPROVED request of this Borrower and an AVAILABLE unit, so a checkout would change data.
+  const pending = await createRequest(db, { borrowerId: borrower.id, itemTypeId: arduino.itemType.id, status: "APPROVED" });
   const unit = arduino.units[0];
   const before = await snapshotCheckoutState(db);
 
@@ -22,7 +23,7 @@ test("TEST-32: a Borrower sees the Forbidden page at /pending and the API refuse
   await page.goto("/pending");
   await expect(page.getByRole("heading", { name: "Forbidden", level: 1 })).toBeVisible();
   await expect(page.getByText("You do not have permission to do this.")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Pending requests" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Ready for checkout" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /^Check out/ })).toHaveCount(0);
   await evidence(page, testInfo, "TEST-32 Forbidden page");
 

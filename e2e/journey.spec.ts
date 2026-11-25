@@ -1,6 +1,8 @@
 // TEST-30 (AC-01, AC-09, AC-19, AC-26): the Sprint 1 journey through the built UI, the API and
 // kithub_test, ending with a check of what the database stored. Texts are from contracts F-01,
 // F-02 and F-03 and match the manual test guide (MT-02, MT-06, MT-11 to MT-13).
+// F-07 (F07-D8): the Custodian now approves the request on its detail page (F-06) before checking
+// it out on Ready for checkout; the checkout dialog picks units with checkboxes.
 import { evidence, expect, expectSignedInAs, formatDateTime, signIn, signOut, test } from "./support/fixtures.js";
 import { createJourneyWorld } from "./support/world.js";
 
@@ -33,11 +35,17 @@ test("TEST-30: Borrower requests, Custodian checks out, Borrower sees Checked ou
   await signOut(page);
   await evidence(page, testInfo, "TEST-30 3 signed out");
 
-  // --- Custodian: land on Pending requests and check out a unit (AC-19) ---
+  // --- Custodian: approve the request (F-06), then check out a unit on Ready for checkout (AC-19) ---
   await signIn(page, "custodian1");
   await expect(page).toHaveURL(/\/pending$/);
   await expectSignedInAs(page, "Custodian One", "Custodian");
-  await expect(page.getByRole("heading", { name: "Pending requests", level: 1 })).toBeVisible();
+  await page.goto(`/requests/${requestId}`);
+  await page.getByRole("button", { name: "Approve", exact: true }).click();
+  await page.getByRole("dialog").getByRole("button", { name: `Approve Request #${requestId}` }).click();
+  await expect(page.getByRole("status").filter({ hasText: "approved" })).toHaveText(`Request #${requestId} approved.`);
+  await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Ready for checkout" }).click();
+  await expect(page).toHaveURL(/\/pending$/);
+  await expect(page.getByRole("heading", { name: "Ready for checkout", level: 1 })).toBeVisible();
 
   const pendingRow = page.getByRole("row").filter({ has: page.getByRole("link", { name: `#${requestId}`, exact: true }) });
   await expect(pendingRow).toContainText("Borrower One (borrower1)");
@@ -45,15 +53,16 @@ test("TEST-30: Borrower requests, Custodian checks out, Borrower sees Checked ou
   await pendingRow.getByRole("button", { name: `Check out Request #${requestId}` }).click();
 
   const dialog = page.getByRole("dialog", { name: `Check out Request #${requestId}` });
-  await expect(dialog).toContainText("Borrower One (borrower1) · Arduino Uno R3");
+  await expect(dialog).toContainText("Borrower One (borrower1)");
+  await expect(dialog).toContainText("Arduino Uno R3 — choose 1 of 5 available");
   // Only the requested item type's AVAILABLE units: no ESP32 DevKitC unit is offered.
-  const unitChoices = dialog.getByRole("radio");
+  const unitChoices = dialog.getByRole("checkbox");
   await expect(unitChoices).toHaveCount(5);
   for (const unit of arduino.units) await expect(dialog.getByLabel(unit.assetTag, { exact: true })).toBeVisible();
   await expect(dialog.getByText(/KH-ESP-/)).toHaveCount(0);
 
   await dialog.getByLabel("KH-ARD-0001", { exact: true }).check();
-  const confirm = dialog.getByRole("button", { name: `Check out KH-ARD-0001 for Request #${requestId}` });
+  const confirm = dialog.getByRole("button", { name: `Check out 1 unit for Request #${requestId}` });
   await expect(confirm).toBeEnabled();
   await evidence(page, testInfo, "TEST-30 4 checkout dialog");
   await confirm.click();
@@ -63,7 +72,7 @@ test("TEST-30: Borrower requests, Custodian checks out, Borrower sees Checked ou
   await expect(checkedOut).toHaveText(new RegExp(`^Request #${requestId} checked out: KH-ARD-0001, due .+$`));
   const checkoutMessage = await checkedOut.textContent();
   await expect(pendingRow).toHaveCount(0);
-  await expect(page.getByText("No pending requests.")).toBeVisible();
+  await expect(page.getByText("No approved requests.")).toBeVisible();
   await evidence(page, testInfo, "TEST-30 5 checkout success");
 
   // The catalog count drops by one (AC-26), and a Custodian has no Request button.

@@ -1,17 +1,19 @@
-// TEST-49 (AC-49) and TEST-58 (AC-58) (f), (g): the checkout dialog (contract F-03 4.3). The units,
-// checkout and requests API modules are mocked. The due-date preview (#71) is mocked with a
-// vi.mock factory, so this file does not import a preview function before it exists (F-03 8.1).
+// TEST-49 (AC-49), TEST-58 (AC-58) (f), (g) and TEST-101 (AC-101) (a) to (c): the checkout dialog
+// (contract F-03 4.3, F-07 4). The units, checkout and requests API modules are mocked; functions
+// that F-07 adds are mocked with vi.mock factories, so this file imports nothing before it exists.
+// F-07 (F07-D8): the dialog now checks out an APPROVED request and picks units with checkboxes, one
+// unit per quantity on each line; the confirm label counts the units ("Check out 1 unit for
+// Request #12", was "Check out KH-ARD-0007 for Request #12"). The rules each case checks are unchanged.
 import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as checkoutApi from "../src/api/checkout";
 import { ApiError } from "../src/api/client";
-import * as requestsApi from "../src/api/requests";
 import type { BorrowRequest } from "../src/api/requests";
 import * as unitsApi from "../src/api/units";
 import type { UnitSummary } from "../src/api/units";
-import { CheckoutDialog } from "../src/pages/pending/CheckoutDialog";
+import { CheckoutDialog, checkoutConfirmation } from "../src/pages/pending/CheckoutDialog";
 import { PendingRequestsPage } from "../src/pages/pending/PendingRequestsPage";
-import { checkedOut12, pending12 } from "./fixtures";
+import { approved12, approvedMulti12, checkedOut12, checkedOutMulti12 } from "./fixtures";
 import { custodian, deferred, renderAs } from "./render";
 
 const units: UnitSummary[] = [
@@ -19,10 +21,17 @@ const units: UnitSummary[] = [
   { id: 7, assetTag: "KH-ARD-0007", status: "AVAILABLE" },
 ];
 
-const { fetchDueDatePreview } = vi.hoisted(() => ({ fetchDueDatePreview: vi.fn() }));
+const { fetchDueDatePreview, fetchApprovedRequests } = vi.hoisted(() => ({
+  fetchDueDatePreview: vi.fn(),
+  fetchApprovedRequests: vi.fn(),
+}));
 vi.mock("../src/api/units", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../src/api/units")>()),
   fetchDueDatePreview,
+}));
+vi.mock("../src/api/requests", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../src/api/requests")>()),
+  fetchApprovedRequests,
 }));
 
 /** The 5.5 example: item type 3 at Fri 6 Nov 2026, 14:30 ICT. */
@@ -31,17 +40,19 @@ const preview = { itemTypeId: 3, maxLoanDays: 14, at: "2026-11-06T07:30:00.000Z"
 beforeEach(() => {
   fetchDueDatePreview.mockReset();
   fetchDueDatePreview.mockResolvedValue(preview);
+  fetchApprovedRequests.mockReset();
 });
 
 afterEach(() => vi.restoreAllMocks());
 
-function renderDialog() {
+function renderDialog(request: BorrowRequest = approved12) {
   const handlers = { onClose: vi.fn(), onCheckedOut: vi.fn(), onStale: vi.fn() };
-  renderAs(custodian, <CheckoutDialog request={pending12} {...handlers} />);
+  renderAs(custodian, <CheckoutDialog request={request} {...handlers} />);
   return handlers;
 }
 
 const confirmButton = () => screen.getByRole("button", { name: /^Check out/ });
+const ONE = "Check out 1 unit for Request #12";
 
 describe("TEST-49 (AC-49): checkout dialog", () => {
   it("TEST-49 (a): lists the AVAILABLE units of the line's item type; confirm is disabled until one is chosen", async () => {
@@ -49,21 +60,22 @@ describe("TEST-49 (AC-49): checkout dialog", () => {
     renderDialog();
 
     const dialog = await screen.findByRole("dialog", { name: "Check out Request #12" });
-    expect(dialog).toHaveTextContent("Borrower One (borrower1) · Arduino Uno R3");
-    expect(await screen.findByRole("radio", { name: "KH-ARD-0006" })).toBeInTheDocument();
-    expect(screen.getByRole("radio", { name: "KH-ARD-0007" })).toBeInTheDocument();
+    expect(dialog).toHaveTextContent("Borrower One (borrower1)");
+    expect(await screen.findByText("Arduino Uno R3 — choose 1 of 2 available")).toBeInTheDocument();
+    expect(await screen.findByRole("checkbox", { name: "KH-ARD-0006" })).toBeInTheDocument();
+    expect(screen.getByRole("checkbox", { name: "KH-ARD-0007" })).toBeInTheDocument();
     expect(fetchUnits).toHaveBeenCalledWith(3, "AVAILABLE");
     expect(confirmButton()).toBeDisabled();
   });
 
-  it("TEST-49 (b): the confirm button names the unit and request; a double click sends one call", async () => {
+  it("TEST-49 (b): the confirm button counts the units for the request; a double click sends one call", async () => {
     vi.spyOn(unitsApi, "fetchUnits").mockResolvedValue(units);
     const slow = deferred<BorrowRequest>();
     const checkout = vi.spyOn(checkoutApi, "checkoutRequest").mockReturnValue(slow.promise);
     renderDialog();
 
-    fireEvent.click(await screen.findByRole("radio", { name: "KH-ARD-0007" }));
-    const button = screen.getByRole("button", { name: "Check out KH-ARD-0007 for Request #12" });
+    fireEvent.click(await screen.findByRole("checkbox", { name: "KH-ARD-0007" }));
+    const button = screen.getByRole("button", { name: ONE });
     expect(button).toBeEnabled();
     fireEvent.click(button);
     fireEvent.click(button);
@@ -79,9 +91,7 @@ describe("TEST-49 (AC-49): checkout dialog", () => {
     const checkout = vi.spyOn(checkoutApi, "checkoutRequest");
     renderDialog();
 
-    expect(
-      await screen.findByText("No unit of Arduino Uno R3 is available. The request stays pending."),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Only 0 of 1 available. The request cannot be checked out yet.")).toBeInTheDocument();
     expect(confirmButton()).toBeDisabled();
     fireEvent.click(confirmButton());
     expect(checkout).not.toHaveBeenCalled();
@@ -96,36 +106,33 @@ describe("TEST-49 (AC-49): checkout dialog", () => {
     );
     const handlers = renderDialog();
 
-    fireEvent.click(await screen.findByRole("radio", { name: "KH-ARD-0007" }));
-    fireEvent.click(screen.getByRole("button", { name: "Check out KH-ARD-0007 for Request #12" }));
+    fireEvent.click(await screen.findByRole("checkbox", { name: "KH-ARD-0007" }));
+    fireEvent.click(screen.getByRole("button", { name: ONE }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Unit KH-ARD-0007 is not available for checkout.");
     await waitFor(() => expect(fetchUnits).toHaveBeenCalledTimes(2));
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(handlers.onClose).not.toHaveBeenCalled();
     expect(handlers.onCheckedOut).not.toHaveBeenCalled();
-    await screen.findByRole("radio", { name: "KH-ARD-0007" });
-    expect(screen.getByRole("radio", { name: "KH-ARD-0007" })).not.toBeChecked();
+    await screen.findByRole("checkbox", { name: "KH-ARD-0007" });
+    expect(screen.getByRole("checkbox", { name: "KH-ARD-0007" })).not.toBeChecked();
     expect(confirmButton()).toBeDisabled();
   });
 
-  it("TEST-49 (e): on success the dialog closes, shows asset tag and due date, and the pending list is fetched again", async () => {
-    const fetchPending = vi
-      .spyOn(requestsApi, "fetchPendingRequests")
-      .mockResolvedValueOnce([pending12])
-      .mockResolvedValueOnce([]);
+  it("TEST-49 (e): on success the dialog closes, shows asset tag and due date, and the list is fetched again", async () => {
+    fetchApprovedRequests.mockResolvedValueOnce([approved12]).mockResolvedValueOnce([]);
     vi.spyOn(unitsApi, "fetchUnits").mockResolvedValue(units);
     vi.spyOn(checkoutApi, "checkoutRequest").mockResolvedValue(checkedOut12);
     renderAs(custodian, <PendingRequestsPage />);
 
     fireEvent.click(await screen.findByRole("button", { name: "Check out Request #12" }));
-    fireEvent.click(await screen.findByRole("radio", { name: "KH-ARD-0007" }));
-    fireEvent.click(screen.getByRole("button", { name: "Check out KH-ARD-0007 for Request #12" }));
+    fireEvent.click(await screen.findByRole("checkbox", { name: "KH-ARD-0007" }));
+    fireEvent.click(screen.getByRole("button", { name: ONE }));
 
     expect(await screen.findByText("Request #12 checked out: KH-ARD-0007, due 20 Nov 2026, 17:00")).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    await waitFor(() => expect(fetchPending).toHaveBeenCalledTimes(2));
-    expect(await screen.findByText("No pending requests.")).toBeInTheDocument();
+    await waitFor(() => expect(fetchApprovedRequests).toHaveBeenCalledTimes(2));
+    expect(await screen.findByText("No approved requests.")).toBeInTheDocument();
   });
 
   it("TEST-49 (e): the dialog passes the checked-out request to onCheckedOut", async () => {
@@ -133,8 +140,8 @@ describe("TEST-49 (AC-49): checkout dialog", () => {
     vi.spyOn(checkoutApi, "checkoutRequest").mockResolvedValue(checkedOut12);
     const handlers = renderDialog();
 
-    fireEvent.click(await screen.findByRole("radio", { name: "KH-ARD-0007" }));
-    fireEvent.click(screen.getByRole("button", { name: "Check out KH-ARD-0007 for Request #12" }));
+    fireEvent.click(await screen.findByRole("checkbox", { name: "KH-ARD-0007" }));
+    fireEvent.click(screen.getByRole("button", { name: ONE }));
 
     await waitFor(() => expect(handlers.onCheckedOut).toHaveBeenCalledWith(checkedOut12));
   });
@@ -157,8 +164,8 @@ describe("TEST-58 (AC-58): due-date preview in the checkout dialog (#71)", () =>
 
     expect(await screen.findByText("Due date not available.")).toBeInTheDocument();
     expect(fetchDueDatePreview).toHaveBeenCalledWith(3);
-    fireEvent.click(await screen.findByRole("radio", { name: "KH-ARD-0007" }));
-    const button = screen.getByRole("button", { name: "Check out KH-ARD-0007 for Request #12" });
+    fireEvent.click(await screen.findByRole("checkbox", { name: "KH-ARD-0007" }));
+    const button = screen.getByRole("button", { name: ONE });
     expect(button).toBeEnabled();
     fireEvent.click(button);
     expect(checkout).toHaveBeenCalledWith(12, { units: [{ lineId: 5, unitId: 7 }] });
@@ -166,18 +173,76 @@ describe("TEST-58 (AC-58): due-date preview in the checkout dialog (#71)", () =>
   });
 });
 
+describe("TEST-101 (AC-101) (a) to (c): several lines and quantities", () => {
+  const arduinos: UnitSummary[] = [1, 2, 3, 4].map((n) => ({ id: n, assetTag: `KH-ARD-000${n}`, status: "AVAILABLE" }));
+  const sensors: UnitSummary[] = [{ id: 23, assetTag: "KH-SR04-0003", status: "AVAILABLE" }];
+  const unitsOf = (sensorUnits: UnitSummary[]) => (itemTypeId: number) =>
+    Promise.resolve(itemTypeId === 3 ? arduinos : sensorUnits);
+
+  it("TEST-101 (a): confirm is enabled only when every line has its quantity; the preview uses the loan length", async () => {
+    vi.spyOn(unitsApi, "fetchUnits").mockImplementation(unitsOf(sensors));
+    renderDialog(approvedMulti12);
+
+    expect(await screen.findByText("Arduino Uno R3 — choose 2 of 4 available")).toBeInTheDocument();
+    expect(await screen.findByText("HC-SR04 ultrasonic sensor — choose 1 of 1 available")).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole("checkbox", { name: "KH-ARD-0001" }));
+    expect(confirmButton()).toBeDisabled();
+    fireEvent.click(screen.getByRole("checkbox", { name: "KH-ARD-0002" }));
+    expect(confirmButton()).toBeDisabled();
+    // The line is full, so a third Arduino cannot be added.
+    expect(screen.getByRole("checkbox", { name: "KH-ARD-0003" })).toBeDisabled();
+    fireEvent.click(await screen.findByRole("checkbox", { name: "KH-SR04-0003" }));
+    expect(screen.getByRole("button", { name: "Check out 3 units for Request #12" })).toBeEnabled();
+    expect(fetchDueDatePreview).toHaveBeenCalledWith(3, 7);
+  });
+
+  it("TEST-101 (b): a line with fewer available units than its quantity blocks the checkout", async () => {
+    vi.spyOn(unitsApi, "fetchUnits").mockImplementation(unitsOf([]));
+    renderDialog(approvedMulti12);
+
+    expect(await screen.findByText("Only 0 of 1 available. The request cannot be checked out yet.")).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole("checkbox", { name: "KH-ARD-0001" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "KH-ARD-0002" }));
+    expect(confirmButton()).toBeDisabled();
+  });
+
+  it("TEST-101 (c): confirm sends the three entries once; the success text lists every asset tag and the due date", async () => {
+    vi.spyOn(unitsApi, "fetchUnits").mockImplementation(unitsOf(sensors));
+    const checkout = vi.spyOn(checkoutApi, "checkoutRequest").mockResolvedValue(checkedOutMulti12);
+    const handlers = renderDialog(approvedMulti12);
+
+    fireEvent.click(await screen.findByRole("checkbox", { name: "KH-ARD-0001" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "KH-ARD-0002" }));
+    fireEvent.click(await screen.findByRole("checkbox", { name: "KH-SR04-0003" }));
+    fireEvent.click(screen.getByRole("button", { name: "Check out 3 units for Request #12" }));
+
+    expect(checkout).toHaveBeenCalledTimes(1);
+    expect(checkout).toHaveBeenCalledWith(12, {
+      units: [
+        { lineId: 5, unitId: 1 },
+        { lineId: 5, unitId: 2 },
+        { lineId: 6, unitId: 23 },
+      ],
+    });
+    await waitFor(() => expect(handlers.onCheckedOut).toHaveBeenCalledWith(checkedOutMulti12));
+    expect(checkoutConfirmation(checkedOutMulti12)).toBe(
+      "Request #12 checked out: KH-ARD-0001, KH-ARD-0002, KH-SR04-0003, due 7 Dec 2026, 17:00",
+    );
+  });
+});
+
 describe("Checkout dialog: other responses and keyboard (contract F-03 4.3)", () => {
-  it("409 INVALID_STATE shows the message and asks the page to reload the pending list", async () => {
+  it("409 INVALID_STATE shows the message and asks the page to reload the list", async () => {
     vi.spyOn(unitsApi, "fetchUnits").mockResolvedValue(units);
     vi.spyOn(checkoutApi, "checkoutRequest").mockRejectedValue(
-      new ApiError(409, "INVALID_STATE", "Request #12 cannot be checked out because it is CHECKED_OUT, not PENDING."),
+      new ApiError(409, "INVALID_STATE", "Request #12 cannot be checked out because it is CHECKED_OUT, not APPROVED."),
     );
     const handlers = renderDialog();
 
-    fireEvent.click(await screen.findByRole("radio", { name: "KH-ARD-0006" }));
-    fireEvent.click(screen.getByRole("button", { name: "Check out KH-ARD-0006 for Request #12" }));
+    fireEvent.click(await screen.findByRole("checkbox", { name: "KH-ARD-0006" }));
+    fireEvent.click(screen.getByRole("button", { name: ONE }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("because it is CHECKED_OUT, not PENDING.");
+    expect(await screen.findByRole("alert")).toHaveTextContent("because it is CHECKED_OUT, not APPROVED.");
     expect(handlers.onStale).toHaveBeenCalledTimes(1);
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
@@ -187,7 +252,7 @@ describe("Checkout dialog: other responses and keyboard (contract F-03 4.3)", ()
     const checkout = vi.spyOn(checkoutApi, "checkoutRequest");
     const handlers = renderDialog();
 
-    await screen.findByRole("radio", { name: "KH-ARD-0006" });
+    await screen.findByRole("checkbox", { name: "KH-ARD-0006" });
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
     fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
 
@@ -204,7 +269,7 @@ describe("Checkout dialog: other responses and keyboard (contract F-03 4.3)", ()
 
     expect(await screen.findByText("Cannot reach KitHub. Check your connection and try again.")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
-    expect(await screen.findByRole("radio", { name: "KH-ARD-0006" })).toBeInTheDocument();
+    expect(await screen.findByRole("checkbox", { name: "KH-ARD-0006" })).toBeInTheDocument();
     expect(fetchUnits).toHaveBeenCalledTimes(2);
   });
 });

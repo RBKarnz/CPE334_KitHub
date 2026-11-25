@@ -7,7 +7,8 @@ type Row = [TransitionEntity, string | null, string];
 
 describe("TEST-51: assertTransition", () => {
   it.each<Row>([
-    ["REQUEST", "PENDING", "CHECKED_OUT"],
+    // F-07 (F07-D1): checkout needs an APPROVED request; the Sprint 1 PENDING row is removed.
+    ["REQUEST", "APPROVED", "CHECKED_OUT"],
     ["UNIT", "AVAILABLE", "ON_LOAN"],
     ["LOAN", null, "ACTIVE"],
     // F-06 (contract F-06 3.2): a Custodian approves or rejects a PENDING request.
@@ -28,6 +29,8 @@ describe("TEST-51: assertTransition", () => {
     ["REQUEST", "APPROVED", "APPROVED"],
     ["REQUEST", "REJECTED", "APPROVED"],
     ["REQUEST", "CHECKED_OUT", "REJECTED"],
+    // F-07: the Sprint 1 checkout of a PENDING request is gone (FR-16 replaced by FR-17).
+    ["REQUEST", "PENDING", "CHECKED_OUT"],
   ])("TEST-51 (b): %s %s → %s is rejected as 409 INVALID_STATE", (entity, from, to) => {
     let thrown: unknown;
     try {

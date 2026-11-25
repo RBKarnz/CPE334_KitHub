@@ -1,6 +1,9 @@
 // TEST-58 (AC-58), API part: GET /api/item-types/:id/due-date-preview (contract F-03 5.5, v1.3 #71).
 // The preview and a checkout at the same server time give the same dueAt; the endpoint is
 // Custodian only and writes nothing.
+// F-07 (F07-D8): checkout now needs an APPROVED request (FR-17 replaces FR-16), so these tests
+// create their requests APPROVED; their rule assertions are unchanged.
+import { RequestStatus } from "@prisma/client";
 import request from "supertest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createTestApp, prisma } from "../helpers/app.js";
@@ -29,7 +32,7 @@ function getPreview(cookie: string | undefined, itemTypeId: number | string, que
 async function setup() {
   const w = await createCheckoutWorld(prisma);
   const u = await createUnit(prisma, { itemTypeId: w.arduino.id, assetTag: "KH-ARD-0007" });
-  const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+  const r = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b1.id, itemTypeId: w.arduino.id });
   return { w, u, r };
 }
 

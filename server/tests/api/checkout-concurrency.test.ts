@@ -1,6 +1,8 @@
 // TEST-22 (AC-22, BR-03) and TEST-47 (AC-47): simultaneous checkouts give exactly one loan
 // (contract F-03 3.9, SDS 4.7). Each round starts from an empty database.
-import { Prisma } from "@prisma/client";
+// F-07 (F07-D8): checkout now needs an APPROVED request (FR-17 replaces FR-16), so these tests
+// create their requests APPROVED; their rule assertions are unchanged.
+import { Prisma, RequestStatus } from "@prisma/client";
 import { describe, expect, it } from "vitest";
 import { createTestApp, prisma } from "../helpers/app.js";
 import { signIn } from "../helpers/auth.js";
@@ -17,8 +19,8 @@ describe("TEST-22 (AC-22): two checkouts of the same unit", () => {
       await resetDb(prisma);
       const w = await createCheckoutWorld(prisma);
       const u = await createUnit(prisma, { itemTypeId: w.arduino.id, assetTag: "KH-ARD-0001" });
-      const r1 = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
-      const r2 = await createRequest(prisma, { borrowerId: w.b2.id, itemTypeId: w.arduino.id });
+      const r1 = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+      const r2 = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b2.id, itemTypeId: w.arduino.id });
       const [c1, c2] = [await signIn(app, "custodian1"), await signIn(app, "custodian2")];
 
       const results = await Promise.all([
@@ -39,7 +41,7 @@ describe("TEST-22 (AC-22): two checkouts of the same unit", () => {
       expect(await prisma.loan.count()).toBe(1);
       expect((await prisma.unit.findUniqueOrThrow({ where: { id: u.id } })).status).toBe("ON_LOAN");
       expect((await prisma.borrowRequest.findUniqueOrThrow({ where: { id: winnerId } })).status).toBe("CHECKED_OUT");
-      expect((await prisma.borrowRequest.findUniqueOrThrow({ where: { id: loserId } })).status).toBe("PENDING");
+      expect((await prisma.borrowRequest.findUniqueOrThrow({ where: { id: loserId } })).status).toBe("APPROVED");
       const history = await prisma.historyEntry.findMany();
       expect(history).toHaveLength(3);
       expect(history.every((h) => h.requestId === winnerId)).toBe(true);
@@ -51,7 +53,7 @@ describe("TEST-22 (AC-22): two checkouts of the same unit", () => {
     const w = await createCheckoutWorld(prisma);
     const v = await createUnit(prisma, { itemTypeId: w.arduino.id });
     await createActiveLoan(prisma, { borrowerId: w.b1.id, custodianId: w.c1.id, itemTypeId: w.arduino.id, unitId: v.id });
-    const other = await createRequest(prisma, { borrowerId: w.b2.id, itemTypeId: w.arduino.id });
+    const other = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b2.id, itemTypeId: w.arduino.id });
 
     const insert = prisma.loan.create({
       data: {
@@ -81,7 +83,7 @@ describe("TEST-47 (AC-47): two checkouts of the same request", () => {
       const w = await createCheckoutWorld(prisma);
       const u1 = await createUnit(prisma, { itemTypeId: w.arduino.id, assetTag: "KH-ARD-0001" });
       const u2 = await createUnit(prisma, { itemTypeId: w.arduino.id, assetTag: "KH-ARD-0002" });
-      const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+      const r = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b1.id, itemTypeId: w.arduino.id });
       const lineId = r.lines[0].id;
       const [c1, c2] = [await signIn(app, "custodian1"), await signIn(app, "custodian2")];
 
@@ -95,7 +97,7 @@ describe("TEST-47 (AC-47): two checkouts of the same request", () => {
       const loser = results.find((x) => x.status === 409)!;
       expect(loser.body.error.code).toBe("INVALID_STATE");
       expect(loser.body.error.message).toBe(
-        `Request #${r.id} cannot be checked out because it is CHECKED_OUT, not PENDING.`,
+        `Request #${r.id} cannot be checked out because it is CHECKED_OUT, not APPROVED.`,
       );
 
       const wonUnitId = winner.body.lines[0].loans[0].unit.id as number;

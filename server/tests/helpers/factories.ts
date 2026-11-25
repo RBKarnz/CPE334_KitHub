@@ -138,3 +138,8 @@ export async function createItemTypeWithUnits(
   }
   return itemType;
 }
+
+/** Adds a line to an existing request (Sprint 2 multi-line requests, F-07 tests). Test data only. */
+export function addLine(prisma: PrismaClient, requestId: number, itemTypeId: number, quantity = 1) {
+  return prisma.requestLine.create({ data: { requestId, itemTypeId, quantity } });
+}
