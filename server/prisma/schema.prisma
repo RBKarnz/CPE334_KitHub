@@ -2,7 +2,7 @@
 // CHECK constraints, the partial unique index on loans and the append-only trigger on
 // history_entries cannot be written in Prisma; they are raw SQL in the migration (SDS 4.3).
 // Columns marked Sprint 2 or 3 in the SDS are added by later additive migrations (DD-14);
-// the Sprint 2 columns come from 20261125_sprint2_columns (#73).
+// the Sprint 2 columns come from 20261125104833_sprint2_columns (#73).
 
 generator client {
   provider = "prisma-client-js"

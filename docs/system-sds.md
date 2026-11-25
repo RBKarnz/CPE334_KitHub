@@ -519,7 +519,7 @@ The seed script (`server/prisma/seed.ts`, run with `npm run prisma:seed`) is rep
 - It inserts each record only if no record with the same natural key exists (username, category name, item type name, asset tag). It never changes an existing record: a rerun does not reset passwords, unit states or loans.
 - Passwords come from environment variables, never from code. The seed stops with an error naming the missing variable if a password it needs is not set, and it never prints a password.
 - Catalog data and Custodian accounts are always seeded. Borrower demo accounts are seeded only when `SEED_DEMO_DATA=true`.
-- Sprint 2 demo requests (#73), one in each state from `PENDING` to `RETURNED` with their loans, unit states and history, are seeded only when `SEED_DEMO_REQUESTS=true` (which needs `SEED_DEMO_DATA=true`) and only into a database with no request, so a database in use is never changed.
+- Sprint 2 demo requests (#73), one in each state from `PENDING` to `RETURNED` with their loans, unit states and history, are seeded only when `SEED_DEMO_REQUESTS=true` (which needs `SEED_DEMO_DATA=true`) and only into a database with no request, so a database in use is never changed. Their times are hours before the seed time, so the approval is still inside the 48-hour window (BR-13) and the checked-out loan is not overdue (BR-15); the seed stops with an error if a demo unit is not `AVAILABLE`.
 
 Planned seed content (limits from D-08; several units per item type, as D-17 requires):
 

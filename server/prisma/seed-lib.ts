@@ -214,9 +214,11 @@ export async function seed(prisma: PrismaClient, config: Omit<SeedConfig, "seedD
 // Sprint 2 demo requests (#73), seeded only with SEED_DEMO_REQUESTS=true and only into a
 // database that has no request yet, so a database in use (for example production) is never
 // changed. One request per Sprint 2 state, with the history entries the features write, so
-// every Sprint 2 screen has something to show.
+// every Sprint 2 screen has something to show. Times are hours before the seed time, so the
+// demo states do not age (the approval stays inside the 48-hour window of BR-13, and the
+// checked-out loan is not overdue, BR-15).
 
-const at = (iso: string) => new Date(iso);
+const HOUR_MS = 3_600_000;
 
 interface DemoLine {
   itemType: string;
@@ -225,18 +227,19 @@ interface DemoLine {
   units?: string[];
 }
 
+/** Every time is a number of hours before the seed time. */
 interface DemoRequest {
   borrower: string;
   status: RequestStatus;
   loanDays: number;
-  createdAt: string;
+  createdAt: number;
   lines: DemoLine[];
   /** Approval or rejection by custodian1 */
-  decidedAt?: string;
+  decidedAt?: number;
   rejectionReason?: string;
-  cancelledAt?: string;
-  checkedOutAt?: string;
-  returnedAt?: string;
+  cancelledAt?: number;
+  checkedOutAt?: number;
+  returnedAt?: number;
 }
 
 const DEMO_REQUESTS: DemoRequest[] = [
@@ -244,7 +247,7 @@ const DEMO_REQUESTS: DemoRequest[] = [
     borrower: "borrower1",
     status: RequestStatus.PENDING,
     loanDays: 7,
-    createdAt: "2026-11-20T03:00:00.000Z",
+    createdAt: 1,
     lines: [
       { itemType: "Arduino Uno R3", quantity: 2 },
       { itemType: "HC-SR04 ultrasonic sensor", quantity: 1 },
@@ -254,16 +257,16 @@ const DEMO_REQUESTS: DemoRequest[] = [
     borrower: "borrower2",
     status: RequestStatus.APPROVED,
     loanDays: 14,
-    createdAt: "2026-11-20T04:00:00.000Z",
-    decidedAt: "2026-11-21T02:00:00.000Z",
+    createdAt: 5,
+    decidedAt: 2,
     lines: [{ itemType: "ESP32 DevKitC", quantity: 1 }],
   },
   {
     borrower: "borrower2",
     status: RequestStatus.REJECTED,
     loanDays: 14,
-    createdAt: "2026-11-20T05:00:00.000Z",
-    decidedAt: "2026-11-21T03:00:00.000Z",
+    createdAt: 6,
+    decidedAt: 3,
     rejectionReason: "All Raspberry Pi units are booked for the IoT workshop this week.",
     lines: [{ itemType: "Raspberry Pi 4 Model B", quantity: 1 }],
   },
@@ -271,33 +274,34 @@ const DEMO_REQUESTS: DemoRequest[] = [
     borrower: "borrower1",
     status: RequestStatus.CANCELLED,
     loanDays: 3,
-    createdAt: "2026-11-20T06:00:00.000Z",
-    cancelledAt: "2026-11-21T04:00:00.000Z",
+    createdAt: 8,
+    cancelledAt: 4,
     lines: [{ itemType: "Digital multimeter", quantity: 1 }],
   },
   {
     borrower: "borrower1",
     status: RequestStatus.CHECKED_OUT,
     loanDays: 14,
-    createdAt: "2026-11-21T05:00:00.000Z",
-    decidedAt: "2026-11-22T02:00:00.000Z",
-    checkedOutAt: "2026-11-22T03:00:00.000Z",
+    createdAt: 27,
+    decidedAt: 26,
+    checkedOutAt: 24,
     lines: [{ itemType: "DHT22 temperature and humidity sensor", quantity: 2, units: ["KH-DHT-0001", "KH-DHT-0002"] }],
   },
   {
     borrower: "borrower2",
     status: RequestStatus.RETURNED,
     loanDays: 7,
-    createdAt: "2026-11-13T03:00:00.000Z",
-    decidedAt: "2026-11-13T05:00:00.000Z",
-    checkedOutAt: "2026-11-16T03:00:00.000Z",
-    returnedAt: "2026-11-20T03:00:00.000Z",
+    createdAt: 8 * 24,
+    decidedAt: 8 * 24 - 2,
+    checkedOutAt: 7 * 24,
+    returnedAt: 24,
     lines: [{ itemType: "Transistor kit (2N2222 ×4)", quantity: 1, units: ["KH-TRK-0001"] }],
   },
 ];
 
 /** Inserts the Sprint 2 demo requests into a database with no request. Returns how many were created. */
-export async function seedDemoRequests(prisma: PrismaClient): Promise<number> {
+export async function seedDemoRequests(prisma: PrismaClient, now: Date = new Date()): Promise<number> {
+  const at = (hoursBefore: number) => new Date(now.getTime() - hoursBefore * HOUR_MS);
   return prisma.$transaction(
     async (tx) => {
       if ((await tx.borrowRequest.count()) > 0) return 0;
@@ -326,7 +330,7 @@ export async function seedDemoRequests(prisma: PrismaClient): Promise<number> {
             rejectionReason: demo.rejectionReason ?? null,
           },
         });
-        const requestEntry = (occurredAt: string, actorUserId: number, fromStatus: string | null, toStatus: string, action = "STATUS_CHANGED") =>
+        const requestEntry = (occurredAt: number, actorUserId: number, fromStatus: string | null, toStatus: string, action = "STATUS_CHANGED") =>
           tx.historyEntry.create({
             data: {
               occurredAt: at(occurredAt),
@@ -356,7 +360,10 @@ export async function seedDemoRequests(prisma: PrismaClient): Promise<number> {
           const checkedOutAt = at(demo.checkedOutAt);
           const returnedAt = demo.returnedAt;
           for (const tag of line.units ?? []) {
-            const unit = await tx.unit.findUniqueOrThrow({ where: { assetTag: tag }, select: { id: true } });
+            // Never overwrite a unit that is on loan, in maintenance or retired (review of PR #80).
+            const unit = await tx.unit.findUniqueOrThrow({ where: { assetTag: tag }, select: { id: true, status: true } });
+            if (unit.status !== UnitStatus.AVAILABLE)
+              throw new Error(`Demo requests need ${tag} to be AVAILABLE, but ${tag} is ${unit.status}, not AVAILABLE`);
             const loan = await tx.loan.create({
               data: {
                 requestLineId: created.id,
@@ -371,7 +378,7 @@ export async function seedDemoRequests(prisma: PrismaClient): Promise<number> {
               },
             });
             await tx.unit.update({ where: { id: unit.id }, data: { status: returnedAt ? UnitStatus.AVAILABLE : UnitStatus.ON_LOAN } });
-            const entry = (occurredAt: string, entityType: HistoryEntity, fromStatus: string | null, toStatus: string, action = "STATUS_CHANGED") =>
+            const entry = (occurredAt: number, entityType: HistoryEntity, fromStatus: string | null, toStatus: string, action = "STATUS_CHANGED") =>
               tx.historyEntry.create({
                 data: {
                   occurredAt: at(occurredAt),
