@@ -19,7 +19,7 @@
 
 | Version | Date | Author | Change |
 | --- | --- | --- | --- |
-| 1.0 | 2026-11-25 | Methipat Mansap | First contract: AC-72 to AC-79, TEST-72 to TEST-79, decisions F05-D1 to F05-D8 |
+| 1.0 | 2026-11-25 | Methipat Mansap | First contract: AC-72 to AC-79, TEST-72 to TEST-79, decisions F05-D1 to F05-D8. Before review: `415` first in 3.5 (found in the review of #84) |
 
 Changes after approval get a new version row with the reason. AC and TEST IDs are never reused for a different meaning.
 
@@ -111,8 +111,10 @@ Any failure rolls back: the request, its lines and the history stay as they were
 
 ### 3.5 Check order
 
-- Edit: `401` → `403` → `415` → `400` (path, then body) → transaction: lock Borrower row → `404` (request missing or not the caller's) → `409 INVALID_STATE` (not `PENDING`) → `404` (first line whose item type does not exist) → `409` rules in the F-04 order (BR-04, BR-07, BR-08, BR-01).
-- Cancel: `401` → `403` → `415` → `400` (path, then body) → transaction: `404` → `409 INVALID_STATE`.
+- Edit: `415` → `401` → `403` → `400` (path, then body) → transaction: lock Borrower row → `404` (request missing or not the caller's) → `409 INVALID_STATE` (not `PENDING`) → `404` (first line whose item type does not exist) → `409` rules in the F-04 order (BR-04, BR-07, BR-08, BR-01).
+- Cancel: `415` → `401` → `403` → `400` (path, then body) → transaction: `404` → `409 INVALID_STATE`.
+
+`415` comes first because SR-01 mounts `requireJson` on the whole `/api` router before authentication (`server/src/app.ts`); a no-session test still sends `Content-Type: application/json`.
 
 The state check comes before the rule checks so that a Borrower who edits a request that was just approved learns that, not a rule message about its lines.
 
