@@ -19,7 +19,7 @@
 
 | Version | Date | Author | Change |
 | --- | --- | --- | --- |
-| 1.0 | 2026-11-25 | Methipat Mansap | First contract: AC-110 to AC-121, TEST-110 to TEST-121, decisions F09-D1 to F09-D10 |
+| 1.0 | 2026-11-25 | Methipat Mansap | First contract: AC-110 to AC-121, TEST-110 to TEST-121, decisions F09-D1 to F09-D10. Before review: `415` first in 3.5 (found in the review of #84); F09-D3 adopts the F-04 cap F04-D2 |
 
 Changes after approval get a new version row with the reason. AC and TEST IDs are never reused for a different meaning.
 
@@ -110,7 +110,7 @@ No migration and no dependency on #73: every column F-09 writes exists since Spr
 
 ### 3.5 Check order
 
-`401` → `403` → `415` → `400` (path, then body) → `404` (the record in the path; then a `categoryId` in the body) → `409` (`NAME_TAKEN`, `ASSET_TAG_TAKEN`, `INVALID_STATE`). This is SDS 6.5's order. Messages that name a current state come from a re-read inside the transaction after a 0-row update.
+`415` → `401` → `403` → `400` (path, then body) → `404` (the record in the path; then a `categoryId` in the body) → `409` (`NAME_TAKEN`, `ASSET_TAG_TAKEN`, `INVALID_STATE`). This is SDS 6.5's order, with `415` first because SR-01 mounts `requireJson` on the whole `/api` router before authentication (`server/src/app.ts`); a no-session test still sends `Content-Type: application/json`. Messages that name a current state come from a re-read inside the transaction after a 0-row update.
 
 ### 3.6 History entries
 
@@ -139,7 +139,7 @@ Unit changes only. One timestamp `now` per transaction; `actorType` `USER`, `act
 | --- | --- | --- |
 | F09-D1 | Endpoints as SDS 6.6: `POST /api/categories`, `PATCH /api/categories/:id`, `POST /api/item-types`, `PATCH /api/item-types/:id`, `POST /api/item-types/:id/units`, `POST /api/units/:id/repair`, `POST /api/units/:id/retire`. Creates return `201`, edits and transitions `200`, each with the changed record | SDS 6.1 and 6.3 conventions; the UI refreshes from the response |
 | F09-D2 | Names are trimmed and unique without regard to case: "arduino uno r3" is taken when "Arduino Uno R3" exists. `409 NAME_TAKEN`, "An item type named Arduino Uno R3 already exists." / "A category named Instruments already exists." | Two names that differ only in case would look like duplicates to a Borrower. The database index still catches the exact duplicate under a race |
-| F09-D3 | Loan days 1 to 365 and quantity per request 1 to 10, for category defaults and item types | 365 matches the `loanDays` bound of F-04; 10 is above every D-08 default (largest 4) and gives the F-04 cap of 10 lines × 10 = 100 units per request that F-07 and F-08 use |
+| F09-D3 | Loan days 1 to 365 and quantity per request 1 to 10, for category defaults and item types. Adopts F04-D2: no item type may allow more than 10 per request | 365 matches the `loanDays` bound of F-04; 10 is above every D-08 default (largest 4). F04-D2 sets 10 lines × 10 = 100 units per request, which F-07 and F-08 use, so F-09 must not allow more |
 | F09-D4 | A new item type whose limits are left out gets its category's defaults at that moment. Changing a category's defaults does not change its existing item types | SDS 4.2: the defaults are "copied to new item types in this category". A Custodian may have tuned an item type on purpose |
 | F09-D5 | Changed item type limits apply to the next create (F-04) and edit (F-05). Existing `PENDING` and `APPROVED` requests are not re-checked and keep their quantities and `loanDays`; F-07 uses the request's `loanDays` | The Borrower made the request under the old limits, and the Custodian still approves or rejects it (F-06). Re-checking would need a state the SRS does not have |
 | F09-D6 | Asset tags are trimmed and stored in upper case; the format is `KH-<CODE>-<NNNN>` with a code of 2 to 6 letters or digits (SDS 4.2). Unique across all item types (A-07): `409 ASSET_TAG_TAKEN`, "Asset tag KH-ARD-0006 is already used." | Matches the labels on the shelf and the seed (`KH-SR04-0003`). Upper case makes "kh-ard-0006" and "KH-ARD-0006" the same tag |
