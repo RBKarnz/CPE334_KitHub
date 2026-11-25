@@ -9,6 +9,11 @@
 | Environment | Windows 11, Git Bash, node v24.14.0, npm 10.8.2, PostgreSQL 16 in Docker (`kithub-pg`, test database `kithub_test`) |
 | Recorded | 2026-11-25, ICT; each file states its own command, commit and time |
 
+## How the runs were recorded
+
+- **Commit order.** The RED commit `e08dbb2` (2026-11-25 20:19 ICT) contains only tests and sits directly on `staging` `5508f49`; the GREEN commit `b1898d5` (20:24 ICT) comes after it. The RED run was also done on `e08dbb2` before the GREEN commit, as the TDD order requires. The output files in this folder were then recorded again at 20:39 to 20:42 ICT, after the GREEN commit, by checking out `e08dbb2` (detached) for the RED files and `b1898d5` for the GREEN files. So a RED file's timestamp later than the GREEN commit does not mean RED ran after GREEN: each file shows the commit it ran on.
+- **` M server/prisma/migrations/migration_lock.toml` in every header.** Only a line-ending difference made by Git's `core.autocrlf` on Windows (LF in the repository, CRLF in the working copy). `git diff` on the file is empty, so its content equals the committed file. Prisma does not read it during tests, and it is the same on both commits, so it does not affect any run.
+
 ## RED: pre-change code with the new and revised tests
 
 | Suite | Command | Commit | Passed | Failed | Skipped | File |
