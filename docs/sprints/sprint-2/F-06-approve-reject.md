@@ -6,7 +6,7 @@
 | --- | --- |
 | Feature | F-06 Approve and reject requests; all-requests view |
 | Sprint | 2 (due 2026-11-29) |
-| Version | 1.0 |
+| Version | 1.1 |
 | Status | Proposed (PR for #76); implementation starts only after this contract is reviewed and merged |
 | Date | 2026-11-25 |
 | Authors | Teerakarn Noiruksa (67070501062); reviewer Methipat Mansap (67070501071) |
@@ -20,6 +20,7 @@
 | Version | Date | Author | Change |
 | --- | --- | --- | --- |
 | 1.0 | 2026-11-25 | Teerakarn Noiruksa | First contract: AC-80 to AC-89, TEST-80 to TEST-89, decisions F06-D1 to F06-D7 |
+| 1.1 | 2026-11-25 | Teerakarn Noiruksa | Review of PR #81: `/requests` is one route scoped by role (My requests for a Borrower, All requests for a Custodian, F06-D8), not a Custodian-only route; `decidedBy` is in the Custodian view only (SDS 4.4, as F03-D7), a Borrower sees `decidedAt` and `rejectionReason`; 3.7 corrected: approve then cancel both succeed (`APPROVED` → `CANCELLED`, FR-12), only reject and cancel have one winner; 8.1 names the snapshot helper file. Also aligned with F-02/F-05: path `id` 1 to 2 147 483 647 and the 404 text "Request 999 does not exist." |
 
 Changes after approval get a new version row with the reason. AC and TEST IDs are never reused for a different meaning.
 
@@ -58,13 +59,13 @@ Changes after approval get a new version row with the reason. AC and TEST IDs ar
 
 ### 3.1 Behaviour and workflow
 
-1. A Custodian opens **All requests** (`/requests`) from the navigation bar. The UI calls `GET /api/requests` (all states) or `GET /api/requests?status=<state>` when a state is chosen in the filter.
+1. A Custodian opens **All requests** (`/requests`, the same route that shows My requests to a Borrower, F06-D8) from the navigation bar. The UI calls `GET /api/requests` (all states) or `GET /api/requests?status=<state>` when a state is chosen in the filter.
 2. The Custodian opens a request (`/requests/:id`). The detail shows its state, Borrower, lines, loan length when set, decision fields and its history, oldest entry first.
 3. For a `PENDING` request the detail shows **Approve** and **Reject**.
 4. **Approve** asks for confirmation ("Approve Request #12 for Borrower One?") and calls `POST /api/requests/:id/approve` with `{}`. In one transaction the server sets `status = 'APPROVED'`, `decidedById`, `decidedAt` with a conditional update `WHERE status = 'PENDING'`, and writes one history entry (3.6).
 5. **Reject** opens a dialog with a required reason (1 to 500 characters after trimming). The confirm button stays disabled until the reason is not blank. The UI calls `POST /api/requests/:id/reject` with `{ "reason": "..." }`. The server sets `status = 'REJECTED'`, `decidedById`, `decidedAt` and `rejectionReason` (trimmed) the same way and writes one history entry with the reason in `details`.
 6. The server returns `200` with the request in its new state. The UI shows "Request #12 approved." or "Request #12 rejected." and refreshes the detail.
-7. The Borrower who owns the request sees the new state in My requests and on the detail; a rejected request shows "Rejected: <reason>".
+7. The Borrower who owns the request sees the new state in My requests and on the detail; a rejected request shows "Rejected 21 Nov 2026, 10:00" and "Reason: <reason>", without the Custodian's name (F06-D4).
 8. Any failure rolls back: the request keeps its state and no history entry is written.
 
 ### 3.2 State changes
@@ -91,7 +92,7 @@ No unit or loan changes: approval reserves nothing in Sprint 2 (reservation is B
 
 | Input | Rule | Error |
 | --- | --- | --- |
-| Path `id` (approve, reject, detail) | Integer ≥ 1 | `400 VALIDATION_FAILED` naming `id` |
+| Path `id` (approve, reject, detail) | Integer 1 to 2 147 483 647 (as F-02 and F-05) | `400 VALIDATION_FAILED` naming `id` |
 | Approve body | Exactly `{}`; any field is unknown | `400 VALIDATION_FAILED` naming the field |
 | Reject body | `{ "reason": string }`, strict; `reason` after trimming has 1 to 500 characters | `400 VALIDATION_FAILED` naming `reason` ("Must not be blank", "Must be at most 500 characters") or the unknown field |
 | `GET /api/requests` query | Optional `status`, one `RequestStatus`; no other parameter (unchanged from F-02) | `400 VALIDATION_FAILED` naming the parameter |
@@ -117,7 +118,7 @@ One entry per decision, written in the same transaction as the update. `now` is 
 
 ### 3.7 Concurrency
 
-Two Custodians deciding the same request at the same time (approve and approve, approve and reject, reject and reject): the conditional update lets exactly one succeed; the other gets `409 INVALID_STATE` with the state the winner set, after a re-read in the transaction. Exactly one history entry is written. A Borrower cancelling (F-05) uses the same conditional pattern, so a decision and a cancel cannot both succeed.
+Two Custodians deciding the same request at the same time (approve and approve, approve and reject, reject and reject): the conditional update lets exactly one succeed; the other gets `409 INVALID_STATE` with the state the winner set, after a re-read in the transaction. Exactly one history entry is written. A Borrower's cancel (F-05) is a conditional update `WHERE status IN ('PENDING', 'APPROVED')`, so the outcome depends on the decision: reject and cancel have exactly one winner (the other gets `409 INVALID_STATE`); approve and cancel can both succeed when the approve commits first, because `APPROVED` → `CANCELLED` is allowed (FR-12), and the request ends `CANCELLED`; when the cancel commits first, the approve gets `409 INVALID_STATE`. The full race table is in the F-05 contract (#85) section 3.7.
 
 ### 3.8 Decisions made in this contract
 
@@ -126,10 +127,11 @@ Two Custodians deciding the same request at the same time (approve and approve, 
 | F06-D1 | Approve and reject are two endpoints, `POST /api/requests/:id/approve` and `/reject` (SDS 6.6), not a `PATCH` of `status` | One action per URL with its own body schema; a client cannot set any other state |
 | F06-D2 | Both return `200` with the request in the Custodian detail shape (F06-D4) | The UI shows the new state without a second call |
 | F06-D3 | The reason is trimmed and limited to 500 characters | Leading and trailing spaces add nothing; 500 is enough for one explanation and keeps the list readable |
-| F06-D4 | The request representation (F-02 4.5) gains `loanDays`, `decidedAt`, `decidedBy { id, username, displayName }` and `rejectionReason` for both roles; `null` when not set. The Custodian detail (`GET /api/requests/:id` as a Custodian) also has `history[]` | The Borrower must see the reason (BR-09); FR-30 asks for the history in the Custodian view. Lists do not carry `history` |
+| F06-D4 | The request representation (F-02 4.5) gains `loanDays`, `decidedAt` and `rejectionReason` for both roles, and `decidedBy { id, username, displayName }` for Custodians only; `null` when not set. The Custodian detail (`GET /api/requests/:id` as a Custodian) also has `history[]` | The Borrower must see the time and the reason (BR-09); SDS 4.4 shows a user only their own profile, so the Custodian's identity stays out of the Borrower view, as F03-D7 (`checkedOutBy`) and F-08 5.3 (`returnedBy`). FR-30 asks for the history in the Custodian view. Lists do not carry `history` |
 | F06-D5 | `history[]` items: `id`, `occurredAt`, `actor { id, username, displayName }` or `null` for the System actor, `entityType`, `action`, `fromStatus`, `toStatus`, `details`; oldest first (`occurredAt`, then `id`) | Shows who did what and when, without database IDs of other tables |
-| F06-D6 | Messages: `409 INVALID_STATE`: "Request #12 cannot be approved because it is APPROVED, not PENDING." (or "rejected"); `404`: "Request #999 does not exist." | Same style as F-03 |
+| F06-D6 | Messages: `409 INVALID_STATE`: "Request #12 cannot be approved because it is APPROVED, not PENDING." (or "rejected"); `404`: "Request 999 does not exist." (F-02 F02-D2, also used by F-05) | Same style as F-02 and F-03 |
 | F06-D7 | The all-requests page reuses `GET /api/requests`; without `status` a Custodian gets every request (oldest first, F02-D4) | No new list endpoint; FR-30 is the Custodian scope that F-02 already has |
+| F06-D8 | `/requests` is one route scoped by role: a Borrower sees My requests (unchanged), a Custodian sees All requests. The navigation link reads "My requests" for a Borrower and "All requests" for a Custodian | `/requests` is already the Borrower's My requests page (F-02, MT-10 to MT-13, client tests); one route per resource with the scope by role is the pattern of F07-D7 (`/loans`) and of the API (SDS 6.1) |
 
 ## 4. UI specification
 
@@ -137,14 +139,14 @@ Two Custodians deciding the same request at the same time (approve and approve, 
 
 | Layer | Change |
 | --- | --- |
-| UI | New All requests page `/requests` (Custodian); Approve and Reject on the request detail; reject dialog; decision fields and history on the detail; "All requests" navigation link for Custodians |
+| UI | New All requests view on `/requests` for Custodians (F06-D8); Approve and Reject on the request detail; reject dialog; decision fields and history on the detail; "All requests" navigation link for Custodians |
 | API | New `POST /api/requests/:id/approve` and `/reject`; `GET /api/requests/:id` adds the decision fields for both roles and `history[]` for Custodians; list items add the decision fields |
 | Domain | Two new rows in the transition table |
 | Database | None beyond #73 |
 
 ### 4.2 All requests page (`/requests`, Custodian)
 
-- Route wrapped in `RequireAuth` and `RequireRole("CUSTODIAN")`; a Borrower who opens `/requests` sees the Forbidden page.
+- Route wrapped in `RequireAuth`; the page chooses by role (F06-D8): a Custodian gets `AllRequestsPage`, a Borrower gets the existing `MyRequestsPage` unchanged. The API scope decides what each sees; the role switch only picks the layout.
 - State filter: "All states" (default) and each `RequestStatus` value; changing it calls `GET /api/requests?status=<state>` (or without `status`).
 - Columns: Request (`#12`, link to the detail), Borrower (`Borrower One (borrower1)`), Items (one line per item type with quantity, for example `Arduino Uno R3 × 2`), State (`StatusBadge`), Created (Asia/Bangkok, "6 Nov 2026, 13:10").
 - States through `AsyncState` (NFR-12): "Loading…", empty "No requests." (or "No requests in state APPROVED." with a filter), error message with "Try again".
@@ -155,7 +157,8 @@ Two Custodians deciding the same request at the same time (approve and approve, 
 | Element | Shown to | Content |
 | --- | --- | --- |
 | Loan length | Both | "Loan length: 7 days" when `loanDays` is set |
-| Decision | Both | `APPROVED`: "Approved by Custodian One, 21 Nov 2026, 09:00". `REJECTED`: "Rejected by Custodian One, 21 Nov 2026, 10:00" and "Reason: <reason>" |
+| Decision | Custodian | `APPROVED`: "Approved by Custodian One, 21 Nov 2026, 09:00". `REJECTED`: "Rejected by Custodian One, 21 Nov 2026, 10:00" and "Reason: <reason>" |
+| Decision | Borrower | `APPROVED`: "Approved 21 Nov 2026, 09:00". `REJECTED`: "Rejected 21 Nov 2026, 10:00" and "Reason: <reason>" (no Custodian name, F06-D4) |
 | Approve, Reject buttons | Custodian, `PENDING` only | Approve opens a confirmation; Reject opens the reason dialog |
 | History | Custodian | Table: time, actor ("Custodian One" or "System"), what ("Request PENDING → APPROVED", "Created", "Unit AVAILABLE → ON_LOAN"), and the reason for a rejection |
 
@@ -231,8 +234,8 @@ Example error:
 
 | Endpoint | Change |
 | --- | --- |
-| `GET /api/requests` | Unchanged scope and order (F02-D4). Every item gains `loanDays`, `decidedAt`, `decidedBy`, `rejectionReason`. A Custodian without `status` gets every request in every state (FR-30) |
-| `GET /api/requests/:id` | Gains the same fields for both roles. As a Custodian it also has `history[]` (F06-D5). A Borrower's response has no `history` field. A Borrower asking for another Borrower's request still gets `404` (DD-06) |
+| `GET /api/requests` | Unchanged scope and order (F02-D4). Every item gains `loanDays`, `decidedAt`, `rejectionReason`, and for a Custodian `decidedBy`. A Custodian without `status` gets every request in every state (FR-30) |
+| `GET /api/requests/:id` | Gains the same fields (`decidedBy` for Custodians only). As a Custodian it also has `history[]` (F06-D5). A Borrower's response has no `decidedBy` and no `history` key. A Borrower asking for another Borrower's request still gets `404` (DD-06) |
 
 ## 6. Data specification
 
@@ -253,15 +256,15 @@ No migration in F-06. It uses the #73 columns `decidedById` (FK users), `decided
 
 | AC | Expected outcome | Requirements |
 | --- | --- | --- |
-| AC-80 | A Custodian who lists requests without a filter receives every request of every Borrower in every state, oldest first; with `status=<state>` only that state; each item carries `loanDays`, `decidedAt`, `decidedBy` and `rejectionReason`. A Borrower's list still holds only their own requests | FR-30, BR-05 |
-| AC-81 | A Custodian who opens any request receives its lines, Borrower, decision fields and its history entries oldest first, each with time, actor, action and states; a Borrower opening their own request receives the decision fields and no history | FR-30, NFR-09 |
+| AC-80 | A Custodian who lists requests without a filter receives every request of every Borrower in every state, oldest first; with `status=<state>` only that state; each item carries `loanDays`, `decidedAt`, `decidedBy` and `rejectionReason`. A Borrower's list still holds only their own requests, without `decidedBy` | FR-30, BR-05 |
+| AC-81 | A Custodian who opens any request receives its lines, Borrower, decision fields and its history entries oldest first, each with time, actor, action and states; a Borrower opening their own request receives `decidedAt` and `rejectionReason`, but no `decidedBy` and no history | FR-30, NFR-09 |
 | AC-82 | A Custodian approves a `PENDING` request: it becomes `APPROVED` with `decidedBy` the Custodian and `decidedAt` the decision time, exactly one history entry `PENDING` → `APPROVED` is written with the same time, and no unit, line or loan changes | FR-13, BR-09, BR-16 |
-| AC-83 | A Custodian rejects a `PENDING` request with a reason: it becomes `REJECTED` with the trimmed reason, `decidedBy` and `decidedAt`; one history entry `PENDING` → `REJECTED` has the reason in `details`; the owning Borrower sees the state and the reason | FR-14, BR-09, BR-16 |
+| AC-83 | A Custodian rejects a `PENDING` request with a reason: it becomes `REJECTED` with the trimmed reason, `decidedBy` and `decidedAt`; one history entry `PENDING` → `REJECTED` has the reason in `details`; the owning Borrower sees the state, the decision time and the reason, but not the Custodian | FR-14, BR-09, BR-16 |
 | AC-84 | A reject with no reason, a blank reason, a reason over 500 characters after trimming, or an unknown field, and an approve with any field, is rejected with `400 VALIDATION_FAILED` naming the field, and nothing changes | FR-13, FR-14, BR-09 |
 | AC-85 | Approving or rejecting a request that is not `PENDING` (`APPROVED`, `REJECTED`, `CHECKED_OUT`) is rejected with `409 INVALID_STATE` naming the current state, and nothing changes; a request ID that does not exist gives `404 NOT_FOUND` | FR-13, FR-14 |
 | AC-86 | Two simultaneous decisions on the same `PENDING` request (approve with approve, approve with reject) produce exactly one success and one `409 INVALID_STATE`, and exactly one decision history entry | FR-13, FR-14, NFR-05 |
 | AC-87 | Approve and reject called by a Borrower give `403 FORBIDDEN`, and without a session `401 UNAUTHENTICATED`; the body has only the `error` object and nothing changes | NFR-01, NFR-02, BR-17 |
-| AC-88 | The All requests page lists requests with Borrower, items, state and creation time, filters by state, and shows a loading, an empty and an error state; a Borrower who opens `/requests` sees the Forbidden page | FR-30, NFR-12 |
+| AC-88 | The All requests page lists requests with Borrower, items, state and creation time, filters by state, and shows a loading, an empty and an error state; a Borrower who opens `/requests` still sees their own My requests page, with no state filter and no other Borrower's request | FR-30, NFR-12, BR-05 |
 | AC-89 | On a `PENDING` request a Custodian can approve after confirming, or reject with a reason (confirm disabled while the reason is blank); the detail then shows the new state and the decision; a Borrower's detail of a rejected request shows "Rejected" and the reason, and never shows Approve or Reject | FR-13, FR-14, BR-09 |
 
 ## 8. Software Test Specification (STS)
@@ -269,22 +272,22 @@ No migration in F-06. It uses the #73 columns `decidedById` (FK users), `decided
 ### 8.1 Conventions
 
 - Levels and tools from SDS 10, as in the F-03 contract 8.1. API and Integration tests run against `kithub_test` with data from the test factories, never the demo seed.
-- "Unchanged" means: the request's row (all columns), every unit's status, the `loans` count and the `history_entries` count are equal before and after the call (helper `snapshotRequestState()` extended with `decidedById`, `decidedAt`, `rejectionReason`).
+- "Unchanged" means: the request's row (all columns), every unit's status, the `loans` count and the `history_entries` count are equal before and after the call (helper `snapshotRequestState()` in `server/tests/helpers/requests.ts`, extended with `decidedById`, `decidedAt`, `rejectionReason`, so the F-05 and F-07 tests reuse it).
 - **TDD** marks the tests for the rules (approve, reject, reason validation, state, concurrency). Each is committed and run on the pre-implementation code first, failing on an assertion (for example `404` because the route does not exist, or a missing field), and the failing output and commit are kept. UI tests mock the API module with a `vi.mock` factory so they do not import functions that do not exist yet.
 
 ### 8.2 Test cases
 
 | Test | AC | Level | Preconditions and input | Action | Expected result | Planned file |
 | --- | --- | --- | --- | --- | --- | --- |
-| TEST-80 **TDD** | AC-80 | API | Borrower A: requests R1 `PENDING`, R2 `APPROVED` (decided by C), R3 `REJECTED` with a reason; Borrower B: R4 `CHECKED_OUT`, R5 `CANCELLED`. Custodian C | (a) as C `GET /api/requests`; (b) `?status=APPROVED`; (c) `?status=REJECTED`; (d) as A `GET /api/requests` | (a) `200`, IDs exactly R1 to R5 oldest first, each item has `loanDays`, `decidedAt`, `decidedBy`, `rejectionReason`; R2 `decidedBy.id` C; R3 `rejectionReason` set. (b) only R2. (c) only R3. (d) only R1 to R3, newest first | `server/tests/api/requests-decide.test.ts` |
-| TEST-81 **TDD** | AC-81 | API | R2 from TEST-80 with its entries (created, approved) | (a) as C `GET /api/requests/R2`; (b) as A `GET /api/requests/R2`; (c) as B `GET /api/requests/R2` | (a) `200` with `history` of 2 items oldest first: `CREATED` (actor A, `toStatus` `PENDING`), `STATUS_CHANGED` `PENDING` → `APPROVED` (actor C); each item exactly the F06-D5 fields; no `passwordHash` anywhere. (b) `200` with decision fields and no `history` key. (c) `404 NOT_FOUND` with only `error` | `server/tests/api/requests-decide.test.ts` |
+| TEST-80 **TDD** | AC-80 | API | Borrower A: requests R1 `PENDING`, R2 `APPROVED` (decided by C), R3 `REJECTED` with a reason; Borrower B: R4 `CHECKED_OUT`, R5 `CANCELLED`. Custodian C | (a) as C `GET /api/requests`; (b) `?status=APPROVED`; (c) `?status=REJECTED`; (d) as A `GET /api/requests` | (a) `200`, IDs exactly R1 to R5 oldest first, each item has `loanDays`, `decidedAt`, `decidedBy`, `rejectionReason`; R2 `decidedBy.id` C; R3 `rejectionReason` set. (b) only R2. (c) only R3. (d) only R1 to R3, newest first, and no item has a `decidedBy` key | `server/tests/api/requests-decide.test.ts` |
+| TEST-81 **TDD** | AC-81 | API | R2 from TEST-80 with its entries (created, approved) | (a) as C `GET /api/requests/R2`; (b) as A `GET /api/requests/R2`; (c) as B `GET /api/requests/R2` | (a) `200` with `history` of 2 items oldest first: `CREATED` (actor A, `toStatus` `PENDING`), `STATUS_CHANGED` `PENDING` → `APPROVED` (actor C); each item exactly the F06-D5 fields; no `passwordHash` anywhere. (b) `200` with `decidedAt` and `rejectionReason`, and no `decidedBy` or `history` key. (c) `404 NOT_FOUND` with only `error` | `server/tests/api/requests-decide.test.ts` |
 | TEST-82 **TDD** | AC-82 | API | `PENDING` request R of Borrower A with 2 lines; units of both item types `AVAILABLE`; Custodian C | `POST /api/requests/R/approve` with `{}` | `200`; `status` `APPROVED`, `decidedBy.id` C, `decidedAt` within the call window, `rejectionReason` null. Database: R `APPROVED`, `decidedById` C; exactly one new history entry (`REQUEST`, `STATUS_CHANGED`, `PENDING` → `APPROVED`, actor C, `occurredAt` = `decidedAt`, `details` null); lines, units and loans unchanged | `server/tests/api/requests-decide.test.ts` |
-| TEST-83 **TDD** | AC-83 | API + UI | API: `PENDING` request R of A. UI: request detail with the requests module mocked returning a `REJECTED` request with reason "Only one unit left." | API: (a) reject R with `{ "reason": "  Only one unit left.  " }`; (b) as A `GET /api/requests/R`. UI: (c) render `/requests/R` as A | (a) `200`, `status` `REJECTED`, `rejectionReason` "Only one unit left." (trimmed), `decidedBy.id` C; one history entry with `details` `{ "reason": "Only one unit left." }`. (b) A sees `REJECTED` and the reason. (c) "Rejected by Custodian One, …" and "Reason: Only one unit left." shown; no Approve or Reject button | `server/tests/api/requests-decide.test.ts`, `client/tests/request-decision.test.tsx` |
+| TEST-83 **TDD** | AC-83 | API + UI | API: `PENDING` request R of A. UI: request detail with the requests module mocked returning a `REJECTED` request with reason "Only one unit left." | API: (a) reject R with `{ "reason": "  Only one unit left.  " }`; (b) as A `GET /api/requests/R`. UI: (c) render `/requests/R` as A | (a) `200`, `status` `REJECTED`, `rejectionReason` "Only one unit left." (trimmed), `decidedBy.id` C; one history entry with `details` `{ "reason": "Only one unit left." }`. (b) A sees `REJECTED`, `decidedAt` and the reason, and no `decidedBy`. (c) "Rejected 21 Nov 2026, …" and "Reason: Only one unit left." shown, no Custodian name; no Approve or Reject button | `server/tests/api/requests-decide.test.ts`, `client/tests/request-decision.test.tsx` |
 | TEST-84 **TDD** | AC-84 | API | `PENDING` request R; Custodian C | Reject R with (a) `{}`; (b) `{ "reason": "   " }`; (c) 501 × "x"; (d) `{ "reason": "ok", "lineIds": [1] }`; approve R with (e) `{ "lineIds": [1] }`; (f) reject with exactly 500 × "x" on another `PENDING` request R2 | (a) to (e) `400 VALIDATION_FAILED`; (a), (b), (c) name `reason`; (d), (e) name `lineIds`. After each: Unchanged, R `PENDING`. (f) `200`, reason stored with 500 characters | `server/tests/api/requests-decide.test.ts` |
-| TEST-85 **TDD** | AC-85 | API | Requests R_A `APPROVED`, R_R `REJECTED`, R_C `CHECKED_OUT`; no request 999 999 | Approve and reject each; approve 999 999 | Each of the six `409 INVALID_STATE`, message names the current state ("… because it is APPROVED, not PENDING."); Unchanged. 999 999: `404 NOT_FOUND` "Request #999999 does not exist." | `server/tests/api/requests-decide.test.ts` |
+| TEST-85 **TDD** | AC-85 | API | Requests R_A `APPROVED`, R_R `REJECTED`, R_C `CHECKED_OUT`; no request 999 999 | Approve and reject each; approve 999 999 | Each of the six `409 INVALID_STATE`, message names the current state ("… because it is APPROVED, not PENDING."); Unchanged. 999 999: `404 NOT_FOUND` "Request 999999 does not exist." | `server/tests/api/requests-decide.test.ts` |
 | TEST-86 **TDD** | AC-86 | Integration | `PENDING` request R; Custodians C1 and C2 on two agents | (a) `Promise.all` of C1 approve and C2 approve; (b) C1 approve and C2 reject with a reason; 5 rounds each with fresh data | Each round: one `200`, one `409 INVALID_STATE`; R ends in the winner's state with the winner as `decidedBy`; exactly one decision history entry; for (b) `rejectionReason` set only when reject won | `server/tests/api/requests-decide-concurrency.test.ts` |
 | TEST-87 | AC-87 | API | `PENDING` request R of Borrower A | (a) as A approve R and reject R; (b) with no cookie, and with a signed-out session cookie, both calls | (a) `403 FORBIDDEN`, (b) `401 UNAUTHENTICATED`; each body only `error`; Unchanged | `server/tests/api/requests-decide-access.test.ts` |
-| TEST-88 | AC-88 | UI | `AllRequestsPage` with the requests module mocked (`vi.mock` factory) | (a) pending promise; (b) `{ items: [] }`; (c) rejects with an API error, then resolves; (d) resolves R1 `PENDING` (Borrower One, Arduino Uno R3 × 2) and R2 `APPROVED`; (e) choose "APPROVED" in the filter; (f) render `/requests` as a Borrower | (a) "Loading…"; (b) "No requests."; (c) the error and "Try again", which calls again; (d) both rows with `#`, Borrower, items, `StatusBadge` and time; (e) the mock called with `status: "APPROVED"`; (f) Forbidden page | `client/tests/AllRequestsPage.test.tsx` |
+| TEST-88 | AC-88 | UI | `AllRequestsPage` with the requests module mocked (`vi.mock` factory) | (a) pending promise; (b) `{ items: [] }`; (c) rejects with an API error, then resolves; (d) resolves R1 `PENDING` (Borrower One, Arduino Uno R3 × 2) and R2 `APPROVED`; (e) choose "APPROVED" in the filter; (f) render `/requests` as a Borrower | (a) "Loading…"; (b) "No requests."; (c) the error and "Try again", which calls again; (d) both rows with `#`, Borrower, items, `StatusBadge` and time; (e) the mock called with `status: "APPROVED"`; (f) the Borrower sees My requests (their own list) and no state filter | `client/tests/AllRequestsPage.test.tsx` |
 | TEST-89 **TDD** | AC-89 | UI | Request detail as a Custodian with the module mocked: `PENDING` request 12 of Borrower One | (a) render; (b) click Approve, then confirm; (c) click Reject, type "   ", then "Broken cable."; confirm twice quickly; (d) the reject mock rejects with `409 INVALID_STATE` | (a) Approve and Reject shown. (b) approve mock called once with `12`; "Request #12 approved." shown; detail fetched again. (c) confirm disabled while the reason is blank; enabled after typing; reject mock called once with `(12, "Broken cable.")`. (d) the API message as an alert; detail fetched again | `client/tests/request-decision.test.tsx` |
 
 ### 8.3 Coverage checks
@@ -319,5 +322,5 @@ No migration in F-06. It uses the #73 columns `decidedById` (FK users), `decided
 | AC-85 | FR-13, FR-14 | TEST-85 | `server/tests/api/requests-decide.test.ts` |
 | AC-86 | FR-13, FR-14, NFR-05 | TEST-86 | `server/tests/api/requests-decide-concurrency.test.ts` |
 | AC-87 | NFR-01, NFR-02, BR-17 | TEST-87 | `server/tests/api/requests-decide-access.test.ts` |
-| AC-88 | FR-30, NFR-12 | TEST-88 | `client/tests/AllRequestsPage.test.tsx` |
+| AC-88 | FR-30, NFR-12, BR-05 | TEST-88 | `client/tests/AllRequestsPage.test.tsx` |
 | AC-89 | FR-13, FR-14, BR-09 | TEST-89 | `client/tests/request-decision.test.tsx` |
