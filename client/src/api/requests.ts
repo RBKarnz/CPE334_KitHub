@@ -18,11 +18,30 @@ export interface LineLoan {
   checkedOutBy?: UserSummary;
 }
 
-/** The request representation of contract F-02 section 4.5. */
+/** One history entry of the Custodian detail (contract F-06 F06-D5). `actor` null is the System. */
+export interface HistoryItem {
+  id: number;
+  occurredAt: string;
+  actor: UserSummary | null;
+  entityType: "REQUEST" | "UNIT" | "LOAN";
+  action: string;
+  fromStatus: string | null;
+  toStatus: string | null;
+  details: { reason?: string } | null;
+}
+
+/** The request representation of contract F-02 section 4.5, with the F-06 decision fields (F06-D4). */
 export interface BorrowRequest {
   id: number;
   status: RequestStatus;
   createdAt: string;
+  loanDays?: number | null;
+  decidedAt?: string | null;
+  /** Custodian view only (F06-D4). */
+  decidedBy?: UserSummary | null;
+  rejectionReason?: string | null;
+  /** Custodian detail only (F06-D5). */
+  history?: HistoryItem[];
   dueAt: string | null;
   borrower: UserSummary;
   lines: { id: number; itemType: { id: number; name: string }; quantity: number; loans: LineLoan[] }[];
@@ -34,6 +53,20 @@ export const createRequest = (itemTypeId: number) =>
 export const fetchMyRequests = () => apiFetch<{ items: BorrowRequest[] }>("/requests").then((r) => r.items);
 
 export const fetchRequest = (id: number) => apiFetch<BorrowRequest>(`/requests/${id}`);
+
+/** Custodian: every request, oldest first, or only those in `status` (contract F-06 4.2, F06-D7). */
+export const fetchRequests = (status?: RequestStatus) =>
+  apiFetch<{ items: BorrowRequest[] }>(`/requests${status ? `?status=${encodeURIComponent(status)}` : ""}`).then(
+    (r) => r.items,
+  );
+
+/** Custodian: approve a PENDING request as a whole (contract F-06 5.1). */
+export const approveRequest = (id: number) =>
+  apiFetch<BorrowRequest>(`/requests/${id}/approve`, { method: "POST", body: {} });
+
+/** Custodian: reject a PENDING request with a reason the Borrower sees (contract F-06 5.2). */
+export const rejectRequest = (id: number, reason: string) =>
+  apiFetch<BorrowRequest>(`/requests/${id}/reject`, { method: "POST", body: { reason } });
 
 /** Custodian: every Borrower's PENDING requests, oldest first (contract F-03 5.1, F03-D2). */
 export const fetchPendingRequests = () =>

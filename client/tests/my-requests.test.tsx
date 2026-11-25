@@ -94,14 +94,16 @@ describe("Request detail (contract F-02 section 5)", () => {
     expect(screen.getByRole("link", { name: "Back to My requests" })).toHaveAttribute("href", "/requests");
   });
 
-  it("a Custodian's 404 links back to Pending requests, not the Borrower-only list", async () => {
+  // F-06 (F06-D8): /requests is All requests for a Custodian, so the link goes there. Before F-06
+  // it went to Pending requests because /requests was Borrower-only (review of PR #91).
+  it("a Custodian's 404 links back to All requests", async () => {
     vi.spyOn(requestsApi, "fetchRequest").mockRejectedValue(
       new ApiError(404, "NOT_FOUND", "Request 99 does not exist."),
     );
     renderAs(custodian, <RequestDetailPage />, { path: "/requests/:id", at: "/requests/99" });
 
     expect(await screen.findByRole("heading", { name: "Request not found." })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Back to Pending requests" })).toHaveAttribute("href", "/pending");
+    expect(screen.getByRole("link", { name: "Back to All requests" })).toHaveAttribute("href", "/requests");
   });
 
   it("an ID that is not a positive integer shows Not found without calling the API", async () => {

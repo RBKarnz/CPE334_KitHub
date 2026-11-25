@@ -10,6 +10,9 @@ describe("TEST-51: assertTransition", () => {
     ["REQUEST", "PENDING", "CHECKED_OUT"],
     ["UNIT", "AVAILABLE", "ON_LOAN"],
     ["LOAN", null, "ACTIVE"],
+    // F-06 (contract F-06 3.2): a Custodian approves or rejects a PENDING request.
+    ["REQUEST", "PENDING", "APPROVED"],
+    ["REQUEST", "PENDING", "REJECTED"],
   ])("TEST-51 (a): %s %s → %s is allowed", (entity, from, to) => {
     expect(() => assertTransition(entity, from, to)).not.toThrow();
   });
@@ -21,6 +24,10 @@ describe("TEST-51: assertTransition", () => {
     ["UNIT", "MAINTENANCE", "ON_LOAN"],
     ["UNIT", "RETIRED", "ON_LOAN"],
     ["LOAN", "ACTIVE", "ACTIVE"],
+    // F-06: only PENDING can be decided.
+    ["REQUEST", "APPROVED", "APPROVED"],
+    ["REQUEST", "REJECTED", "APPROVED"],
+    ["REQUEST", "CHECKED_OUT", "REJECTED"],
   ])("TEST-51 (b): %s %s → %s is rejected as 409 INVALID_STATE", (entity, from, to) => {
     let thrown: unknown;
     try {

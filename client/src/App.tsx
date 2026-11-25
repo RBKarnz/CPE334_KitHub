@@ -8,6 +8,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { MyRequestsPage } from "./pages/MyRequestsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { PendingRequestsPage } from "./pages/pending/PendingRequestsPage";
+import { AllRequestsPage } from "./pages/requests/AllRequestsPage";
 import { RequestDetailPage } from "./pages/RequestDetailPage";
 
 function SignedInLayout() {
@@ -24,6 +25,12 @@ function Home() {
   return user ? <Navigate to={landingPath(user.role)} replace /> : <LoadingScreen />;
 }
 
+/** /requests is one route scoped by role (contract F-06 F06-D8): My requests or All requests. */
+function RequestsPage() {
+  const { user } = useAuth();
+  return user?.role === "CUSTODIAN" ? <AllRequestsPage /> : <MyRequestsPage />;
+}
+
 function AppRoutes() {
   const { user } = useAuth();
   // Shown while GET /api/auth/me runs, so the sign-in page does not flash.
@@ -35,14 +42,7 @@ function AppRoutes() {
       <Route element={<SignedInLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/catalog" element={<CatalogPage />} />
-        <Route
-          path="/requests"
-          element={
-            <RequireRole role="BORROWER">
-              <MyRequestsPage />
-            </RequireRole>
-          }
-        />
+        <Route path="/requests" element={<RequestsPage />} />
         {/* Borrower (own) and Custodian; the API scopes it (DD-06). */}
         <Route path="/requests/:id" element={<RequestDetailPage />} />
         <Route

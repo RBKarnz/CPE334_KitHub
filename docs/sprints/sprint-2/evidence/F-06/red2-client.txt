@@ -1,0 +1,487 @@
+# RED 2 (review of PR #91), client: whole suite before the fixes
+Command: cd client && npx vitest run --reporter=verbose
+Commit: d9462527eb053e75f6c5197af5327a7c37bf8d59 test(#76): RED for the review of PR #91 (dialog locked while running, 400 keeps the reason, no stale rows); restore the recorded E2E evidence
+Date: 2026-11-26 00:58:46 ICT
+node -v: v24.14.0   npm -v: 10.8.2
+git status --short:
+ M server/prisma/migrations/migration_lock.toml
+?? docs/sprints/sprint-2/evidence/F-06/red2-client.txt
+----
+
+ RUN  v2.1.9 E:/CPE334_KitHub/client
+
+stderr | tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: shows Loading… until the slow response arrives
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Pending requests states > TEST-25 (a): shows Loading… until the first response
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: shows Loading…, then each request with its line, state and Bangkok time
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (a): lists the AVAILABLE units of the line's item type; confirm is disabled until one is chosen
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (a): a PENDING request shows Approve and Reject to a Custodian, with the loan length and history
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: shows Loading… until the slow response arrives
+ ✓ tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: an empty catalog shows its message
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Pending requests states > TEST-25 (a): shows Loading… until the first response
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Pending requests states > TEST-25 (b): no pending requests shows the empty message
+ ✓ tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (a): a PENDING request shows Approve and Reject to a Custodian, with the loan length and history
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Pending requests states > TEST-25 (c): an error shows the API message, and Try again calls the API again
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (a): lists the AVAILABLE units of the line's item type; confirm is disabled until one is chosen
+stderr | tests/App.test.tsx > F-01 UI > a first visit with no session opens the sign-in page with no message
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (a): shows Loading… while the list loads
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: an error shows the API message, and Try again calls the API again
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: a 0-available item type has a disabled button and 'None available'
+ ✓ tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: shows Loading…, then each request with its line, state and Bangkok time
+ ✓ tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: no requests shows the empty message with a link to the catalog
+ ✓ tests/App.test.tsx > F-01 UI > a first visit with no session opens the sign-in page with no message
+ ✓ tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (a): shows Loading… while the list loads
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Pending requests states > TEST-25 (d): a row shows request, borrower, item type, quantity, Bangkok time and a Check out button
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Pending requests states > TEST-25: rows keep the API order (oldest first, F03-D2)
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: a double press sends one request, shows the confirmation and refetches the catalog
+ ✓ tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (b): an empty list says No requests.
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (b): the confirm button names the unit and request; a double click sends one call
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (c): with no AVAILABLE unit the dialog says so and sends no checkout (D-17)
+ ✓ tests/App.test.tsx > F-01 UI > the sign-in page shows a short tagline under the heading
+ ✓ tests/App.test.tsx > F-01 UI > empty fields show messages and do not call the API
+ ✓ tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (b): Approve asks for confirmation, sends one call, shows the result and loads the detail again
+ ✓ tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: an error shows the API message, and Try again calls the API again
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > shows the title, state, creation time and lines
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > TEST-60 (AC-60): after checkout the Borrower sees Checked out, the stored due date in ICT, the asset tag and the checkout time (contract F-03 4.4)
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > a 404 shows 'Request not found.' with a link to My requests
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > a Custodian's 404 links back to Pending requests, not the Borrower-only list
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > an ID that is not a positive integer shows Not found without calling the API
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (d): a 409 is shown as an alert, the selection is cleared and the units are fetched again
+ ✓ tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (c): an error shows the message and Try again, which calls again
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: a 409 shows the API message as an alert and refetches the catalog
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: a Custodian sees the catalog without Request buttons
+ ✓ tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (c): Reject needs a reason that is not blank, and a double click sends one call
+ ✓ tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (d): a 409 from reject is shown as an alert and the detail is loaded again
+ × tests/request-decision.test.tsx > TEST-89: dialog behaviour while a call runs and on 400 (review of PR #91) > TEST-89 (e): while approve is pending, Cancel and Close are disabled and Escape does not close the dialog
+   → expect(element).toBeDisabled()
+
+Received element is not disabled:
+  <button
+  class="btn btn-outline-secondary"
+  type="button"
+/>
+ ✓ tests/App.test.tsx > F-01 UI > a wrong sign-in keeps the username, clears the password and shows the API message
+ ✓ tests/App.test.tsx > F-01 UI > a Custodian lands on Pending requests and sees their name and role badge
+ ✓ tests/App.test.tsx > F-01 UI > sign-in returns to the page that sent the user to /login
+ ✓ tests/App.test.tsx > F-01 UI > a Borrower sent to /login from a Custodian route lands on the Catalog, not the Forbidden page
+ ✓ tests/App.test.tsx > F-01 UI > a Borrower opening a Custodian route sees the Forbidden page
+ ✓ tests/App.test.tsx > F-01 UI > sign out sends Content-Type: application/json and opens the sign-in page with no message
+ ✓ tests/App.test.tsx > F-01 UI > a 401 after sign-in opens the sign-in page with the session-ended message
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > moving to another request ID loads that request
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (e): on success the dialog closes, shows asset tag and due date, and the pending list is fetched again
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (e): the dialog passes the checked-out request to onCheckedOut
+ ✓ tests/CheckoutDialog.test.tsx > TEST-58 (AC-58): due-date preview in the checkout dialog (#71) > TEST-58 (f): shows the due date a checkout now would get, with weekday, in ICT
+ ✓ tests/CheckoutDialog.test.tsx > TEST-58 (AC-58): due-date preview in the checkout dialog (#71) > TEST-58 (g): a preview error shows 'Due date not available.' and checkout still works
+ ✓ tests/CheckoutDialog.test.tsx > Checkout dialog: other responses and keyboard (contract F-03 4.3) > 409 INVALID_STATE shows the message and asks the page to reload the pending list
+ ✓ tests/CheckoutDialog.test.tsx > Checkout dialog: other responses and keyboard (contract F-03 4.3) > Cancel and Escape close the dialog without a checkout call
+ ✓ tests/CheckoutDialog.test.tsx > Checkout dialog: other responses and keyboard (contract F-03 4.3) > an error loading the units shows the message and Try again
+ ✓ tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (d): rows show request, Borrower, items, state and time; the navigation links All requests
+ × tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (e): choosing APPROVED in the filter calls the API with that state
+   → expect(element).not.toBeInTheDocument()
+
+expected document not to contain element, found <a
+  href="/requests/1"
+>
+  #
+  1
+</a> instead
+ ✓ tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (f): a Borrower on /requests still sees My requests, without a state filter
+ × tests/request-decision.test.tsx > TEST-89: dialog behaviour while a call runs and on 400 (review of PR #91) > TEST-89 (f): a 400 from reject keeps the dialog open with the typed reason and shows the message there 1025ms
+   → Unable to find role="alert"
+
+Ignored nodes: comments, script, style
+<div
+  aria-labelledby=":r8:"
+  aria-modal="true"
+  class="modal d-block"
+  role="dialog"
+  tabindex="-1"
+>
+  <div
+    class="modal-dialog"
+  >
+    <div
+      class="modal-content"
+    >
+      <div
+        class="modal-header"
+      >
+        <h2
+          class="modal-title h5"
+          id=":r8:"
+        >
+          Reject Request #12 for Borrower One
+        </h2>
+        <button
+          aria-label="Close"
+          class="btn-close"
+          type="button"
+        />
+      </div>
+      <div
+        class="modal-body"
+      >
+        <label
+          class="form-label"
+          for=":r9:"
+        >
+          Reason
+        </label>
+        <textarea
+          class="form-control"
+          disabled=""
+          id=":r9:"
+          rows="3"
+        >
+          Broken cable.
+        </textarea>
+        <div
+          class="form-text text-end"
+        >
+          13
+          /
+          500
+        </div>
+      </div>
+      <div
+        class="modal-footer"
+      >
+        <button
+          class="btn btn-outline-secondary"
+          type="button"
+        >
+          Cancel
+        </button>
+        <button
+          class="btn btn-danger"
+          disabled=""
+          type="button"
+        >
+          <span
+            aria-hidden="true"
+            class="spinner-border spinner-border-sm me-1"
+          />
+          Reject Request #12
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+Ignored nodes: comments, script, style
+<div
+  aria-labelledby=":r8:"
+  aria-modal="true"
+  class="modal d-block"
+  role="dialog"
+  tabindex="-1"
+>
+  <div
+    class="modal-dialog"
+  >
+    <div
+      class="modal-content"
+    >
+      <div
+        class="modal-header"
+      >
+        <h2
+          class="modal-title h5"
+          id=":r8:"
+        >
+          Reject Request #12 for Borrower One
+        </h2>
+        <button
+          aria-label="Close"
+          class="btn-close"
+          type="button"
+        />
+      </div>
+      <div
+        class="modal-body"
+      >
+        <label
+          class="form-label"
+          for=":r9:"
+        >
+          Reason
+        </label>
+        <textarea
+          class="form-control"
+          disabled=""
+          id=":r9:"
+          rows="3"
+        >
+          Broken cable.
+        </textarea>
+        <div
+          class="form-text text-end"
+        >
+          13
+          /
+          500
+        </div>
+      </div>
+      <div
+        class="modal-footer"
+      >
+        <button
+          class="btn btn-outline-secondary"
+          type="button"
+        >
+          Cancel
+        </button>
+        <button
+          class="btn btn-danger"
+          disabled=""
+          type="button"
+        >
+          <span
+            aria-hidden="true"
+            class="spinner-border spinner-border-sm me-1"
+          />
+          Reject Request #12
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+ ✓ tests/request-decision.test.tsx > TEST-83 (c) (AC-83): a Borrower's view of a rejected request > TEST-83 (c): shows the time and the reason, no Custodian name, and no Approve or Reject
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (e): choosing APPROVED in the filter calls the API with that state
+Error: expect(element).not.toBeInTheDocument()
+
+expected document not to contain element, found <a
+  href="/requests/1"
+>
+  #
+  1
+</a> instead
+ ❯ tests/AllRequestsPage.test.tsx:114:60
+    112|     await waitFor(() => expect(fetchRequests).toHaveBeenLastCalledWith…
+    113|     // Review of PR #91: while the new filter loads, the previous filt…
+    114|     expect(screen.queryByRole("link", { name: "#1" })).not.toBeInTheDo…
+       |                                                            ^
+    115|     expect(screen.queryByRole("link", { name: "#2" })).not.toBeInTheDo…
+    116|     expect(screen.getByText("Loading…")).toBeInTheDocument();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/request-decision.test.tsx > TEST-89: dialog behaviour while a call runs and on 400 (review of PR #91) > TEST-89 (e): while approve is pending, Cancel and Close are disabled and Escape does not close the dialog
+Error: expect(element).toBeDisabled()
+
+Received element is not disabled:
+  <button
+  class="btn btn-outline-secondary"
+  type="button"
+/>
+ ❯ tests/request-decision.test.tsx:152:60
+    150|     fireEvent.click(screen.getByRole("button", { name: "Approve Reques…
+    151| 
+    152|     expect(screen.getByRole("button", { name: "Cancel" })).toBeDisable…
+       |                                                            ^
+    153|     expect(screen.getByRole("button", { name: "Close" })).toBeDisabled…
+    154|     fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/request-decision.test.tsx > TEST-89: dialog behaviour while a call runs and on 400 (review of PR #91) > TEST-89 (f): a 400 from reject keeps the dialog open with the typed reason and shows the message there
+TestingLibraryElementError: Unable to find role="alert"
+
+Ignored nodes: comments, script, style
+<div
+  aria-labelledby=":r8:"
+  aria-modal="true"
+  class="modal d-block"
+  role="dialog"
+  tabindex="-1"
+>
+  <div
+    class="modal-dialog"
+  >
+    <div
+      class="modal-content"
+    >
+      <div
+        class="modal-header"
+      >
+        <h2
+          class="modal-title h5"
+          id=":r8:"
+        >
+          Reject Request #12 for Borrower One
+        </h2>
+        <button
+          aria-label="Close"
+          class="btn-close"
+          type="button"
+        />
+      </div>
+      <div
+        class="modal-body"
+      >
+        <label
+          class="form-label"
+          for=":r9:"
+        >
+          Reason
+        </label>
+        <textarea
+          class="form-control"
+          disabled=""
+          id=":r9:"
+          rows="3"
+        >
+          Broken cable.
+        </textarea>
+        <div
+          class="form-text text-end"
+        >
+          13
+          /
+          500
+        </div>
+      </div>
+      <div
+        class="modal-footer"
+      >
+        <button
+          class="btn btn-outline-secondary"
+          type="button"
+        >
+          Cancel
+        </button>
+        <button
+          class="btn btn-danger"
+          disabled=""
+          type="button"
+        >
+          <span
+            aria-hidden="true"
+            class="spinner-border spinner-border-sm me-1"
+          />
+          Reject Request #12
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+Ignored nodes: comments, script, style
+<div
+  aria-labelledby=":r8:"
+  aria-modal="true"
+  class="modal d-block"
+  role="dialog"
+  tabindex="-1"
+>
+  <div
+    class="modal-dialog"
+  >
+    <div
+      class="modal-content"
+    >
+      <div
+        class="modal-header"
+      >
+        <h2
+          class="modal-title h5"
+          id=":r8:"
+        >
+          Reject Request #12 for Borrower One
+        </h2>
+        <button
+          aria-label="Close"
+          class="btn-close"
+          type="button"
+        />
+      </div>
+      <div
+        class="modal-body"
+      >
+        <label
+          class="form-label"
+          for=":r9:"
+        >
+          Reason
+        </label>
+        <textarea
+          class="form-control"
+          disabled=""
+          id=":r9:"
+          rows="3"
+        >
+          Broken cable.
+        </textarea>
+        <div
+          class="form-text text-end"
+        >
+          13
+          /
+          500
+        </div>
+      </div>
+      <div
+        class="modal-footer"
+      >
+        <button
+          class="btn btn-outline-secondary"
+          type="button"
+        >
+          Cancel
+        </button>
+        <button
+          class="btn btn-danger"
+          disabled=""
+          type="button"
+        >
+          <span
+            aria-hidden="true"
+            class="spinner-border spinner-border-sm me-1"
+          />
+          Reject Request #12
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/request-decision.test.tsx:173:33
+    171| 
+    172|     const dialog = await screen.findByRole("dialog");
+    173|     expect(await within(dialog).findByRole("alert")).toHaveTextContent…
+       |                                 ^
+    174|     expect(within(dialog).getByLabelText("Reason")).toHaveValue("Broke…
+    175|     expect(fetchRequest).toHaveBeenCalledTimes(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+ Test Files  2 failed | 5 passed (7)
+      Tests  3 failed | 52 passed (55)
+   Start at  00:58:55
+   Duration  22.49s (transform 481ms, setup 1.09s, collect 1.20s, tests 2.79s, environment 3.39s, prepare 671ms)
+
+exit code: 1

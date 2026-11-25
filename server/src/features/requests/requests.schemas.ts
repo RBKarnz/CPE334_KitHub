@@ -27,5 +27,19 @@ export const requestIdParams = z.object({
     .pipe(z.number().max(MAX_ID, { error: "Must be a positive integer" })),
 });
 
+// validate() makes both strict, so any other field (for example lineIds) is an error (contract F-06 3.4).
+/** Approve takes an empty body: a request is approved as a whole (BR-09). */
+export const approveBody = z.object({});
+
+/** Reject needs a reason the Borrower will see; trimmed, 1 to 500 characters (BR-09, F06-D3). */
+export const rejectBody = z.object({
+  reason: z
+    .string({ error: "Must be a string" })
+    .trim()
+    .min(1, { error: "Must not be blank" })
+    .max(500, { error: "Must be at most 500 characters" }),
+});
+
+export type RejectBody = z.infer<typeof rejectBody>;
 export type CreateRequestBody = z.infer<typeof createRequestBody>;
 export type ListRequestsQuery = z.infer<typeof listRequestsQuery>;

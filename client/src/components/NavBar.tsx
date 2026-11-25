@@ -4,7 +4,7 @@ import type { Role } from "../api/auth";
 import { landingPath, useAuth } from "../auth/AuthProvider";
 import { Logo } from "./Logo";
 
-// Sprint 1 links per role (SDS 5.2).
+// Links per role (SDS 5.2); Sprint 2 adds All requests for Custodians (F-06).
 const LINKS: Record<Role, { to: string; label: string }[]> = {
   BORROWER: [
     { to: "/catalog", label: "Catalog" },
@@ -12,6 +12,8 @@ const LINKS: Record<Role, { to: string; label: string }[]> = {
   ],
   CUSTODIAN: [
     { to: "/pending", label: "Pending requests" },
+    // Same route as a Borrower's My requests, scoped by role (contract F-06 F06-D8).
+    { to: "/requests", label: "All requests" },
     { to: "/catalog", label: "Catalog" },
   ],
 };
