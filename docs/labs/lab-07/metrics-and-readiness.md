@@ -17,7 +17,7 @@ Each source list is in `evidence/metrics/` with its command and snapshot time, s
 
 | ID | Metric | Definition and scope | Window or snapshot | Value | Source |
 | --- | --- | --- | --- | --- | --- |
-| M1 | Completed Issues | Issues of this repository closed as completed in the window. Duplicates or cancelled work would be counted apart; there were none (both `stateReason` = `COMPLETED`) | 25 Nov ICT | **2**: #64 (Lab 6 Part B, closed 15:15 ICT), #71 (Lab 7 change, closed 21:27 ICT) | `metrics/m1-issues.txt` |
+| M1 | Completed Issues | Issues of this repository closed as completed in the window. Duplicates or cancelled work would be counted apart; there were none (both `stateReason` = `COMPLETED`) | 25 Nov ICT | **2**: #64 (Lab 6 Part B, closed 15:15 ICT), #71 (Lab 7 change, closed 21:27 ICT, after the post-deploy checks of 21:20 ICT; their record PR #90 merged at 21:44 ICT) | `metrics/m1-issues.txt` |
 | M2 | Merged PRs | PRs merged in the window, by target branch | 25 Nov ICT | **12**: 11 into `staging` (#72, #80 to #88, #90), 1 into `main` (#89) | `metrics/m2-prs.txt` |
 | M3 | Automated test results | Passed / failed / skipped of the `test-and-docker` job inside Deploy demo run 45630366597, on the deployed commit `main` `6ada56d` | Run of 25 Nov 21:06 to 21:07 ICT | Server (Vitest, 27 files): **185 / 0 / 0**. Client (Vitest, 5 files): **42 / 0 / 0**. E2E (Playwright): **4 / 0 / 0** | `metrics/m3-tests.txt` |
 | M4 | UAT defect status | Issues labelled `uat-finding`. Resolved = fix merged into `main`, deployed, and the reporting team's retest passed, then the Issue closed | Status at the snapshot | **1 opened, 1 resolved, 0 open** (all time). #68 opened 24 Nov 01:25 ICT, closed 24 Nov 19:48 ICT. None opened or resolved in the M1/M2 window | `metrics/m4-uat-defects.txt`; retest in the Lab 6 report |
@@ -66,7 +66,30 @@ Outstanding items (do not block READY):
 | D-21 is checked in the browser only by TEST-30's range assertion (14 to 17 days, 17:00, Mon to Fri) | A wrong day inside the range would not fail E2E; the unit and API tests (TEST-54 to TEST-59) carry the exact values | Low | Keep as is; F-07 must keep the assertion (C.2) |
 | Holidays are not business days in D-21 (Mon to Fri only) | A loan can fall due on a public holiday | Low | Accepted scope of #71 (`change-71.md`); a holiday calendar would be a new change request |
 
-### D.3 Retrospective (draft for the team)
+### D.3 Known limitations
+
+| Limitation | Effect | Where it is recorded |
+| --- | --- | --- |
+| Holidays are not business days in D-21 (Monday to Friday only) | A loan can fall due on a public holiday | `change-71.md`, D.2 |
+| D-17: a pending request with no `AVAILABLE` unit stays pending | The Custodian cannot check it out until a unit is free; nothing else happens to it | SRS D-17, F-03 contract |
+| The Sprint 1 checkout of a `PENDING` request stays until F-07 (#77) | A request can still be checked out without approval on the deployed release | F-06 contract 2.3, F-07 contract F07-D1 |
+| Request #7 and unit KH-ARD-0001 stay on loan on production | Post-deploy check data; one Arduino Uno R3 shows as on loan until returns exist | D.1 outstanding items; returned with F-08 (#78) |
+
+### D.4 Contributions (to be confirmed by each student)
+
+| Student | Lab 7 work |
+| --- | --- |
+| Teerakarn Noiruksa (67070501062) | Change request #71; impact table and contract revisions (PR #72); RED/GREEN implementation (PR #88); release PR #89; post-deploy checks (PR #90); metrics and readiness (this page, PR #92) |
+| Methipat Mansap (67070501071) | Reviews with requested changes and approvals of PR #72, #88, #89, #90 and #92, including the cap, check-order and evidence corrections; *(add any other work)* |
+
+### D.5 AI-use declaration (to be confirmed by each student)
+
+| Student | Declaration |
+| --- | --- |
+| Teerakarn Noiruksa | *(to fill: tools used, for what, and how the output was checked)* |
+| Methipat Mansap | *(to fill)* |
+
+### D.6 Retrospective (draft for the team)
 
 | Question | Answer |
 | --- | --- |
