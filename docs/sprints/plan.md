@@ -6,8 +6,8 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part D |
-| Version | 1.5 |
-| Date | 2026-11-07 |
+| Version | 1.6 |
+| Date | 2026-11-25 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Baseline | [SRS v1.3](../srs.md), [System-Level SDS v1.4](../system-sds.md) |
 
@@ -21,6 +21,7 @@
 | 1.3 | 2026-11-06 | Methipat Mansap | Issue #34: SR-04 UI polish added to Sprint 1 (sections 2, 3.2 and 4.3), so the Deliverable 1 screenshots, the Lab 6 UAT and the demo use one finished look. Visual only: no feature, requirement or sprint moves |
 | 1.4 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | Issue #36: baseline SRS v1.3 and SDS v1.3. Q-08 is resolved as D-20, so the F-11 dependency (3.1) cites D-20, and the 25 Nov milestone (6.3), the Sprint 3 dependencies (6.4) and the open-questions risk (8) list only Q-07 and Q-09. No feature, requirement or sprint moves |
 | 1.5 | 2026-11-07 | Methipat Mansap | Issue #38 (SR-04 defect fix): baseline SDS v1.4. SR-04 (3.2) covers every width from 320 to 1440 px, with the narrow layout below 768 px instead of 576 px. No feature, requirement or sprint moves |
+| 1.6 | 2026-11-25 | Teerakarn Noiruksa | Change request #71 (Lab 7, review of PR #72): the Sprint 1 due-date row in section 4 follows SRS v1.4 D-21 (17:00 ICT on a business day, 16:00 cutoff). No feature, requirement or sprint moves |
 
 ## 2. Overview
 
@@ -139,7 +140,7 @@ What Sprint 1 leaves out, and why that is safe:
 | --- | --- | --- |
 | Approval and rejection | The Theme 2 example goes straight from pending to checkout. Checkout from `PENDING` is the Sprint 1 transition (SRS 8.2) and is replaced by FR-17 in Sprint 2 | `RequestStatus` already has every state (SDS 4.2) |
 | Several lines and quantities | One unit of one item type is enough to prove the rules | The request body already uses a `lines` array, and checkout a `units` array (SDS DD-11) |
-| Loan length chosen by the Borrower | Sprint 1 due date = checkout time + the item type's maximum loan length (D-16) | `dueAt` is stored on every loan from Sprint 1 |
+| Loan length chosen by the Borrower | Sprint 1 due date uses the item type's maximum loan length (D-16); since #71 it is 17:00 ICT on a business day with a 16:00 checkout cutoff (D-21) | `dueAt` is stored on every loan from Sprint 1 |
 | Returns, maintenance, retiring | Not needed to show the request-to-loan slice | `UnitStatus` and `LoanStatus` already have every state |
 | Catalog management | The catalog is seeded (#13) | Category default limits from D-08 are already in the data |
 | Reservations, overdue, limits, search, history views, reports | Sprint 3 features | History entries are written from Sprint 1, so Sprint 3 can show them |

@@ -38,7 +38,9 @@
 | Callers and dependencies | F-03 | F-03 contract 6.3 | AC-19 | TEST-19 | `server/src/features/loans/loans.service.ts` | Calls `computeDueAt(now, maxLoanDays)` inside the checkout transaction; unchanged |
 | UI and API validation | F-03 | F-03 contract 3.5, 5.5 | AC-58 | TEST-58 (d), (e) | `units.schemas.ts` | Path `id` integer ≥ 1; no query field allowed |
 | End-to-end journey | #20 | F-03 contract 8.1 | AC-19, AC-26 | TEST-30 assertion revised | `e2e/journey.spec.ts` | Old assertion "due = checkout + 14 × 24 h" fails under the new rule; revised to "17:00 ICT on Monday to Friday, 14 to 17 days after the ICT checkout date" (real server clock, so no fixed value) |
-| Manual tests | F-03 | `manual-test-guide.md` MT-14 and section 5 | AC-19, AC-54, AC-58 | MT-14 updated | - | Example and expected text changed |
+| Manual tests | F-03 | `manual-test-guide.md` MT-12, MT-13, MT-14, section 5 and the MT-to-TEST table | AC-19, AC-26, AC-54, AC-58 | MT-12, MT-13, MT-14 updated | - | Expected due dates and the preview line changed |
+| Sprint plan | - | `docs/sprints/plan.md` v1.6, section 4 (Sprint 1 limitations table) | - | - | - | The Sprint 1 due-date wording follows D-21; no feature or sprint moves |
+| Lab 6 records | - | `docs/labs/lab-06/uat-cases.md` (UAT-05) | - | - | - | Not edited: it records what Lab 6 accepted on `55d3f55` / `495142e` under the old rule |
 | Sprint 2 (BR-08, F-07) | F-07 | SRS BR-08, D-16 | - | - | `computeDueAt` | F-07 will pass the request's `loanDays`; the business-day rule applies to it as well. No conflict |
 | Sprint 3 (FR-22, F-11 overdue) | F-11 | SDS 4.5 "Overdue request" | - | - | - | Overdue stays `dueAt < now`; with the new rule a loan never becomes overdue at night or on a weekend |
 | Not applicable: request creation, BR-01 to BR-05 | F-02 | - | AC-08 to AC-17, AC-33 to AC-40 | Regression only | `requests.*` | Does not read or write `dueAt` (it is `null` until checkout) |
@@ -61,7 +63,7 @@ Regression run for the change: `npm run typecheck` and `npm test` in `server/`, 
 
 ## 4. Order of work
 
-1. This document and the revised specifications (SRS v1.4, SDS v1.9, F-03 contract v1.3, `features.md` v1.10, `traceability.md` v1.12, manual test guide) on branch `docs/71-due-date-contract`; PR into `staging`, reviewed by Methipat Mansap, merged **before** any code.
+1. This document and the revised specifications (SRS v1.4, SDS v1.9, F-03 contract v1.3, `features.md` v1.10, `traceability.md` v1.12, plan v1.6, manual test guide) on branch `docs/71-due-date-contract`; PR into `staging`, reviewed by Methipat Mansap, merged **before** any code.
 2. RED: branch `feature/71-due-date` from the merged `staging`; commit the new and revised tests only; run them on that commit (pre-change code) and keep the failing output.
 3. GREEN: implementation commit; the same tests pass; regression run as in section 3.
 4. PR review, CI, `staging`, release PR into `main`, Deploy demo, post-deploy checks: a checkout shows a 17:00 business-day due date, Request #5 keeps its old due date, and a Borrower still gets `403` on the Custodian endpoints.
