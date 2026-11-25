@@ -9,7 +9,7 @@
 | Pre-change implementation | `main` `495142e` |
 | Snapshot | 2026-11-26 00:43 ICT (2026-11-25T17:43Z) |
 | Observation window (M1, M2, M5) | 25 Nov 2026, 00:00 to 24:00 ICT = `2026-11-24T17:00Z` to `2026-11-25T17:00Z`: the day #71 was specified, implemented, released and checked |
-| Status | Draft by Teerakarn Noiruksa for review by Methipat Mansap; the retrospective answers (D.3) are the team's to confirm |
+| Status | Written by Teerakarn Noiruksa, reviewed by Methipat Mansap; D.6 agreed by both (PR #92) |
 
 ## Part C. Five metrics
 
@@ -86,13 +86,13 @@ Outstanding items (do not block READY):
 
 | Student | Declaration |
 | --- | --- |
-| Teerakarn Noiruksa | *(to fill: tools used, for what, and how the output was checked)* |
+| Teerakarn Noiruksa | Claude Code (Anthropic) was used to draft the change request, the impact table, contract and test text, the test and implementation code, the evidence scripts and this page, and to collect the GitHub data for the metrics. Every output was checked by running the tests and commands recorded in the evidence, by comparing the due dates with a separate reference calculation, and through Methipat's reviews; I decided the change and approved each commit. |
 | Methipat Mansap | *(to fill)* |
 
-### D.6 Retrospective (draft for the team)
+### D.6 Retrospective
 
 | Question | Answer |
 | --- | --- |
 | What helped? | Writing the impact table, the contract and every expected due date before code, checked against a small reference implementation, meant the RED run failed only where expected and GREEN needed no test changes. |
-| What hurt? | Evidence was re-recorded after the fact and one claim ("E2E is not run by CI") was wrong until we read the workflow; parallel docs PRs also conflicted on the same `traceability.md` rows. |
-| What will change for the final release? | Save the RED/GREEN output into the repository in the same PR as the commits, check a claim against the workflow or log before writing it, and merge one docs PR at a time for shared files. |
+| What hurt? | Evidence was re-recorded after the fact and one claim ("E2E is not run by CI") was wrong until we read the workflow; parallel docs PRs conflicted on the same `traceability.md` rows. Some first-round reviews with must-fix points were posted as Comment, so GitHub did not show the PR as blocked. |
+| What will change for the final release? | Save the RED/GREEN output in the same PR as the commits, check a claim against the workflow or log before writing it, and merge one docs PR at a time for shared files. Every review with a must-fix point is submitted as Request changes. |
