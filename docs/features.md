@@ -4,7 +4,7 @@
 | --- | --- |
 | Version | 1.11 |
 | Date | 2026-11-25 |
-| Source requirements | `docs/srs.md` v1.4 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
+| Source requirements | `docs/srs.md` v1.5 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
 | Traceability | `docs/traceability.md` |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 
@@ -89,13 +89,13 @@ Test levels: **Unit** (domain logic), **API** (HTTP + database), **Integration**
 | AC-16 | Creating a request writes a history entry with the Borrower as actor and a timestamp | BR-16, NFR-09 | TEST-16 | Integration |
 | AC-17 | The catalog and the Borrower's request list show a loading, an empty and an error state | NFR-12 | TEST-17 | UI |
 | AC-33 | A call without a valid session to the catalog, request creation, the request list or a request's detail is rejected with `401 UNAUTHENTICATED`, returns no catalog or request data, and nothing is stored | NFR-01 | TEST-33 | API |
-| AC-34 | A create body that fails the schema (missing `lines`, zero or two lines, `quantity` other than 1, a non-integer or non-positive `itemTypeId`, an unknown field such as `loanDays`) is rejected with `400 VALIDATION_FAILED` naming each problem in `details`, and nothing is stored | FR-07 | TEST-34 | API |
+| AC-34 | A create body that fails the schema (missing `lines`, zero or more than 10 lines, a repeated item type, a `quantity` that is not an integer from 1 to 10, a non-integer or non-positive `itemTypeId`, a missing or out-of-range `loanDays`, an unknown field such as `borrowerId`) is rejected with `400 VALIDATION_FAILED` naming each problem in `details`, and nothing is stored (revised by F-04 8.4, F04-D9; Sprint 1 text in `docs/traceability.md` 5.2) | FR-07, FR-10 | TEST-34 | API |
 | AC-35 | A create with an `itemTypeId` that does not exist is rejected with `404 NOT_FOUND` naming `lines[0].itemTypeId`, and nothing is stored | FR-07 | TEST-35 | API |
 | AC-36 | BR-04 blocks only the Borrower's own open requests with the same item type: with an open request for item type A, the Borrower can still request item type B; after their request for A is `CHECKED_OUT`, they can request A again; another Borrower's open request for A does not block them | BR-04 | TEST-36 | API |
 | AC-37 | Two simultaneous create calls by the same Borrower for the same item type store exactly one request; the other is rejected with `409 DUPLICATE_OPEN_REQUEST` | BR-04 | TEST-37 | Integration |
 | AC-38 | When the item type has 0 available units and the Borrower already has an open request for it, the rejection is `409 DUPLICATE_OPEN_REQUEST`; each `409` message names the item type, and the duplicate message also names the open request | BR-01, BR-04 | TEST-38 | Unit + API |
 | AC-39 | A Borrower's list holds their own requests in every state, newest first, and `?status=PENDING` narrows it to their own pending requests; a Custodian's list is oldest first; an unknown `status` or query parameter, or a non-integer request ID, gives `400 VALIDATION_FAILED`; a request ID that does not exist gives `404 NOT_FOUND` in the same form as another Borrower's request: the same `code`, only the `error` object, and the message "Request <id> does not exist." with the requested ID | FR-08, BR-05 | TEST-39 | API |
-| AC-40 | In the catalog, a Borrower's Request button is disabled with "None available" when the count is 0; pressing an enabled button once sends one request, shows "Request #n submitted" and refreshes the catalog; a `409` is shown as an alert with the API message; a Custodian sees no Request button | FR-07, BR-01, BR-17 | TEST-40 | UI |
+| AC-40 | In the catalog, a Borrower's Request button is disabled with "None available" when the count is 0; pressing an enabled button opens the new request form with that item type (F04-D5); a Custodian sees no Request button (revised by F-04 8.4, F04-D9; Sprint 1 text in `docs/traceability.md` 5.2) | FR-07, FR-10, BR-01, BR-17 | TEST-40 | UI |
 
 AC-33 to AC-40 with TEST-33 to TEST-40 were added by the F-02 contract (`docs/traceability.md` 5.2). Numbers 33 to 40 are the block reserved for F-02 while the Sprint 1 contracts are written in parallel; F-03 uses 41 to 52 (PR #28).
 

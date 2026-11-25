@@ -6,7 +6,7 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part A |
-| Version | 1.4 |
+| Version | 1.5 |
 | Date | 2026-11-25 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Theme | 2. Inventory and Borrowing System |
@@ -20,6 +20,7 @@
 | 1.2 | 2026-11-06 | Teerakarn Noiruksa | Resolved Q-04, Q-05 and Q-06 as decisions D-15, D-16 and D-17; A-04 and A-05 now point to them |
 | 1.3 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | Resolved Q-01, Q-02 and Q-08 as D-18, D-19 and D-20; NFR-04, NFR-10 and BR-14 now point to them; Q-03 status reads "Open; settle before the Sprint 3 measurement (SR-03)" |
 | 1.4 | 2026-11-25 | Teerakarn Noiruksa | Change request #71 (Lab 7): new decision D-21, the due date is 17:00 ICT on a business day (Monday to Friday) with a 16:00 checkout cutoff. Glossary "Due date", FR-16, BR-08, A-05 and D-16 point to it. The loan length rules (D-08, D-16, BR-08) do not change |
+| 1.5 | 2026-11-25 | Teerakarn Noiruksa | Review of PR #87: 8.1 gains the row (new) → `AVAILABLE` for a unit added by a Custodian (FR-24), which F-09 2.1 needs. No requirement changes |
 
 ## 2. Introduction
 
@@ -228,6 +229,7 @@ Any transition that is not listed in this section is invalid. The system rejects
 
 | From | To | Trigger | Sprint |
 | --- | --- | --- | --- |
+| (new) | `AVAILABLE` | Added by a Custodian with a unique asset tag (FR-24) | 2 |
 | `AVAILABLE` | `ON_LOAN` | Checkout | 1 |
 | `ON_LOAN` | `AVAILABLE` | Return in good condition | 2 |
 | `ON_LOAN` | `MAINTENANCE` | Return damaged | 2 |
