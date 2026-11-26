@@ -1,7 +1,7 @@
 // TEST-89 (AC-89) and TEST-83 (c) (AC-83): approve and reject on the request detail, and the
 // decision shown to each role (contract F-06 4.3, 4.4). The requests module is mocked with a
 // vi.mock factory, so this file does not import functions before they exist (F-06 8.1).
-import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "../src/api/client";
 import type { BorrowRequest } from "../src/api/requests";
@@ -67,7 +67,12 @@ const renderDetail = (user = custodian) =>
 beforeEach(() => {
   for (const fn of [fetchRequest, approveRequest, rejectRequest]) fn.mockReset();
 });
-afterEach(() => vi.restoreAllMocks());
+// Unmount first, then restore: a page still mounted must never call a mock that was just reset
+// (the setup file's cleanup runs after this hook).
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 describe("TEST-89 (AC-89): approve and reject on the request detail", () => {
   it("TEST-89 (a): a PENDING request shows Approve and Reject to a Custodian, with the loan length and history", async () => {

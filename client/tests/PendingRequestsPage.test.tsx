@@ -3,7 +3,7 @@
 // requests (GET /api/requests?status=APPROVED) with items, loan length and approval time; the empty
 // text is "No approved requests." The states it checks are unchanged. The requests module is mocked
 // with a vi.mock factory, so this file imports nothing before it exists.
-import { act, fireEvent, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "../src/api/client";
 import type { BorrowRequest } from "../src/api/requests";
@@ -18,7 +18,12 @@ vi.mock("../src/api/requests", async (importOriginal) => ({
 }));
 
 beforeEach(() => fetchApprovedRequests.mockReset());
-afterEach(() => vi.restoreAllMocks());
+// Unmount first, then restore: a page still mounted must never call a mock that was just reset
+// (the setup file's cleanup runs after this hook).
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 describe("TEST-25 (AC-25): Ready for checkout states", () => {
   it("TEST-25 (a): shows Loading… until the first response", async () => {

@@ -2,7 +2,7 @@
 // 4). The return calls live in `src/api/loans.ts` (recorded path; the contract planned
 // `src/api/returns.ts`) and are mocked with a vi.mock factory, so this file imports nothing before
 // it exists.
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { BorrowRequest } from "../src/api/requests";
 import { RequestDetailPage } from "../src/pages/RequestDetailPage";
@@ -38,7 +38,12 @@ const renderDetail = (user = custodian) =>
 beforeEach(() => {
   for (const fn of [fetchRequest, returnRequest, returnLoan]) fn.mockReset();
 });
-afterEach(() => vi.restoreAllMocks());
+// Unmount first, then restore: a page still mounted must never call a mock that was just reset
+// (the setup file's cleanup runs after this hook).
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 describe("TEST-109 (AC-109): return controls on the request detail", () => {
   it("TEST-109: a Borrower sees no return control", async () => {

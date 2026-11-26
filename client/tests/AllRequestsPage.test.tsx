@@ -1,7 +1,7 @@
 // TEST-88 (AC-88): the All requests view on /requests for a Custodian, and My requests unchanged
 // for a Borrower (contract F-06 4.2, F06-D8). The requests module is mocked with a vi.mock factory,
 // so this file does not import functions before they exist (F-06 8.1).
-import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../src/App";
@@ -53,7 +53,12 @@ beforeEach(() => {
   fetchMyRequests.mockReset();
   fetchMyRequests.mockResolvedValue([]);
 });
-afterEach(() => vi.restoreAllMocks());
+// Unmount first, then restore: a page still mounted must never call a mock that was just reset
+// (the setup file's cleanup runs after this hook).
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 describe("TEST-88 (AC-88): All requests page", () => {
   it("TEST-88 (a): shows Loading… while the list loads", async () => {
