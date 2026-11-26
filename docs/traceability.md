@@ -143,3 +143,4 @@ None. Notes on three rows:
 | 2026-11-27 | F-14 contract v1.0 (#111): AC-158 to AC-163 and TEST-158 to TEST-163 copied to `features.md` 6.5; FR-29 moves from Planned to Specified | Sprint 3 contract before code (D2 3.3) | #111 |
 | 2026-11-27 | Review of PR #114: F-11 contract v1.1 (days overdue on the due day, two more D-20 cases in 3.4 and TEST-136, no AC change). Headers of `features.md` and this file name SRS v1.6 and `features.md` v1.12 | Review | #108 |
 | 2026-11-27 | Review of PR #115: F-12 contract v1.1 (TEST-145 with a non-empty combined filter, invalid URL filters F12-D8, narrow layout under SDS 5.3 / SR-04, AC-142 and AC-149 wording); SDS v1.14 row names section 6.1 | Review | #109 |
+| 2026-11-27 | Review of PR #116: F-14 contract v1.1 (TEST-159 data with exact times, TEST-161 expected rows, narrow layout under SDS 5.3 / SR-04, visible "Available (unit state)" header, F14-D6 no expiry); no AC changed | Review | #111 |

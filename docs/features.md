@@ -459,7 +459,7 @@ Copied from the Sprint 3 engineering contracts when each is merged into `staging
 | AC-148 | On the Catalog page, typing a name, choosing a category or ticking "Available only" shows only the matching item types grouped by category, keeps the filters in the URL across a reload, and a Borrower can still request a filtered item type | FR-06, F12-D6 | TEST-148 | Planned |
 | AC-149 | The page shows "Loading…", the error with "Try again", and "No item types match these filters." with **Clear filters**, which resets every control and the URL; the three controls have labels and stack below 768 px; invalid filter values in the URL are handled as F12-D8 | FR-06, NFR-12, SR-04 | TEST-149 | Planned |
 
-### 6.5 F-14 Inventory summary report (contract `docs/sprints/sprint-3/F-14-inventory-report.md` v1.0, #111)
+### 6.5 F-14 Inventory summary report (contract `docs/sprints/sprint-3/F-14-inventory-report.md` v1.1, #111)
 
 | AC | Expected outcome | Requirements | Tests | Status |
 | --- | --- | --- | --- | --- |

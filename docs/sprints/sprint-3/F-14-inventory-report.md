@@ -6,7 +6,7 @@
 | --- | --- |
 | Feature | F-14 Inventory summary report |
 | Sprint | 3 (due 2026-12-13) |
-| Version | 1.0 |
+| Version | 1.1 |
 | Status | Proposed (PR for #111); implementation starts only after this contract is reviewed and merged |
 | Date | 2026-11-27 |
 | Authors | Methipat Mansap (67070501071); reviewer Teerakarn Noiruksa (67070501062) |
@@ -20,6 +20,7 @@
 | Version | Date | Author | Change |
 | --- | --- | --- | --- |
 | 1.0 | 2026-11-27 | Methipat Mansap | First contract: AC-158 to AC-163, TEST-158 to TEST-163, decisions F14-D1 to F14-D5 |
+| 1.1 | 2026-11-27 | Methipat Mansap | Review of PR #116: TEST-159 has its own data with exact checkout times and loan lengths; TEST-161 states the five expected rows; the narrow layout cites SDS 5.3 / SR-04 (below 768 px, table in its `.table-responsive` scroller) and NFR-12 only the list states; F14-D4 uses a visible header instead of a tooltip; F14-D6 says the report does not apply D-23 expiry. No AC changed |
 
 Changes after approval get a new version row with the reason. AC and TEST IDs are never reused for a different meaning.
 
@@ -31,7 +32,8 @@ Changes after approval get a new version row with the reason. AC and TEST IDs ar
 | --- | --- | --- |
 | Functional | FR-29 | A Custodian sees, for each item type, the number of units in each unit state, the number of active loans and the number of overdue requests |
 | Business rules (read) | BR-12, BR-16 | Retired units are counted in their own column; nothing is written, so no history entry |
-| Non-functional | NFR-01, NFR-02, NFR-08, NFR-12 | Custodian only; standard errors; readable at 600 px |
+| Non-functional | NFR-01, NFR-02, NFR-08, NFR-12 | Custodian only; standard errors; loading, empty and error states (NFR-12 "List states") |
+| System responsibility | SR-04, SDS 5.3 "Visual style" | Below 768 px the table scrolls sideways in its `.table-responsive` scroller inside the panel, checked from 320 to 1440 px |
 | Non-functional (measured later) | NFR-11 | Measured by SR-03 (#112) on this endpoint |
 | SDS | 5.1 Inventory report (`/reports/inventory`), 6.6 `GET /api/reports/inventory`, 7.1 "View inventory report" (Custodian only), DD-08 | Used as written |
 
@@ -77,8 +79,9 @@ Totals row: the sum of each column, except `overdueRequests`, which counts disti
 | F14-D1 | All figures come from one read transaction with one `now` (application clock, as F11-D1) | The columns agree with each other; tests can fix the clock |
 | F14-D2 | Every item type is listed, also one with no unit (all zeros), ordered by category name, item type name, `id` | A Custodian sees an item type with no stock; the catalog's order (F12-D4) |
 | F14-D3 | The totals `overdueRequests` counts distinct requests, so it can be smaller than the sum of the rows | A two-line overdue request is one overdue request |
-| F14-D4 | `available` counts `AVAILABLE` units, not the request availability of BR-01 (which subtracts reservations once F-10 is in) | The report describes the stock; reservations are a request concern. The page says "Units in AVAILABLE state" in the column header tooltip |
+| F14-D4 | `available` counts `AVAILABLE` units, not the request availability of BR-01 (which subtracts reservations once F-10 is in) | The report describes the stock; reservations are a request concern. The column header reads "Available (unit state)", visible on every device, so it is not confused with the catalog's count |
 | F14-D5 | The endpoint takes no query field (strict) | One fixed report |
+| F14-D6 | The report does not apply D-23 expiry | It counts unit states, `ACTIVE` loans and `CHECKED_OUT` requests only; expiry changes `APPROVED` requests, which no column reads. Recorded so F-10 does not add expiry to this endpoint |
 
 ## 4. UI specification
 
@@ -95,10 +98,10 @@ Totals row: the sum of each column, except `overdueRequests`, which counts disti
 
 | Element | Behaviour |
 | --- | --- |
-| Table | Category, Item type, Available, On loan, Maintenance, Retired, Total units, Active loans, Overdue requests; numbers right-aligned; totals row in bold |
+| Table | Category, Item type, Available (unit state), On loan, Maintenance, Retired, Total units, Active loans, Overdue requests; numbers right-aligned; totals row in bold |
 | Header | "Inventory report" and "Generated *date, time*" (ICT) from `generatedAt`; **Refresh** |
 | States | "Loading…"; error with "Try again"; no item type: "The catalog is empty." |
-| Narrow screens | The table scrolls sideways inside its panel at 600 px (NFR-12) |
+| Narrow screens | Below 768 px the table scrolls sideways in its `.table-responsive` scroller inside the panel (SDS 5.3 "Visual style", SR-04) |
 | Access | `RequireRole CUSTODIAN`; a Borrower gets the Forbidden page and has no Reports link |
 
 ## 5. API specification
@@ -146,9 +149,9 @@ No schema change and no migration. Reads `categories`, `item_types`, `units`, `l
 | Test | AC | Level | Preconditions and input | Action | Expected result | Planned file |
 | --- | --- | --- | --- | --- | --- | --- |
 | TEST-158 **TDD** | AC-158 | API | A: 2 `AVAILABLE`, 1 `ON_LOAN` (with its loan), 1 `MAINTENANCE`, 1 `RETIRED`; B: 1 `AVAILABLE`; C: no unit | Custodian `GET /api/reports/inventory` | Rows for A, B, C in F14-D2 order; A: 2/1/1/1, total 5; B: 1/0/0/0, total 1; C: all 0 | `server/tests/api/inventory-report.test.ts` |
-| TEST-159 **TDD** | AC-159 | API | Request R1 with lines of A and B, checked out Mon 30 Nov 10:00 ICT for 3 days (due Thu 3 Dec 17:00); request R2 of A checked out later, due 10 Dec | Read at Thu 3 Dec 17:00:00.000, then at 17:00:00.001 | First: `overdueRequests` 0 everywhere. Second: A 1, B 1; `activeLoans` A 2, B 1 | `server/tests/api/inventory-report.test.ts` |
+| TEST-159 **TDD** | AC-159 | API | Fresh data: A with 2 `AVAILABLE` units, B with 1 `AVAILABLE` unit. Borrower B1's request R1 (A × 1, B × 1, `loanDays` 3) and Borrower B2's request R2 (A × 1, `loanDays` 10), both approved (F-06), then checked out (F-07): R1 at Mon 30 Nov 2026 10:00 ICT (due Thu 3 Dec 17:00 = `2026-12-03T10:00:00.000Z`), R2 at Mon 30 Nov 2026 11:00 ICT (due Thu 10 Dec 17:00) | Read the report at Thu 3 Dec 17:00:00.000 ICT, then at 17:00:00.001 | Both reads: `activeLoans` A 2, B 1; `onLoan` A 2, B 1. First read: `overdueRequests` 0 for A and B. Second read: A 1, B 1 (R1 only; R2 is not due) | `server/tests/api/inventory-report.test.ts` |
 | TEST-160 **TDD** | AC-160 | API | As the second read of TEST-159 | Read the totals | Each count column is the sum of the rows; `totals.overdueRequests` is 1 (R1 counted once); `generatedAt` equals the fixed clock | `server/tests/api/inventory-report.test.ts` |
-| TEST-161 **TDD** | AC-161 | Integration | A with 2 `AVAILABLE` units, one `PENDING` → approved request | Report, checkout 1 unit, report, early-return it as damaged, report, repair it, report, retire it, report | Each report differs from the previous one only in the moved unit's columns and `activeLoans` | `server/tests/api/inventory-report.test.ts` |
+| TEST-161 **TDD** | AC-161 | Integration | Fresh data: A with 2 `AVAILABLE` units; a Borrower's request of A × 1, approved | Report (1); check out 1 unit, report (2); return it early as damaged, report (3); mark it repaired, report (4); retire it, report (5) | Row A as available / onLoan / maintenance / retired, activeLoans: (1) 2/0/0/0, 0; (2) 1/1/0/0, 1; (3) 1/0/1/0, 0; (4) 2/0/0/0, 0; (5) 1/0/0/1, 0; `totalUnits` 2 in every report; `overdueRequests` 0 | `server/tests/api/inventory-report.test.ts` |
 | TEST-162 **TDD** | AC-162 | API | As TEST-158 | (a) Borrower; (b) no session; (c) `?itemTypeId=1`; snapshot before and after | (a) `403 FORBIDDEN`; (b) `401 UNAUTHENTICATED`; (c) `400 VALIDATION_FAILED` naming `itemTypeId`; nothing changed | `server/tests/api/inventory-report.test.ts` |
 | TEST-163 **TDD** | AC-163 | UI | App rendered with `fetch` stubbed | (a) Custodian opens Reports; (b) **Refresh**; (c) the stub fails, then "Try again"; (d) the stub returns no item; (e) Borrower opens `/reports/inventory` | (a) table rows, bold totals, "Generated 27 Nov 2026, 14:05"; (b) a second call; (c) the message, then a second call; (d) "The catalog is empty."; (e) Forbidden page, no Reports link | `client/tests/inventory-report.test.tsx` |
 
