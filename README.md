@@ -133,13 +133,11 @@ Playwright strips the TypeScript types without checking them. To type-check `e2e
 npm run typecheck:e2e
 ```
 
-To save the evidence screenshots of the main steps as PNG files (the set for Deliverable 1 Part F is in [`docs/sprints/sprint-1/img/e2e/`](docs/sprints/sprint-1/img/e2e/)), set `E2E_EVIDENCE_DIR` for one run:
+The normal run is `npm run test:e2e` without `E2E_EVIDENCE_DIR`; it saves no PNG files into `docs/`.
 
-```sh
-E2E_EVIDENCE_DIR=docs/sprints/sprint-1/img/e2e npm run test:e2e
-```
+The screenshots for Deliverable 1 Part F in [`docs/sprints/sprint-1/img/e2e/`](docs/sprints/sprint-1/img/e2e/) are the record of tested commit `16fdb7f` (#20) and are not refreshed any more. Do not point `E2E_EVIDENCE_DIR` at that folder: a full run now shows the Sprint 2 UI and also writes the walkthrough's `mt-20-*.png` to `mt-30-*.png` files there.
 
-The Sprint 2 walkthrough screenshots are in [`docs/sprints/sprint-2/img/mt/`](docs/sprints/sprint-2/img/mt/); to refresh only them, run that one file:
+The Sprint 2 walkthrough screenshots are in [`docs/sprints/sprint-2/img/mt/`](docs/sprints/sprint-2/img/mt/); to refresh them, set `E2E_EVIDENCE_DIR` for one run of that one file:
 
 ```sh
 E2E_EVIDENCE_DIR=docs/sprints/sprint-2/img/mt npx playwright test e2e/sprint2-walkthrough.spec.ts
@@ -148,7 +146,7 @@ E2E_EVIDENCE_DIR=docs/sprints/sprint-2/img/mt npx playwright test e2e/sprint2-wa
 In PowerShell, set the variable, run, then remove it so later runs do not overwrite the committed screenshots:
 
 ```powershell
-$env:E2E_EVIDENCE_DIR = "docs/sprints/sprint-1/img/e2e"; npm run test:e2e; Remove-Item Env:E2E_EVIDENCE_DIR
+$env:E2E_EVIDENCE_DIR = "docs/sprints/sprint-2/img/mt"; npx playwright test e2e/sprint2-walkthrough.spec.ts; Remove-Item Env:E2E_EVIDENCE_DIR
 ```
 
 The HTML report is written to `playwright-report/`; open it with `npm run test:e2e:report`. It includes screenshots of the main steps. Traces, screenshots and videos of a failed test go to `test-results/`. Both folders are ignored by Git; never commit them, because a trace can contain session cookies.
