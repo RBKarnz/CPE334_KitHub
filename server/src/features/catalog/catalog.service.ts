@@ -107,6 +107,13 @@ export function catalogService(prisma: PrismaClient) {
       }));
     },
 
+    /** GET /item-types/:id (contract F-04 5.1, F04-D6): the same for both roles, no units. */
+    async getItemType(id: number) {
+      const exists = await prisma.itemType.findUnique({ where: { id }, select: { id: true } });
+      if (!exists) throw new NotFoundError(`Item type ${id} does not exist.`);
+      return itemTypeView(id);
+    },
+
     /** POST /categories (F-09 5.1). No history entry (F09-D8). */
     async createCategory(body: CreateCategoryBody) {
       await assertNameFree("category", body.name);

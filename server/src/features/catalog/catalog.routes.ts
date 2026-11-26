@@ -19,8 +19,9 @@ import { catalogService } from "./catalog.service.js";
 const pathId = (req: Request) => (req.params as unknown as { id: number }).id;
 
 /**
- * GET /categories (contract F-02 4.1), either role; and catalog management (contract F-09 5.1,
- * 5.2): POST and PATCH of categories and item types, Custodian only.
+ * GET /categories (contract F-02 4.1) and GET /item-types/:id (contract F-04 5.1), either role;
+ * and catalog management (contract F-09 5.1, 5.2): POST and PATCH of categories and item types,
+ * Custodian only.
  */
 export function catalogRouter(prisma: PrismaClient): Router {
   const router = Router();
@@ -34,6 +35,20 @@ export function catalogRouter(prisma: PrismaClient): Router {
       next(err);
     }
   });
+
+  // F-04 (5.1): either role; no query parameter (DD-09).
+  router.get(
+    "/item-types/:id",
+    authenticate(prisma),
+    validate({ params: recordIdParams, query: catalogQuery }),
+    async (req, res, next) => {
+      try {
+        res.status(200).json(await service.getItemType(pathId(req)));
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
 
   router.post("/categories", ...custodian, validate({ body: createCategoryBody }), async (req, res, next) => {
     try {

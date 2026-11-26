@@ -1,4 +1,4 @@
-// Borrow requests: create, list and detail (contract F-02 3 and 4); approve and reject, and the
+// Borrow requests: create, list and detail (contract F-02 3 and 4; multi-line create, contract F-04 3); approve and reject, and the
 // Custodian detail with history (contract F-06 3 and 5).
 import {
   ActorType,
@@ -19,7 +19,105 @@ import { historySelect, requestSelect, toHistoryView, toRequestView, type Reques
 /** Open requests block a second request for the same item type (BR-04, SRS glossary). */
 const OPEN_STATUSES = [RequestStatus.PENDING, RequestStatus.APPROVED];
 
-const ITEM_TYPE_FIELD = "lines[0].itemTypeId";
+const lineField = (i: number, field: "itemTypeId" | "quantity") => `lines[${i}].${field}`;
+const days = (n: number) => `${n} day${n === 1 ? "" : "s"}`;
+const units = (n: number) => `${n} available unit${n === 1 ? "" : "s"}`;
+
+/**
+ * Reads the facts for every line inside the caller's transaction and throws the first broken rule
+ * (contract F-04 3.5): 404 for the first item type that does not exist, in body order, then the
+ * rules in the order of requestRuleViolation. Each 409 names the first failing line in its message
+ * and lists every failing line in `details`. `exceptRequestId` leaves out the request being edited
+ * from BR-04 (F-05).
+ */
+export async function assertRequestRules(
+  tx: Prisma.TransactionClient,
+  borrowerId: number,
+  body: CreateRequestBody,
+  exceptRequestId?: number,
+) {
+  const ids = body.lines.map((l) => l.itemTypeId);
+  const itemTypes = await tx.itemType.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, name: true, maxLoanDays: true, maxQuantityPerRequest: true },
+  });
+  const byId = new Map(itemTypes.map((t) => [t.id, t]));
+  const missing = body.lines.findIndex((l) => !byId.has(l.itemTypeId));
+  if (missing >= 0) {
+    const itemTypeId = body.lines[missing].itemTypeId;
+    throw new NotFoundError(`Item type ${itemTypeId} does not exist.`, [
+      { field: lineField(missing, "itemTypeId"), issue: "Item type does not exist" },
+    ]);
+  }
+
+  const [openLines, available] = await Promise.all([
+    tx.requestLine.findMany({
+      where: {
+        itemTypeId: { in: ids },
+        request: {
+          borrowerId,
+          status: { in: OPEN_STATUSES },
+          ...(exceptRequestId !== undefined ? { id: { not: exceptRequestId } } : {}),
+        },
+      },
+      orderBy: { requestId: "asc" },
+      select: { itemTypeId: true, requestId: true },
+    }),
+    // One grouped count on units (itemTypeId, status), never stored (DD-08).
+    tx.unit.groupBy({ by: ["itemTypeId"], where: { itemTypeId: { in: ids }, status: UnitStatus.AVAILABLE }, _count: { _all: true } }),
+  ]);
+  const openById = new Map<number, number>();
+  for (const l of openLines) if (!openById.has(l.itemTypeId)) openById.set(l.itemTypeId, l.requestId);
+  const availableById = new Map(available.map((a) => [a.itemTypeId, a._count._all]));
+
+  const facts = body.lines.map((l) => {
+    const t = byId.get(l.itemTypeId)!;
+    return {
+      name: t.name,
+      quantity: l.quantity,
+      maxQuantityPerRequest: t.maxQuantityPerRequest,
+      maxLoanDays: t.maxLoanDays,
+      availableCount: availableById.get(l.itemTypeId) ?? 0,
+      openRequestId: openById.get(l.itemTypeId) ?? null,
+    };
+  });
+  const violation = requestRuleViolation({ lines: facts, loanDays: body.loanDays });
+  if (!violation) return;
+
+  const first = facts[violation.lines[0]];
+  switch (violation.rule) {
+    case "DUPLICATE_OPEN_REQUEST":
+      throw new ConflictError(
+        violation.rule,
+        `You already have an open request for ${first.name} (Request #${first.openRequestId}).`,
+        violation.lines.map((i) => ({
+          field: lineField(i, "itemTypeId"),
+          issue: `Open request #${facts[i].openRequestId} has this item type`,
+        })),
+      );
+    case "QUANTITY_LIMIT":
+      throw new ConflictError(
+        violation.rule,
+        `You can request at most ${first.maxQuantityPerRequest} ${first.name} at a time.`,
+        violation.lines.map((i) => ({ field: lineField(i, "quantity"), issue: `Maximum ${facts[i].maxQuantityPerRequest}` })),
+      );
+    case "LOAN_LENGTH_LIMIT":
+      throw new ConflictError(
+        violation.rule,
+        `The loan length can be at most ${days(first.maxLoanDays)} because of ${first.name}.`,
+        [{ field: "loanDays", issue: `Maximum ${first.maxLoanDays} (${first.name})` }],
+      );
+    case "ITEM_TYPE_UNAVAILABLE":
+      throw new ConflictError(
+        violation.rule,
+        first.availableCount === 0
+          ? `${first.name} has no available units.`
+          : `${first.name} has only ${units(first.availableCount)}; you asked for ${first.quantity}.`,
+        violation.lines.map((i) => ({ field: lineField(i, "itemTypeId"), issue: `${facts[i].availableCount} available` })),
+      );
+  }
+}
+
 
 /** A Borrower sees only their own requests; a Custodian sees all (BR-05, DD-06). */
 const scopeFor = (user: AuthUser): Prisma.BorrowRequestWhereInput =>
@@ -36,54 +134,31 @@ export type Decision = keyof typeof DECISIONS;
 export function requestsService(prisma: PrismaClient) {
   return {
     /**
-     * Creates a PENDING request owned by the signed-in Borrower. Check order after the schema:
-     * item type exists (404), BR-04 (409), BR-01 (409) (contract F-02 3.3).
+     * Creates a PENDING request owned by the signed-in Borrower with every line and one loan length
+     * (contract F-04 3.1). Check order after the schema (3.5): lock the Borrower row, item types
+     * exist in body order (404), then the rules BR-04 → BR-07 → BR-08 → BR-01 (409).
      */
     async create(user: AuthUser, body: CreateRequestBody) {
-      const [{ itemTypeId, quantity }] = body.lines;
       const id = await prisma.$transaction(async (tx) => {
         // One timestamp for createdAt and the history entry (F02-D5).
         const now = new Date();
         // Lock the Borrower's row, so one Borrower's creates run one after another and the
         // second one sees the first request (BR-04 under concurrency, DD-05, SDS 4.7).
         await tx.$queryRaw`SELECT id FROM users WHERE id = ${user.id} FOR UPDATE`;
+        await assertRequestRules(tx, user.id, body);
 
-        const itemType = await tx.itemType.findUnique({ where: { id: itemTypeId }, select: { id: true, name: true } });
-        if (!itemType)
-          throw new NotFoundError(`Item type ${itemTypeId} does not exist.`, [
-            { field: ITEM_TYPE_FIELD, issue: "Item type does not exist" },
-          ]);
-
-        const openRequest = await tx.borrowRequest.findFirst({
-          where: { borrowerId: user.id, status: { in: OPEN_STATUSES }, lines: { some: { itemTypeId } } },
-          orderBy: { id: "asc" },
-          select: { id: true },
-        });
-        const availableCount = await tx.unit.count({ where: { itemTypeId, status: UnitStatus.AVAILABLE } });
-
-        const violation = requestRuleViolation({ hasOpenRequest: openRequest !== null, availableCount, quantity });
-        if (violation === "DUPLICATE_OPEN_REQUEST")
-          throw new ConflictError(
-            violation,
-            `You already have an open request for ${itemType.name} (Request #${openRequest!.id}).`,
-            [{ field: ITEM_TYPE_FIELD, issue: `Open request #${openRequest!.id} has this item type` }],
-          );
-        if (violation === "ITEM_TYPE_UNAVAILABLE")
-          throw new ConflictError(violation, `${itemType.name} has no available units.`, [
-            { field: ITEM_TYPE_FIELD, issue: `${availableCount} available` },
-          ]);
-
-        // The owner is always the session user (BR-05).
+        // The owner is always the session user (BR-05). Lines in body order (F04-D7).
         const created = await tx.borrowRequest.create({
           data: {
             borrowerId: user.id,
             status: RequestStatus.PENDING,
             createdAt: now,
-            lines: { create: { itemTypeId, quantity } },
+            loanDays: body.loanDays,
+            lines: { create: body.lines.map(({ itemTypeId, quantity }) => ({ itemTypeId, quantity })) },
           },
           select: { id: true },
         });
-        // History in the same transaction (BR-16, contract F-02 3.4).
+        // History in the same transaction (BR-16, contract F-02 3.4, F-04 3.6).
         await tx.historyEntry.create({
           data: {
             occurredAt: now,

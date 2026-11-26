@@ -93,13 +93,18 @@ const quantitySelect = (n: number) => screen.getByRole("combobox", { name: `Quan
 const loanLength = () => screen.getByRole("spinbutton", { name: "Loan length (days)" });
 const submit = () => screen.getByRole("button", { name: "Submit request" });
 const optionValues = (select: HTMLElement) => within(select).getAllByRole("option").map((o) => (o as HTMLOptionElement).value);
+/** The heading shows while the item types load; the form is ready when line 1 is there. */
+const formReady = async () => {
+  expect(await screen.findByRole("heading", { level: 1, name: "New request" })).toBeInTheDocument();
+  await screen.findByRole("combobox", { name: "Item type for line 1" });
+};
 const posts = () => stub.bodies.filter((b) => b.key === "POST /api/requests").map((b) => b.body);
 
 describe("TEST-71 (AC-71): new request form", () => {
   it("TEST-71 (a): ?itemTypeId=3 starts with Arduino × 1, loan length 14, quantities 1 to 2", async () => {
     renderAt("/requests/new?itemTypeId=3");
 
-    expect(await screen.findByRole("heading", { level: 1, name: "New request" })).toBeInTheDocument();
+    await formReady();
     expect(itemTypeSelect(1)).toHaveValue("3");
     expect(quantitySelect(1)).toHaveValue("1");
     expect(optionValues(quantitySelect(1))).toEqual(["1", "2"]);
@@ -109,7 +114,7 @@ describe("TEST-71 (AC-71): new request form", () => {
 
   it("TEST-71 (b), (c), (d): a shorter maximum keeps the value with a field error; 3 days submits once and opens the request", async () => {
     renderAt("/requests/new?itemTypeId=3");
-    await screen.findByRole("heading", { level: 1, name: "New request" });
+    await formReady();
 
     fireEvent.click(screen.getByRole("button", { name: "Add line" }));
     fireEvent.change(itemTypeSelect(2), { target: { value: "9" } });
@@ -152,7 +157,7 @@ describe("TEST-71 (AC-71): new request form", () => {
 
   it("TEST-71 (e): a 409 is an alert with the API message; the lines stay and the item types load again", async () => {
     renderAt("/requests/new?itemTypeId=3");
-    await screen.findByRole("heading", { level: 1, name: "New request" });
+    await formReady();
     stub.routes["POST /api/requests"] = [
       { status: 409, body: errorBody("ITEM_TYPE_UNAVAILABLE", "Arduino Uno R3 has only 1 available unit; you asked for 2.") },
     ];
@@ -167,7 +172,7 @@ describe("TEST-71 (AC-71): new request form", () => {
 
   it("TEST-71 (f): Add line is hidden at 10 lines; Remove is hidden with one line", async () => {
     renderAt("/requests/new", [...catalog, extra]);
-    await screen.findByRole("heading", { level: 1, name: "New request" });
+    await formReady();
     expect(screen.queryByRole("button", { name: "Remove line 1" })).not.toBeInTheDocument();
 
     for (let n = 2; n <= 10; n++) fireEvent.click(screen.getByRole("button", { name: "Add line" }));
