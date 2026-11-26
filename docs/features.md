@@ -4,7 +4,7 @@
 | --- | --- |
 | Version | 1.12 |
 | Date | 2026-11-27 |
-| Source requirements | `docs/srs.md` v1.5 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
+| Source requirements | `docs/srs.md` v1.6 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
 | Traceability | `docs/traceability.md` |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 
@@ -431,7 +431,7 @@ F-08 runs (raw output in `docs/sprints/sprint-2/evidence/F-08/`): RED `73a54a3` 
 
 Copied from the Sprint 3 engineering contracts when each is merged into `staging`, before any of its code. AC-n is verified by TEST-n (section 1). Blocks claimed in the Sprint 3 Issues: F-10 122 to 131 (#107), F-11 132 to 141 (#108), F-12 142 to 149 (#109), F-13 150 to 157 (#110), F-14 158 to 163 (#111), SR-03 164 to 171 (#112). Every status is **Planned** until the feature's implementation PR records its RED and GREEN runs and the tested commit here. A contract revised after this copy wins; its revision row names the change.
 
-### 6.2 F-11 Overdue status and borrowing limits (contract `docs/sprints/sprint-3/F-11-overdue-limits.md` v1.0, #108)
+### 6.2 F-11 Overdue status and borrowing limits (contract `docs/sprints/sprint-3/F-11-overdue-limits.md` v1.1, #108)
 
 | AC | Expected outcome | Requirements | Tests | Status |
 | --- | --- | --- | --- | --- |
