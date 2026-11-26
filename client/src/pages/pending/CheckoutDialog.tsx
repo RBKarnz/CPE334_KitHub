@@ -105,7 +105,8 @@ export function CheckoutDialog({ request, onClose, onCheckedOut, onStale }: Chec
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "Escape") {
       event.stopPropagation();
-      onClose();
+      // The dialog cannot be closed while the checkout runs (review of PR #93, as F-06 and F-08).
+      if (!submitting) onClose();
       return;
     }
     if (event.key !== "Tab" || !dialogRef.current) return;
@@ -141,7 +142,7 @@ export function CheckoutDialog({ request, onClose, onCheckedOut, onStale }: Chec
               <h2 className="modal-title h5" id={titleId}>
                 Check out Request #{request.id}
               </h2>
-              <button type="button" className="btn-close" aria-label="Close" onClick={onClose} />
+              <button type="button" className="btn-close" aria-label="Close" onClick={onClose} disabled={submitting} />
             </div>
             <div className="modal-body">
               <p>
@@ -212,7 +213,7 @@ export function CheckoutDialog({ request, onClose, onCheckedOut, onStale }: Chec
               </AsyncState>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-outline-secondary" onClick={onClose}>
+              <button type="button" className="btn btn-outline-secondary" onClick={onClose} disabled={submitting}>
                 Cancel
               </button>
               <button type="button" className="btn btn-primary" disabled={!complete || submitting} onClick={submit}>
