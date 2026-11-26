@@ -3,7 +3,7 @@
 // assertions. Catalog: Arduino Uno R3 (14 days, max 2, 3 available), HC-SR04 (14, 4, 5),
 // Digital multimeter (3, 1, 3), plus seven more item types for the ten-line case.
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../src/App";
 import { errorBody, stubFetch, type FetchStub } from "./fetch-stub";
@@ -78,12 +78,18 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+// The state of the current history entry, which a browser reload keeps.
+function HistoryState() {
+  return <output data-testid="history-state">{JSON.stringify(useLocation().state)}</output>;
+}
+
 function renderAt(path: string, categories: unknown[] = catalog, user = borrower) {
   stub.routes["GET /api/auth/me"] = [{ status: 200, body: { user } }];
   stub.routes["GET /api/categories"] = [{ status: 200, body: { items: categories } }];
   return render(
     <MemoryRouter initialEntries={[path]}>
       <App />
+      <HistoryState />
     </MemoryRouter>,
   );
 }
@@ -182,7 +188,7 @@ describe("TEST-71 (AC-71): new request form", () => {
     expect(submit()).toBeDisabled();
   });
 
-  it("TEST-71 (g): from the catalog, Request on Arduino and Submit request: 2 clicks, one create", async () => {
+  it("TEST-71 (g): from the catalog, Request on Arduino and Submit request: 2 clicks, one create; a reload does not show the notice again", async () => {
     renderAt("/catalog");
     stub.routes["POST /api/requests"] = [{ status: 201, body: { ...created12, loanDays: 14, lines: [created12.lines[0]] } }];
     stub.routes["GET /api/requests/12"] = [{ status: 200, body: { ...created12, loanDays: 14, lines: [created12.lines[0]] } }];
@@ -192,6 +198,9 @@ describe("TEST-71 (AC-71): new request form", () => {
 
     expect(await screen.findByText("Request #12 submitted.")).toBeInTheDocument();
     expect(posts()).toEqual([{ lines: [{ itemTypeId: 3, quantity: 1 }], loanDays: 14 }]);
+    // The notice is shown once: the history entry no longer carries it (review of #99).
+    await waitFor(() => expect(screen.getByTestId("history-state")).toHaveTextContent("null"));
+    expect(screen.getByText("Request #12 submitted.")).toBeInTheDocument();
   });
 
   it("TEST-71: the Borrower navigation has New request; a Custodian at /requests/new sees the Forbidden page", async () => {
