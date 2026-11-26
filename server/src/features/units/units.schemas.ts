@@ -32,3 +32,20 @@ export const dueDatePreviewQuery = z.object({
 });
 
 export type DueDatePreviewQuery = z.infer<typeof dueDatePreviewQuery>;
+
+/** Path `id` of a unit (contract F-09 3.4). */
+export const unitIdParams = itemTypeIdParams;
+
+/** Add unit (contract F-09 3.4, F09-D6): trimmed, upper-cased, then KH-<CODE>-<NNNN>. */
+export const addUnitBody = z.object({
+  assetTag: z
+    .string({ error: "Must be a string" })
+    .trim()
+    .toUpperCase()
+    .regex(/^KH-[A-Z0-9]{2,6}-[0-9]{4}$/, { error: "Must look like KH-ARD-0007" }),
+});
+
+/** Repair and retire take exactly {}; validate() makes it strict (contract F-09 3.4). */
+export const emptyBody = z.object({});
+
+export type AddUnitBody = z.infer<typeof addUnitBody>;

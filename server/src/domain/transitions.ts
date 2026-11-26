@@ -18,6 +18,10 @@ const TRANSITIONS: Record<TransitionEntity, readonly (readonly [string | null, s
     ["AVAILABLE", "ON_LOAN"], // SRS 8.1: checkout (F-03)
     ["ON_LOAN", "AVAILABLE"], // SRS 8.1, Sprint 2: returned in good condition (F-08)
     ["ON_LOAN", "MAINTENANCE"], // SRS 8.1, Sprint 2: returned damaged (F-08, BR-11)
+    [null, "AVAILABLE"], // FR-24, Sprint 2: a Custodian adds a unit (F-09; SRS 8.1 row added with F-09)
+    ["MAINTENANCE", "AVAILABLE"], // SRS 8.1, Sprint 2: marked repaired (F-09, FR-25)
+    ["AVAILABLE", "RETIRED"], // SRS 8.1, Sprint 2: retired (F-09, FR-26)
+    ["MAINTENANCE", "RETIRED"], // SRS 8.1, Sprint 2: retired (F-09, FR-26)
   ],
   LOAN: [
     [null, "ACTIVE"], // SRS 8.3: checkout of its unit (F-03)

@@ -52,7 +52,9 @@ describe("TEST-121 (AC-121): units of an item type", () => {
     const slow = deferred<{ status: number; body?: unknown }>();
     renderUnits([slow.promise]);
 
-    expect(await screen.findByText("Loading…")).toBeInTheDocument();
+    // The sign-in check shows its own "Loading…" first; the page's comes after the navigation bar.
+    await screen.findByRole("link", { name: "Manage catalog" });
+    expect(screen.getByText("Loading…")).toBeInTheDocument();
     await act(async () => slow.resolve(ok(units)));
 
     expect(await screen.findByRole("heading", { name: "Digital multimeter" })).toBeInTheDocument();

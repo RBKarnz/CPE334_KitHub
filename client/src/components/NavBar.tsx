@@ -18,6 +18,8 @@ const LINKS: Record<Role, { to: string; label: string }[]> = {
     { to: "/requests", label: "All requests" },
     { to: "/loans", label: "Loans" },
     { to: "/catalog", label: "Catalog" },
+    // F-09 (contract F-09 4.1): categories, item types and units.
+    { to: "/manage", label: "Manage catalog" },
   ],
 };
 
