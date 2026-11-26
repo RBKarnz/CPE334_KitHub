@@ -2,8 +2,8 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.11 |
-| Date | 2026-11-25 |
+| Version | 1.12 |
+| Date | 2026-11-27 |
 | Source requirements | `docs/srs.md` v1.5 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
 | Traceability | `docs/traceability.md` |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
@@ -426,3 +426,22 @@ F-08 runs (raw output in `docs/sprints/sprint-2/evidence/F-08/`): RED `73a54a3` 
 | AC-119 | A retire racing a checkout of the same unit, two adds of the same asset tag, and two creates of the same category name, also in another letter case, each end with exactly one success and one `409`, with history only for the success | BR-12, NFR-05, A-07 | TEST-119 | **Implemented**: failed on `567c530`, pass on `4aec247` |
 | AC-120 | Each of the seven catalog management endpoints answers a Borrower with `403 FORBIDDEN` and a call without a session with `401 UNAUTHENTICATED`, with only the `error` object, and nothing changes | NFR-01, NFR-02 | TEST-120 | **Implemented**: failed on `567c530`, pass on `4aec247` |
 | AC-121 | The Manage catalog page lists categories with their defaults and item types with their limits and available counts, with loading, empty and error states; the forms create and edit categories and item types and show `NAME_TAKEN` under the name; the units page lists units with their state, adds a unit, offers Mark repaired only on `MAINTENANCE` and Retire only on `AVAILABLE` and `MAINTENANCE` with a confirmation; a Borrower sees the Forbidden page at `/manage` | FR-23 to FR-26, NFR-12 | TEST-121 | **Implemented**: failed on `567c530`, pass on `4aec247` |
+
+## 6. Sprint 3 acceptance criteria and planned tests
+
+Copied from the Sprint 3 engineering contracts when each is merged into `staging`, before any of its code. AC-n is verified by TEST-n (section 1). Blocks claimed in the Sprint 3 Issues: F-10 122 to 131 (#107), F-11 132 to 141 (#108), F-12 142 to 149 (#109), F-13 150 to 157 (#110), F-14 158 to 163 (#111), SR-03 164 to 171 (#112). Every status is **Planned** until the feature's implementation PR records its RED and GREEN runs and the tested commit here. A contract revised after this copy wins; its revision row names the change.
+
+### 6.2 F-11 Overdue status and borrowing limits (contract `docs/sprints/sprint-3/F-11-overdue-limits.md` v1.0, #108)
+
+| AC | Expected outcome | Requirements | Tests | Status |
+| --- | --- | --- | --- | --- |
+| AC-132 | A request is reported `overdue: true` exactly when it is `CHECKED_OUT` and has an `ACTIVE` loan with `dueAt` before now; at `dueAt` exactly, after every unit is returned, and for every other state it is `false`. Both roles see the same value for the requests they may read | FR-22, F11-D1, F11-D2 | TEST-132 | Planned |
+| AC-133 | `GET /api/requests?overdue=true` returns every overdue request for a Custodian and only the caller's own for a Borrower, earliest due first; a request that is not overdue is never listed; `overdue=false`, `overdue=yes` and `overdue=true&status=CHECKED_OUT` give `400`; no session gives `401` | FR-22, BR-05, NFR-01, F11-D7, F11-D8 | TEST-133 | Planned |
+| AC-134 | A Borrower with an overdue request cannot create a request: `409 OVERDUE_BLOCK` naming the oldest overdue request, and nothing is stored. After every unit of it is returned (early returns or return all), the same create succeeds. A loan that is due later, or due now exactly, does not block | BR-15, D-14, F11-D3, F11-D4 | TEST-134 | Planned |
+| AC-135 | The overdue block also applies to editing the Borrower's own `PENDING` request; nothing changes | BR-15, BR-10 | TEST-135 | Planned |
+| AC-136 | A create is rejected with `409 BORROW_LIMIT` when the Borrower's `ACTIVE` loans plus the line quantities of their `PENDING` and `APPROVED` requests plus the new quantities exceed 5; a total of exactly 5 is allowed; `CANCELLED`, `REJECTED` and `RETURNED` requests and `RETURNED` loans do not count; a kit counts as one unit | BR-14, D-20, F11-D5 | TEST-136 | Planned |
+| AC-137 | On edit the edited request's own current lines are not counted, so an edit that keeps the total at or below 5 succeeds and one that goes above it is rejected with `409 BORROW_LIMIT`; nothing changes on rejection | BR-14, BR-10 | TEST-137 | Planned |
+| AC-138 | The checks run in the order of 3.5: an unknown item type gives `404` before BR-15; an overdue Borrower over the limit gets `OVERDUE_BLOCK`; a Borrower with a duplicate open request and over the limit gets `DUPLICATE_OPEN_REQUEST`; a request over the limit with too few available units gets `BORROW_LIMIT` | BR-14, BR-15, F04-D3 | TEST-138 | Planned |
+| AC-139 | Two simultaneous creates by one Borrower that are each within the limit but exceed it together produce exactly one request; the other is rejected with `BORROW_LIMIT` | BR-14, NFR-05, DD-05 | TEST-139 | Planned |
+| AC-140 | The UI marks overdue requests "Overdue" on My requests, request detail and All requests, and the Custodian Overdue page lists them with the units not returned, the due date and the days overdue, with loading, empty and error states; a Borrower opening `/overdue` sees the Forbidden page and has no Overdue link | FR-22, NFR-12 | TEST-140 | Planned |
+| AC-141 | In the request form, `OVERDUE_BLOCK` and `BORROW_LIMIT` are shown as an alert with the API message and the entered lines and loan length are kept | BR-14, BR-15 | TEST-141 | Planned |
