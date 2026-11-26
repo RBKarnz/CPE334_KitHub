@@ -8,6 +8,7 @@ Design documents:
 - [System-Level Software Design Specification](docs/system-sds.md)
 - [Feature inventory](docs/features.md) and [traceability](docs/traceability.md)
 - [Three-sprint plan](docs/sprints/plan.md)
+- Manual test guides: [Sprint 1](docs/sprints/sprint-1/manual-test-guide.md), [Sprint 2](docs/sprints/sprint-2/manual-test-guide.md)
 
 ## Prerequisites
 
@@ -57,6 +58,8 @@ npm run dev
 The API listens on `http://localhost:3000`. Check it with `GET /api/health` (process is up) and `GET /api/ready` (database is reachable).
 
 The seed is safe to run again: it only inserts records that are missing and never changes existing ones.
+
+For a demo of the Sprint 2 screens, also set `SEED_DEMO_REQUESTS=true` (it needs `SEED_DEMO_DATA=true`) before seeding a fresh database: the seed then adds one request in each state (pending, approved, rejected, cancelled, checked out, returned), with times shortly before the seed ran. It adds them only when the database has no request at all, so it never changes a database in use. Never set it for production; Deploy demo does not. The six requests are listed in the [Sprint 2 manual test guide](docs/sprints/sprint-2/manual-test-guide.md), section 2.
 
 ## 4. Client: install and run
 
@@ -119,7 +122,7 @@ npm run test:e2e
 What the command does:
 
 - Refuses to run unless `TEST_DATABASE_URL` is set, differs from `DATABASE_URL` and names a database ending in `_test`, as the server tests do. It never touches `kithub`.
-- Applies the migrations to `kithub_test` and empties its tables. Each test empties them again and creates its own users, catalog and units with a test-only password, so the demo seed is not needed.
+- Applies the migrations to `kithub_test` and empties its tables. Each test empties them again and creates its own users, catalog and units with a test-only password, so the demo seed is not needed. The exception is `e2e/sprint2-walkthrough.spec.ts`, which walks the Sprint 2 manual test guide (MT-20 to MT-30): it runs the seed functions themselves on `kithub_test`, with the test-only password, so its request numbers match the guide.
 - Builds `client/` and `server/`, then starts the server with `NODE_ENV=production` on port 3100, so it serves the built UI as the deployed app does. Port 3100 must be free; a dev server on 3000 can keep running.
 
 Do not run the server tests (`npm test` in `server/`) at the same time as `npm run test:e2e`. Both empty and refill `kithub_test`, so running them together makes both fail at random.
@@ -136,6 +139,12 @@ To save the evidence screenshots of the main steps as PNG files (the set for Del
 E2E_EVIDENCE_DIR=docs/sprints/sprint-1/img/e2e npm run test:e2e
 ```
 
+The Sprint 2 walkthrough screenshots are in [`docs/sprints/sprint-2/img/mt/`](docs/sprints/sprint-2/img/mt/); to refresh only them, run that one file:
+
+```sh
+E2E_EVIDENCE_DIR=docs/sprints/sprint-2/img/mt npx playwright test e2e/sprint2-walkthrough.spec.ts
+```
+
 In PowerShell, set the variable, run, then remove it so later runs do not overwrite the committed screenshots:
 
 ```powershell
@@ -150,6 +159,8 @@ The HTML report is written to `playwright-report/`; open it with `npm run test:e
 | --- | --- | --- |
 | `custodian1`, `custodian2` | Custodian | Always |
 | `borrower1`, `borrower2` | Borrower | `SEED_DEMO_DATA=true` |
+
+With `SEED_DEMO_REQUESTS=true` the seed also adds six demo requests (section 3).
 
 The passwords are the values you set in `SEED_CUSTODIAN_PASSWORD` and `SEED_BORROWER_PASSWORD` in your own `server/.env`. No password is stored in this repository.
 
