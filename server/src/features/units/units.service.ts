@@ -17,15 +17,19 @@ export function unitsService(prisma: PrismaClient) {
       });
     },
 
-    /** The due date a checkout at `now` would get (D-21). Read only (contract F-03 5.5, #71). */
-    async dueDatePreview(itemTypeId: number, now: Date = new Date()) {
+    /**
+     * The due date a checkout at `now` would get (D-21). Read only (contract F-03 5.5, #71). With
+     * `days` (F07-D4) that loan length is used, also above the item type's maximum; the response
+     * still reports the item type's maxLoanDays.
+     */
+    async dueDatePreview(itemTypeId: number, days?: number, now: Date = new Date()) {
       const itemType = await prisma.itemType.findUnique({ where: { id: itemTypeId }, select: { id: true, maxLoanDays: true } });
       if (!itemType) throw new NotFoundError(`Item type ${itemTypeId} does not exist.`);
       return {
         itemTypeId: itemType.id,
         maxLoanDays: itemType.maxLoanDays,
         at: now.toISOString(),
-        dueAt: computeDueAt(now, itemType.maxLoanDays).toISOString(),
+        dueAt: computeDueAt(now, days ?? itemType.maxLoanDays).toISOString(),
       };
     },
   };

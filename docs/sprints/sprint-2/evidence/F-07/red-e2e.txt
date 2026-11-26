@@ -1,0 +1,141 @@
+# RED, end-to-end on the pre-change code
+Command: npm run test:e2e
+Commit: 29d8600e6b70e1f888bdad2b89c8655dc3b69384 test(#77): RED for F-07 multi-unit checkout and loan lists
+Date: 2026-11-26 01:39:50 ICT
+node -v: v24.14.0   npm -v: 10.8.2
+git status --short:
+ M server/prisma/migrations/migration_lock.toml
+?? docs/sprints/sprint-2/evidence/F-07/
+----
+
+> kithub-e2e@0.1.0 test:e2e
+> playwright test
+
+
+Running 4 tests using 1 worker
+
+  x  1 [chromium] › e2e\forbidden.spec.ts:9:1 › TEST-32: a Borrower sees the Forbidden page at /pending and the API refuses checkout with 403 (850ms)
+  x  2 [chromium] › e2e\journey.spec.ts:11:1 › TEST-30: Borrower requests, Custodian checks out, Borrower sees Checked out (1.0m)
+  x  3 [chromium] › e2e\narrow-screens.spec.ts:60:1 › TEST-53: Check out is reachable at 640 and 760 px and Sign out is visible at 600 px (10.9s)
+  ok 4 [chromium] › e2e\rejection.spec.ts:8:1 › TEST-31: a second request for an item type with an open request is refused with the BR-04 message (809ms)
+
+
+  1) [chromium] › e2e\forbidden.spec.ts:9:1 › TEST-32: a Borrower sees the Forbidden page at /pending and the API refuses checkout with 403 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "PENDING"
+    Received: "APPROVED"
+
+      55 |   // Backend: nothing changed. No loan, no history entry, the request PENDING, the unit AVAILABLE.
+      56 |   expect(await snapshotCheckoutState(db)).toEqual(before);
+    > 57 |   expect((await db.borrowRequest.findUniqueOrThrow({ where: { id: pending.id } })).status).toBe("PENDING");
+         |                                                                                            ^
+      58 |   expect((await db.unit.findUniqueOrThrow({ where: { id: unit.id } })).status).toBe("AVAILABLE");
+      59 |   expect(await db.loan.count()).toBe(0);
+      60 | });
+        at E:\CPE334_KitHub\e2e\forbidden.spec.ts:57:92
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\forbidden-TEST-32-a-Borrow-d307c-I-refuses-checkout-with-403-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\forbidden-TEST-32-a-Borrow-d307c-I-refuses-checkout-with-403-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\forbidden-TEST-32-a-Borrow-d307c-I-refuses-checkout-with-403-chromium\error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\forbidden-TEST-32-a-Borrow-d307c-I-refuses-checkout-with-403-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\forbidden-TEST-32-a-Borrow-d307c-I-refuses-checkout-with-403-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › e2e\journey.spec.ts:11:1 › TEST-30: Borrower requests, Custodian checks out, Borrower sees Checked out 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Ready for checkout' })
+
+
+      44 |   await page.getByRole("dialog").getByRole("button", { name: `Approve Request #${requestId}` }).click();
+      45 |   await expect(page.getByRole("status").filter({ hasText: "approved" })).toHaveText(`Request #${requestId} approved.`);
+    > 46 |   await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Ready for checkout" }).click();
+         |                                                                                                          ^
+      47 |   await expect(page).toHaveURL(/\/pending$/);
+      48 |   await expect(page.getByRole("heading", { name: "Ready for checkout", level: 1 })).toBeVisible();
+      49 |
+        at E:\CPE334_KitHub\e2e\journey.spec.ts:46:106
+
+    attachment #4: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\journey-TEST-30-Borrower-r-e482c-t-Borrower-sees-Checked-out-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #5: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\journey-TEST-30-Borrower-r-e482c-t-Borrower-sees-Checked-out-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\journey-TEST-30-Borrower-r-e482c-t-Borrower-sees-Checked-out-chromium\error-context.md
+
+    attachment #7: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\journey-TEST-30-Borrower-r-e482c-t-Borrower-sees-Checked-out-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\journey-TEST-30-Borrower-r-e482c-t-Borrower-sees-Checked-out-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › e2e\narrow-screens.spec.ts:60:1 › TEST-53: Check out is reachable at 640 and 760 px and Sign out is visible at 600 px 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByRole('button', { name: /^Check out Request #\d+$/ })
+    Expected: 8
+    Received: 0
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveCount" getByRole('button', { name: /^Check out Request #\d+$/ }) with timeout 10000ms
+      - waiting for getByRole('button', { name: /^Check out Request #\d+$/ })
+        23 × locator resolved to 0 elements
+           - unexpected value "0"
+
+
+      75 |   await expect(page).toHaveURL(/\/pending$/);
+      76 |   const checkOutButtons = page.getByRole("button", { name: /^Check out Request #\d+$/ });
+    > 77 |   await expect(checkOutButtons).toHaveCount(8);
+         |                                 ^
+      78 |
+      79 |   for (const width of [640, 760]) {
+      80 |     await test.step(`${width} px: no sideways page scroll; first and last Check out open the dialog`, async () => {
+        at E:\CPE334_KitHub\e2e\narrow-screens.spec.ts:77:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\narrow-screens-TEST-53-Che-26dca-gn-out-is-visible-at-600-px-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\narrow-screens-TEST-53-Che-26dca-gn-out-is-visible-at-600-px-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\narrow-screens-TEST-53-Che-26dca-gn-out-is-visible-at-600-px-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\narrow-screens-TEST-53-Che-26dca-gn-out-is-visible-at-600-px-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\narrow-screens-TEST-53-Che-26dca-gn-out-is-visible-at-600-px-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › e2e\forbidden.spec.ts:9:1 › TEST-32: a Borrower sees the Forbidden page at /pending and the API refuses checkout with 403 
+    [chromium] › e2e\journey.spec.ts:11:1 › TEST-30: Borrower requests, Custodian checks out, Borrower sees Checked out 
+    [chromium] › e2e\narrow-screens.spec.ts:60:1 › TEST-53: Check out is reachable at 640 and 760 px and Sign out is visible at 600 px 
+  1 passed (1.6m)
+exit code: 1

@@ -3,10 +3,10 @@ import { Role, type PrismaClient } from "@prisma/client";
 import { authenticate, requireRole } from "../../core/middleware/authenticate.js";
 import { validate } from "../../core/middleware/validate.js";
 import { requestIdParams } from "../requests/requests.schemas.js";
-import { checkoutBody, type CheckoutBody } from "./loans.schemas.js";
+import { checkoutBody, listLoansQuery, type CheckoutBody, type ListLoansQuery } from "./loans.schemas.js";
 import { loansService } from "./loans.service.js";
 
-/** POST /requests/:id/checkout (contract F-03 5.3). Custodian only. */
+/** POST /requests/:id/checkout (contract F-07 5.1), Custodian only; GET /loans (F-07 5.2), both roles. */
 export function loansRouter(prisma: PrismaClient): Router {
   const router = Router();
   const service = loansService(prisma);
@@ -26,6 +26,15 @@ export function loansRouter(prisma: PrismaClient): Router {
       }
     },
   );
+
+  // Scope by role in the service (BR-05, F07-D5).
+  router.get("/loans", authenticate(prisma), validate({ query: listLoansQuery }), async (req, res, next) => {
+    try {
+      res.status(200).json({ items: await service.list(req.user!, req.query as ListLoansQuery) });
+    } catch (err) {
+      next(err);
+    }
+  });
 
   return router;
 }

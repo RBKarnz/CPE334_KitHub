@@ -2,6 +2,7 @@
 // Check out, and Sign out is not cut off. Before the #38 fix, from 576 to 764 px the Pending
 // requests table was wider than its panel and the panel's clipped corner hid the Action column,
 // and from 576 to 636 px Sign out sat past the right edge of the navigation bar.
+// F-07 (F07-D8): the list is now Ready for checkout, so the requests are created APPROVED.
 import type { Locator, Page } from "@playwright/test";
 import { createBorrower, createCustodian, createRequest } from "./support/db.js";
 import { evidence, expect, signIn, test } from "./support/fixtures.js";
@@ -65,7 +66,7 @@ test("TEST-53: Check out is reachable at 640 and 760 px and Sign out is visible 
   const requestIds: number[] = [];
   for (const [i, [category, name, prefix]] of ITEM_TYPES.entries()) {
     const { itemType } = await createStockedItemType(db, { category, name, prefix, units: 1 });
-    const request = await createRequest(db, { borrowerId: borrowers[i % 2].id, itemTypeId: itemType.id });
+    const request = await createRequest(db, { borrowerId: borrowers[i % 2].id, itemTypeId: itemType.id, status: "APPROVED" });
     requestIds.push(request.id);
   }
   expect(requestIds).toHaveLength(8);

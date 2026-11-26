@@ -1,10 +1,11 @@
-// Checkout dialog (contract F-03 4.3): choose one AVAILABLE unit of the line's item type and
-// confirm. Keyboard: focus moves into the dialog, Tab stays inside, Escape closes (SDS 5.3).
+// Checkout dialog (contract F-03 4.3, F-07 4): for each line of an APPROVED request, choose exactly
+// its quantity of AVAILABLE units of the line's item type, then confirm. Keyboard: focus moves into
+// the dialog, Tab stays inside, Escape closes (SDS 5.3).
 import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { checkoutRequest } from "../../api/checkout";
 import { ApiError } from "../../api/client";
 import type { BorrowRequest } from "../../api/requests";
-import { fetchDueDatePreview, fetchUnits } from "../../api/units";
+import { fetchDueDatePreview, fetchUnits, type UnitSummary } from "../../api/units";
 import { useLoad } from "../../api/useLoad";
 import { AsyncState } from "../../components/AsyncState";
 import { formatDateTime, formatWeekdayDateTime } from "../../format";
@@ -18,24 +19,38 @@ export interface CheckoutDialogProps {
   onStale: () => void;
 }
 
-/** "Request #12 checked out: KH-ARD-0007, due 20 Nov 2026, 14:30", from the 201 response. */
+/** "Request #12 checked out: KH-ARD-0001, KH-ARD-0002, due 7 Dec 2026, 17:00", from the 201 response. */
 export function checkoutConfirmation(result: BorrowRequest): string {
-  const loan = result.lines[0]?.loans[0];
+  const tags = result.lines.flatMap((line) => line.loans.map((loan) => loan.unit.assetTag));
   const due = result.dueAt ? `, due ${formatDateTime(result.dueAt)}` : "";
-  return `Request #${result.id} checked out${loan ? `: ${loan.unit.assetTag}` : ""}${due}`;
+  return `Request #${result.id} checked out${tags.length ? `: ${tags.join(", ")}` : ""}${due}`;
 }
 
 const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
+const unitsText = (n: number) => `${n} unit${n === 1 ? "" : "s"}`;
+
+/**
+ * The due date a checkout now would get (F07-D3, F07-D4): with the request's loan length when it
+ * has one; otherwise the earliest of the lines' previews, which is the smallest maxLoanDays.
+ */
+async function previewFor(request: BorrowRequest) {
+  if (request.loanDays != null) return fetchDueDatePreview(request.lines[0].itemType.id, request.loanDays);
+  const previews = await Promise.all(request.lines.map((line) => fetchDueDatePreview(line.itemType.id)));
+  return previews.reduce((earliest, p) => (p.dueAt < earliest.dueAt ? p : earliest));
+}
 
 export function CheckoutDialog({ request, onClose, onCheckedOut, onStale }: CheckoutDialogProps) {
-  // Every Sprint 1 request has exactly one line (BR-01).
-  const line = request.lines[0];
-  const loadUnits = useCallback(() => fetchUnits(line.itemType.id, "AVAILABLE"), [line.itemType.id]);
-  const units = useLoad(loadUnits);
-  // The due date a checkout now would get (#71). Only a hint: the server computes dueAt again at checkout.
-  const loadPreview = useCallback(() => fetchDueDatePreview(line.itemType.id), [line.itemType.id]);
+  const lines = request.lines;
+  const loadUnits = useCallback(
+    () => Promise.all(lines.map((line) => fetchUnits(line.itemType.id, "AVAILABLE"))),
+    [lines],
+  );
+  const units = useLoad<UnitSummary[][]>(loadUnits);
+  const loadPreview = useCallback(() => previewFor(request), [request]);
+  // Only a hint: the server computes dueAt again at checkout (#71).
   const preview = useLoad(loadPreview);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  // Chosen unit IDs per line, in the order they were picked.
+  const [selected, setSelected] = useState<Record<number, number[]>>({});
   const [submitting, setSubmitting] = useState(false);
   const [alert, setAlert] = useState<string | null>(null);
   // Blocks a second call even before React re-renders the disabled button.
@@ -50,25 +65,33 @@ export function CheckoutDialog({ request, onClose, onCheckedOut, onStale }: Chec
     return () => previous?.focus?.();
   }, []);
 
-  const available = units.data ?? [];
-  const selected = available.find((u) => u.id === selectedId) ?? null;
+  const available = units.data ?? lines.map(() => []);
+  const chosen = (lineId: number) => selected[lineId] ?? [];
+  const toggle = (lineId: number, unitId: number) =>
+    setSelected((s) => {
+      const current = s[lineId] ?? [];
+      return { ...s, [lineId]: current.includes(unitId) ? current.filter((id) => id !== unitId) : [...current, unitId] };
+    });
+
+  const total = lines.reduce((n, line) => n + line.quantity, 0);
+  const complete = units.data !== undefined && lines.every((line) => chosen(line.id).length === line.quantity);
 
   const submit = async () => {
-    if (inFlight.current || !selected) return;
+    if (inFlight.current || !complete) return;
     inFlight.current = true;
     setSubmitting(true);
     setAlert(null);
     try {
-      const result = await checkoutRequest(request.id, { units: [{ lineId: line.id, unitId: selected.id }] });
-      onCheckedOut(result);
+      const body = { units: lines.flatMap((line) => chosen(line.id).map((unitId) => ({ lineId: line.id, unitId }))) };
+      onCheckedOut(await checkoutRequest(request.id, body));
     } catch (err) {
       const apiError = err instanceof ApiError ? err : new ApiError(0, "INTERNAL_ERROR", "Something went wrong.");
       // A 401 is handled by AuthProvider (session ended, SDS 5.3).
       if (apiError.code === "UNAUTHENTICATED") return;
       setAlert(apiError.message);
       if (apiError.code === "UNIT_NOT_AVAILABLE" || apiError.code === "UNIT_WRONG_ITEM_TYPE") {
-        // Someone else took the unit: choose again from a fresh list.
-        setSelectedId(null);
+        // Someone else took a unit: choose again from fresh lists.
+        setSelected({});
         units.reload();
       } else if (apiError.code === "INVALID_STATE" || apiError.status === 404) {
         onStale();
@@ -82,7 +105,8 @@ export function CheckoutDialog({ request, onClose, onCheckedOut, onStale }: Chec
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "Escape") {
       event.stopPropagation();
-      onClose();
+      // The dialog cannot be closed while the checkout runs (review of PR #93, as F-06 and F-08).
+      if (!submitting) onClose();
       return;
     }
     if (event.key !== "Tab" || !dialogRef.current) return;
@@ -99,8 +123,6 @@ export function CheckoutDialog({ request, onClose, onCheckedOut, onStale }: Chec
       first.focus();
     }
   };
-
-  const noUnits = units.data !== undefined && available.length === 0;
 
   return (
     <>
@@ -120,11 +142,11 @@ export function CheckoutDialog({ request, onClose, onCheckedOut, onStale }: Chec
               <h2 className="modal-title h5" id={titleId}>
                 Check out Request #{request.id}
               </h2>
-              <button type="button" className="btn-close" aria-label="Close" onClick={onClose} />
+              <button type="button" className="btn-close" aria-label="Close" onClick={onClose} disabled={submitting} />
             </div>
             <div className="modal-body">
               <p>
-                {request.borrower.displayName} ({request.borrower.username}) · {line.itemType.name}
+                {request.borrower.displayName} ({request.borrower.username})
               </p>
               <p className="text-body-secondary">
                 {preview.data
@@ -142,39 +164,61 @@ export function CheckoutDialog({ request, onClose, onCheckedOut, onStale }: Chec
                 loading={units.loading && !units.data}
                 error={units.error}
                 onRetry={units.reload}
-                isEmpty={noUnits}
-                empty={`No unit of ${line.itemType.name} is available. The request stays pending.`}
+                isEmpty={false}
+                empty={null}
               >
-                <fieldset disabled={submitting}>
-                  <legend className="kh-legend fs-6">Available units</legend>
-                  {/* Each unit is a chip pressed into anti-static foam; the whole chip selects it. */}
-                  <div className="kh-chips kh-foam">
-                    {available.map((unit) => (
-                      <div className={`kh-chip${selectedId === unit.id ? " is-selected" : ""}`} key={unit.id}>
-                        <input
-                          className="form-check-input"
-                          type="radio"
-                          name="checkout-unit"
-                          id={`${titleId}-unit-${unit.id}`}
-                          checked={selectedId === unit.id}
-                          onChange={() => setSelectedId(unit.id)}
-                        />
-                        <label className="kh-tag" htmlFor={`${titleId}-unit-${unit.id}`}>
-                          {unit.assetTag}
-                        </label>
+                {lines.map((line, i) => {
+                  const lineUnits = available[i] ?? [];
+                  const short = lineUnits.length < line.quantity;
+                  const full = chosen(line.id).length >= line.quantity;
+                  return (
+                    <fieldset key={line.id} disabled={submitting} className="mb-3">
+                      {short ? (
+                        <>
+                          <legend className="kh-legend fs-6">{line.itemType.name}</legend>
+                          <p className="text-warning-emphasis">
+                            Only {lineUnits.length} of {line.quantity} available. The request cannot be checked out yet.
+                          </p>
+                        </>
+                      ) : (
+                        <legend className="kh-legend fs-6">
+                          {line.itemType.name} — choose {line.quantity} of {lineUnits.length} available
+                        </legend>
+                      )}
+                      {/* Each unit is a chip pressed into anti-static foam; the whole chip selects it. */}
+                      <div className="kh-chips kh-foam">
+                        {lineUnits.map((unit) => {
+                          const checked = chosen(line.id).includes(unit.id);
+                          const inputId = `${titleId}-line-${line.id}-unit-${unit.id}`;
+                          return (
+                            <div className={`kh-chip${checked ? " is-selected" : ""}`} key={unit.id}>
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                id={inputId}
+                                checked={checked}
+                                disabled={!checked && full}
+                                onChange={() => toggle(line.id, unit.id)}
+                              />
+                              <label className="kh-tag" htmlFor={inputId}>
+                                {unit.assetTag}
+                              </label>
+                            </div>
+                          );
+                        })}
                       </div>
-                    ))}
-                  </div>
-                </fieldset>
+                    </fieldset>
+                  );
+                })}
               </AsyncState>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-outline-secondary" onClick={onClose}>
+              <button type="button" className="btn btn-outline-secondary" onClick={onClose} disabled={submitting}>
                 Cancel
               </button>
-              <button type="button" className="btn btn-primary" disabled={!selected || submitting} onClick={submit}>
+              <button type="button" className="btn btn-primary" disabled={!complete || submitting} onClick={submit}>
                 {submitting && <span className="spinner-border spinner-border-sm me-1" aria-hidden="true" />}
-                {selected ? `Check out ${selected.assetTag} for Request #${request.id}` : "Check out"}
+                {complete ? `Check out ${unitsText(total)} for Request #${request.id}` : "Check out"}
               </button>
             </div>
           </div>

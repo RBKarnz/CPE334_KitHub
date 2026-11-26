@@ -9,11 +9,14 @@ const LINKS: Record<Role, { to: string; label: string }[]> = {
   BORROWER: [
     { to: "/catalog", label: "Catalog" },
     { to: "/requests", label: "My requests" },
+    { to: "/loans", label: "My loans" },
   ],
   CUSTODIAN: [
-    { to: "/pending", label: "Pending requests" },
+    // Renamed by F-07 (F07-D6): the APPROVED requests waiting for checkout.
+    { to: "/pending", label: "Ready for checkout" },
     // Same route as a Borrower's My requests, scoped by role (contract F-06 F06-D8).
     { to: "/requests", label: "All requests" },
+    { to: "/loans", label: "Loans" },
     { to: "/catalog", label: "Catalog" },
   ],
 };

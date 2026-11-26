@@ -1,5 +1,8 @@
 // TEST-41 (AC-41, AC-06): F-03 endpoints reject a missing or ended session with 401 and a
 // Borrower with 403, return only the error object, and change nothing (contract F-03 3.8).
+// F-07 (F07-D8): checkout now needs an APPROVED request (FR-17 replaces FR-16), so these tests
+// create their requests APPROVED; their rule assertions are unchanged.
+import { RequestStatus } from "@prisma/client";
 import request from "supertest";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createTestApp, prisma } from "../helpers/app.js";
@@ -17,7 +20,7 @@ beforeEach(async () => {
 async function setup() {
   const w = await createCheckoutWorld(prisma);
   const u = await createUnit(prisma, { itemTypeId: w.arduino.id });
-  const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+  const r = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b1.id, itemTypeId: w.arduino.id });
   return { itemTypeId: w.arduino.id, u, r, lineId: r.lines[0].id };
 }
 
@@ -34,7 +37,7 @@ const calls: [string, (s: Setup, cookie: string | undefined) => request.Test][] 
 
 async function expectUnchanged(s: Setup, before: unknown) {
   expect(await snapshotCheckoutState(prisma)).toEqual(before);
-  expect((await prisma.borrowRequest.findUniqueOrThrow({ where: { id: s.r.id } })).status).toBe("PENDING");
+  expect((await prisma.borrowRequest.findUniqueOrThrow({ where: { id: s.r.id } })).status).toBe("APPROVED");
   expect((await prisma.unit.findUniqueOrThrow({ where: { id: s.u.id } })).status).toBe("AVAILABLE");
 }
 
