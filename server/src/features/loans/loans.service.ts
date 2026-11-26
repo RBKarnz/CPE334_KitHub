@@ -357,7 +357,13 @@ async function returnOne(
     throw loanNotReturnable(loanId, current.status);
   }
   const { unitId } = await tx.loan.findUniqueOrThrow({ where: { id: loanId }, select: { unitId: true } });
-  await tx.unit.updateMany({ where: { id: unitId, status: UnitStatus.ON_LOAN }, data: { status: unitTo } });
+  const movedUnit = await tx.unit.updateMany({ where: { id: unitId, status: UnitStatus.ON_LOAN }, data: { status: unitTo } });
+  if (movedUnit.count === 0) {
+    // The unit no longer matches its ACTIVE loan: refuse, so the whole return rolls back and no
+    // history records a change that did not happen (BR-16, review of PR #94).
+    const unit = await tx.unit.findUniqueOrThrow({ where: { id: unitId }, select: { assetTag: true, status: true } });
+    throw new ConflictError("INVALID_STATE", `Unit ${unit.assetTag} is ${unit.status}, not ON_LOAN.`);
+  }
   const actor = { occurredAt: now, actorType: ActorType.USER, actorUserId: user.id, requestId, unitId };
   await tx.historyEntry.createMany({
     data: [
