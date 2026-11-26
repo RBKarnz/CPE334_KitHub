@@ -1,0 +1,305 @@
+# RED 2 (review of PR #94), server: whole suite before the fix
+Command: cd server && npx vitest run --reporter=verbose
+Commit: eced9b5ebeba8ff768a2ce53dba16a724e8aa77d test(#78): RED for the review of PR #94, a return whose unit is not ON_LOAN is 409 and rolls back (TEST-107 (c))
+Date: 2026-11-26 10:32:17 ICT
+node -v: v24.14.0   npm -v: 10.8.2
+git status --short:
+ M server/prisma/migrations/migration_lock.toml
+?? docs/sprints/sprint-2/evidence/F-08/red2-server.txt
+----
+
+ RUN  v2.1.9 E:/CPE334_KitHub/server
+
+ ✓ tests/api/checkout.test.ts > TEST-19 (AC-19): normal checkout > TEST-19: checking out an AVAILABLE unit creates one ACTIVE loan due at 17:00 ICT and moves request and unit
+ ✓ tests/api/checkout.test.ts > TEST-19 (AC-19): normal checkout > TEST-19: an item type with maxLoanDays 3 checked out Fri 14:30 ICT is due Mon 17:00 ICT (D-21)
+ ✓ tests/api/checkout.test.ts > TEST-54 (AC-54): checkout on a business day before 16:00 ICT (D-21) > TEST-54: Wed 25 Nov 10:00 ICT, 14 days: the response and the loans row are due Wed 9 Dec 17:00 ICT
+ ✓ tests/api/checkout.test.ts > TEST-20 (AC-20): unit not AVAILABLE, and no AVAILABLE unit at all (D-17) > TEST-20 (a): a unit that is ON_LOAN is 409 UNIT_NOT_AVAILABLE and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-20 (AC-20): unit not AVAILABLE, and no AVAILABLE unit at all (D-17) > TEST-20 (b): a unit in MAINTENANCE is 409 UNIT_NOT_AVAILABLE and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-20 (AC-20): unit not AVAILABLE, and no AVAILABLE unit at all (D-17) > TEST-20 (c): with no AVAILABLE unit the unit list is empty and checkout with any unit is rejected; the request stays PENDING
+ ✓ tests/api/checkout.test.ts > TEST-21 (AC-21): unit of a different item type > TEST-21 (a): an ESP32 unit that is AVAILABLE is 409 UNIT_WRONG_ITEM_TYPE and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-21 (AC-21): unit of a different item type > TEST-21 (b): an ESP32 unit that is ON_LOAN is 409 UNIT_WRONG_ITEM_TYPE and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-26 (AC-26): the Borrower sees the checked-out request; the available count drops > TEST-26: Borrower sees CHECKED_OUT with asset tag and due date and no checkedOutBy; count 3 → 2; another Borrower gets 404
+ ✓ tests/api/checkout.test.ts > TEST-42 (AC-42): request does not exist > TEST-42 (a): request 999999 is 404 NOT_FOUND and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-42 (AC-42): request does not exist > TEST-42 (b): request 999999 with unit 999999 is 404 for the request, without unit details
+ ✓ tests/api/checkout.test.ts > TEST-43 (AC-43): request is not APPROVED (F07-D8: was PENDING in Sprint 1) > TEST-43: checking out a CHECKED_OUT request again is 409 INVALID_STATE; it keeps its one loan
+ ✓ tests/api/checkout.test.ts > TEST-44 (AC-44): body or path fails the schema > TEST-44 (a) empty object is 400 VALIDATION_FAILED and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-44 (AC-44): body or path fails the schema > TEST-44 (b) zero entries is 400 VALIDATION_FAILED and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-44 (AC-44): body or path fails the schema > TEST-44 (c) two entries is 400 VALIDATION_FAILED and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-44 (AC-44): body or path fails the schema > TEST-44 (d) unknown field in an entry is 400 VALIDATION_FAILED and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-44 (AC-44): body or path fails the schema > TEST-44 (e) unknown top-level field is 400 VALIDATION_FAILED and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-44 (AC-44): body or path fails the schema > TEST-44 (f) unitId as a string is 400 VALIDATION_FAILED and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-44 (AC-44): body or path fails the schema > TEST-44 (f) unitId 0 is 400 VALIDATION_FAILED and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-44 (AC-44): body or path fails the schema > TEST-44 (g): malformed JSON is 400 VALIDATION_FAILED and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-44 (AC-44): body or path fails the schema > TEST-44 (h): path id 'abc' is 400 VALIDATION_FAILED naming id and nothing changes
+ ✓ tests/api/checkout.test.ts > TEST-45 (AC-45): lineId is not a line of this request > TEST-45 (a) a line of another request is 400 VALIDATION_FAILED naming units[0].lineId; neither request changes
+ ✓ tests/api/checkout.test.ts > TEST-45 (AC-45): lineId is not a line of this request > TEST-45 (b) line 999999 is 400 VALIDATION_FAILED naming units[0].lineId; neither request changes
+ ✓ tests/api/checkout.test.ts > TEST-46 (AC-46): unit does not exist > TEST-46 (a) with the request's own line: unit 999999 is 404 NOT_FOUND naming units[0].unitId
+ ✓ tests/api/checkout.test.ts > TEST-46 (AC-46): unit does not exist > TEST-46 (b) with a line of another request (unit is checked before lineId): unit 999999 is 404 NOT_FOUND naming units[0].unitId
+ ✓ tests/api/checkout.test.ts > TEST-59 (AC-59): loans from before #71 keep their due date > TEST-59: a loan stored under the old rule is not recalculated by a new checkout, and #71 adds no migration
+ ✓ tests/api/requests-decide.test.ts > TEST-80 (AC-80): a Custodian lists every request; decision fields on each item > TEST-80 (a) to (d): all states oldest first, the status filter, and the Borrower's own list without decidedBy
+ ✓ tests/api/requests-decide.test.ts > TEST-81 (AC-81): request detail with history for a Custodian > TEST-81 (a): a Custodian gets the history oldest first, each item with exactly the F06-D5 fields
+ ✓ tests/api/requests-decide.test.ts > TEST-81 (AC-81): request detail with history for a Custodian > TEST-81 (b), (c): the owner gets the decision time without decidedBy or history; another Borrower gets 404
+ ✓ tests/api/requests-decide.test.ts > TEST-82 (AC-82): approve a PENDING request > TEST-82: APPROVED with decidedBy and decidedAt, one history entry with the same time, nothing else changes
+ ✓ tests/api/requests-decide.test.ts > TEST-83 (AC-83): reject a PENDING request with a reason > TEST-83 (a), (b): the trimmed reason is stored with one history entry; the owner sees state, time and reason only
+ ✓ tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84 (a) reject with {} is 400 VALIDATION_FAILED naming the field, and nothing changes
+ ✓ tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84 (b) reject with a blank reason is 400 VALIDATION_FAILED naming the field, and nothing changes
+ ✓ tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84 (c) reject with 501 characters is 400 VALIDATION_FAILED naming the field, and nothing changes
+ ✓ tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84 (d) reject with an unknown field is 400 VALIDATION_FAILED naming the field, and nothing changes
+ ✓ tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84 (e) approve with an unknown field is 400 VALIDATION_FAILED naming the field, and nothing changes
+ ✓ tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84 (f): a reason of exactly 500 characters is accepted and stored whole
+ ✓ tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84: a path id that is not 1 to 2 147 483 647 is 400 naming id
+ ✓ tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: APPROVED request, approve is 409 INVALID_STATE naming the state
+ ✓ tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: APPROVED request, reject is 409 INVALID_STATE naming the state
+ ✓ tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: REJECTED request, approve is 409 INVALID_STATE naming the state
+ ✓ tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: REJECTED request, reject is 409 INVALID_STATE naming the state
+ ✓ tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: CHECKED_OUT request, approve is 409 INVALID_STATE naming the state
+ ✓ tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: CHECKED_OUT request, reject is 409 INVALID_STATE naming the state
+ ✓ tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: approving request 999999 is 404 NOT_FOUND
+ ✓ tests/api/checkout-multi.test.ts > TEST-90 (AC-90): checkout of an APPROVED request, one unit per quantity > TEST-90: three ACTIVE loans, all units ON_LOAN, request CHECKED_OUT, one shared dueAt (Mon 7 Dec 17:00 ICT)
+ ✓ tests/api/checkout-multi.test.ts > TEST-91 (AC-91): the shared due date and the preview with days > TEST-91 (a): loanDays 3 gives Thu 3 Dec 17:00 ICT
+ ✓ tests/api/checkout-multi.test.ts > TEST-91 (AC-91): the shared due date and the preview with days > TEST-91 (b): without loanDays the smallest maxLoanDays of the item types is used (3, the multimeter)
+ ✓ tests/api/checkout-multi.test.ts > TEST-91 (AC-91): the shared due date and the preview with days > TEST-91 (c), (d): the preview with days 7 and with days 20 (above the maximum 14)
+ ✓ tests/api/checkout-multi.test.ts > TEST-91 (AC-91): the shared due date and the preview with days > TEST-91 (e): preview ?days=0 is 400 VALIDATION_FAILED naming days
+ ✓ tests/api/checkout-multi.test.ts > TEST-91 (AC-91): the shared due date and the preview with days > TEST-91 (e): preview ?days=366 is 400 VALIDATION_FAILED naming days
+ ✓ tests/api/checkout-multi.test.ts > TEST-91 (AC-91): the shared due date and the preview with days > TEST-91 (e): preview ?days=1.5 is 400 VALIDATION_FAILED naming days
+ ✓ tests/api/checkout-multi.test.ts > TEST-91 (AC-91): the shared due date and the preview with days > TEST-91 (e): preview ?days=abc is 400 VALIDATION_FAILED naming days
+ ✓ tests/api/checkout-multi.test.ts > TEST-91 (AC-91): the shared due date and the preview with days > TEST-91 (e): preview ?days=7&x=1 is 400 VALIDATION_FAILED naming x
+ ✓ tests/api/checkout-multi.test.ts > TEST-92 (AC-92): only APPROVED can be checked out > TEST-92: a PENDING request is 409 INVALID_STATE naming the state, and nothing changes
+ ✓ tests/api/checkout-multi.test.ts > TEST-92 (AC-92): only APPROVED can be checked out > TEST-92: a REJECTED request is 409 INVALID_STATE naming the state, and nothing changes
+ ✓ tests/api/checkout-multi.test.ts > TEST-92 (AC-92): only APPROVED can be checked out > TEST-92: a CANCELLED request is 409 INVALID_STATE naming the state, and nothing changes
+ ✓ tests/api/checkout-multi.test.ts > TEST-92 (AC-92): only APPROVED can be checked out > TEST-92: a CHECKED_OUT request is 409 INVALID_STATE naming the state, and nothing changes
+ ✓ tests/api/checkout-multi.test.ts > TEST-93 (AC-93): every line gets exactly its quantity > TEST-93 (a) to (d): wrong counts, a missing line and a line of another request are 400, and nothing changes
+ ✓ tests/api/checkout-multi.test.ts > TEST-94 (AC-94): duplicates, too many entries, unknown fields > TEST-94 (a): the same unit twice is 400 naming it
+ ✓ tests/api/checkout-multi.test.ts > TEST-94 (AC-94): duplicates, too many entries, unknown fields > TEST-94 (b), (c): 101 entries, or an unknown field in an entry, is 400 and nothing changes
+ ✓ tests/api/checkout-multi.test.ts > TEST-95 (AC-95): one bad unit rolls the whole checkout back > TEST-95 (a) ON_LOAN: the whole checkout is rejected with 409; A1 and A2 stay AVAILABLE, no loan, R APPROVED
+ ✓ tests/api/checkout-multi.test.ts > TEST-95 (AC-95): one bad unit rolls the whole checkout back > TEST-95 (b) MAINTENANCE: the whole checkout is rejected with 409; A1 and A2 stay AVAILABLE, no loan, R APPROVED
+ ✓ tests/api/checkout-multi.test.ts > TEST-95 (AC-95): one bad unit rolls the whole checkout back > TEST-95 (c) RETIRED: the whole checkout is rejected with 409; A1 and A2 stay AVAILABLE, no loan, R APPROVED
+ ✓ tests/api/checkout-multi.test.ts > TEST-95 (AC-95): one bad unit rolls the whole checkout back > TEST-95 (d) another item type: the whole checkout is rejected with 409; A1 and A2 stay AVAILABLE, no loan, R APPROVED
+ ✓ tests/api/checkout-multi.test.ts > TEST-97 (AC-97): history of a multi-unit checkout > TEST-97: 1 request, 3 unit and 3 loan entries, all by C at checkedOutAt
+ ✓ tests/api/checkout-multi.test.ts > TEST-100 (AC-100): access > TEST-100 (a), (b): a Borrower gets 403; no session gets 401 on checkout and on the loan list; nothing changes
+ ✓ tests/api/returns.test.ts > TEST-102 (AC-102): return all, every loan GOOD > TEST-102: every loan RETURNED by C, every unit AVAILABLE, the request RETURNED, the count rises
+ ✓ tests/api/returns.test.ts > TEST-103 (AC-103): a DAMAGED unit goes to MAINTENANCE > TEST-103: L2 DAMAGED sends A2 to MAINTENANCE; it is not counted and cannot be checked out
+ ✓ tests/api/returns.test.ts > TEST-104 (AC-104): a condition left out is GOOD > TEST-104 (a), (b): return all without condition, and an early return with {}
+ ✓ tests/api/returns.test.ts > TEST-105 (AC-105): early return of one unit > TEST-105 (a), (b): the request stays CHECKED_OUT until the last loan is back
+ ✓ tests/api/returns.test.ts > TEST-106 (AC-106): return-all bodies that do not name exactly the active loans > TEST-106 (a) to (e): each 400 naming the problem, and nothing changes
+ ✓ tests/api/returns.test.ts > TEST-107 (AC-107): states that cannot be returned; unknown request or loan > TEST-107 (a): APPROVED and RETURNED requests, a RETURNED loan, and 999999
+ ✓ tests/api/returns.test.ts > TEST-107 (AC-107): states that cannot be returned; unknown request or loan > TEST-107 (b): a return-all naming a loan already returned early is 409 for that loan; L2 stays ACTIVE
+ × tests/api/returns.test.ts > TEST-107 (AC-107): states that cannot be returned; unknown request or loan > TEST-107 (c): a loan whose unit is no longer ON_LOAN is 409 and the whole return rolls back (review of PR #94)
+   → expected 200 to be 409 // Object.is equality
+ ✓ tests/api/seed.test.ts > seed (SDS 4.8) > inserts the planned catalog with D-08 limits and the oscilloscope in MAINTENANCE
+ ✓ tests/api/seed.test.ts > seed (SDS 4.8) > hashes passwords with bcrypt and seeds the right roles
+ ✓ tests/api/seed.test.ts > seed (SDS 4.8) > seeds Borrower accounts only when SEED_DEMO_DATA is true
+ ✓ tests/api/seed.test.ts > seed (SDS 4.8) > seeds one demo request in every Sprint 2 state, with consistent loans, units and history (#73)
+ ✓ tests/api/seed.test.ts > seed (SDS 4.8) > dates the demo requests relative to the seed time, so they do not age into expiry or overdue (review of PR #80)
+ ✓ tests/api/seed.test.ts > seed (SDS 4.8) > refuses to seed demo loans on a unit that is not AVAILABLE and changes nothing (review of PR #80)
+ ✓ tests/api/seed.test.ts > seed (SDS 4.8) > adds no demo request when any request already exists, so a used database is never changed (#73)
+ ✓ tests/api/seed.test.ts > seed (SDS 4.8) > changes nothing when run a second time, even after records were changed
+ ✓ tests/api/requests-create.test.ts > TEST-09 (AC-09): a Borrower requests one available unit > TEST-09: 201 PENDING, owned by the signed-in Borrower, units unchanged
+ ✓ tests/api/requests-create.test.ts > TEST-10 (AC-10): BR-01, 0 available units > TEST-10: 409 ITEM_TYPE_UNAVAILABLE and nothing stored
+ ✓ tests/api/requests-create.test.ts > TEST-11 (AC-11): BR-04, one open request per item type > TEST-11: an existing PENDING request for the item type gives 409 DUPLICATE_OPEN_REQUEST
+ ✓ tests/api/requests-create.test.ts > TEST-11 (AC-11): BR-04, one open request per item type > TEST-11: an existing APPROVED request for the item type gives 409 DUPLICATE_OPEN_REQUEST
+ ✓ tests/api/requests-create.test.ts > TEST-11 (AC-11): BR-04, one open request per item type > TEST-11b (UAT finding #68): a second request for the same item type through the API is 409 and stores nothing
+ ✓ tests/api/requests-create.test.ts > TEST-12 (AC-12): the owner cannot be chosen by the client > TEST-12: a body with borrowerId is 400 VALIDATION_FAILED naming it
+ ✓ tests/api/requests-create.test.ts > TEST-12 (AC-12): the owner cannot be chosen by the client > TEST-12: a body with role is 400 VALIDATION_FAILED naming it
+ ✓ tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: no lines gives 400 naming the field
+ ✓ tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: empty lines gives 400 naming the field
+ ✓ tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: two lines gives 400 naming the field
+ ✓ tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: quantity 2 gives 400 naming the field
+ ✓ tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: string itemTypeId gives 400 naming the field
+ ✓ tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: itemTypeId 0 gives 400 naming the field
+ ✓ tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: extra loanDays gives 400 naming the field
+ ✓ tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: unknown field in a line gives 400 naming the field
+ ✓ tests/api/requests-create.test.ts > TEST-35 (AC-35): unknown item type > TEST-35: 404 NOT_FOUND naming lines[0].itemTypeId
+ ✓ tests/api/requests-create.test.ts > TEST-36 (AC-36): BR-04 limits > TEST-36: other item types, closed requests and other Borrowers do not block; the same item type does
+ ✓ tests/api/requests-create.test.ts > TEST-38 (AC-38): BR-04 wins over BR-01 (F02-D1) > TEST-38: open request and 0 available gives 409 DUPLICATE_OPEN_REQUEST naming both records
+ ✓ tests/api/auth.test.ts > TEST-01 (AC-01): valid sign-in starts a session and /me returns the user > TEST-01: borrower1 signs in
+ ✓ tests/api/auth.test.ts > TEST-01 (AC-01): valid sign-in starts a session and /me returns the user > TEST-01: custodian1 signs in
+ ✓ tests/api/auth.test.ts > TEST-01 (AC-01): valid sign-in starts a session and /me returns the user > TEST-01: Borrower1 signs in
+ ✓ tests/api/auth.test.ts > TEST-02 (AC-02): wrong sign-in is rejected with one generic message > TEST-02: unknown username and wrong password give the same 401 and no session
+ ✓ tests/api/auth.test.ts > TEST-02 (AC-02): wrong sign-in is rejected with one generic message > TEST-02: empty password gives 400 VALIDATION_FAILED naming the field
+ ✓ tests/api/auth.test.ts > TEST-02 (AC-02): wrong sign-in is rejected with one generic message > TEST-02: unknown field gives 400 VALIDATION_FAILED naming the field
+ ✓ tests/api/auth.test.ts > TEST-03 (AC-03): sign-out ends the session > TEST-03 (a): logout without Content-Type is 415 and the session stays
+ ✓ tests/api/auth.test.ts > TEST-03 (AC-03): sign-out ends the session > TEST-03 (b, c): logout deletes the session, the old cookie is rejected, and a second logout is 204
+ ✓ tests/api/auth.test.ts > TEST-04 (AC-04): sessions expire > TEST-04 (a): a new session expires 8 hours after sign-in
+ ✓ tests/api/auth.test.ts > TEST-04 (AC-04): sessions expire > TEST-04 (b): a session whose expiry has passed is rejected with no user data
+ ✓ tests/api/auth.test.ts > TEST-05 (AC-05): protected calls need a valid session > TEST-05: /api/auth/me with no cookie is 401 with no private data
+ ✓ tests/api/auth.test.ts > TEST-05 (AC-05): protected calls need a valid session > TEST-05: /api/auth/me with an unknown token is 401 with no private data
+ ✓ tests/api/auth.test.ts > TEST-05 (AC-05): protected calls need a valid session > TEST-05: health and sign-in stay reachable without a cookie
+ ✓ tests/api/auth.test.ts > TEST-06 (AC-06): requireRole rejects the wrong role before the handler runs > TEST-06: a Borrower gets 403 and nothing is written; a Custodian passes
+ ✓ tests/api/schema.test.ts > database constraints from the migration (SDS 4.3) > has the partial unique index for one ACTIVE loan per unit
+ ✓ tests/api/schema.test.ts > database constraints from the migration (SDS 4.3) > has the append-only trigger on history_entries for UPDATE and DELETE
+ ✓ tests/api/schema.test.ts > database constraints from the migration (SDS 4.3) > has the Sprint 2 columns of SDS 4.2, all nullable (#73)
+ ✓ tests/api/schema.test.ts > database constraints from the migration (SDS 4.3) > has the Sprint 1 and Sprint 2 CHECK constraints
+ ✓ tests/api/schema.test.ts > database constraints from the migration (SDS 4.3) > rejects a REJECTED request with a blank reason and a loan whose returnedAt does not match its status (SDS 4.3, #73)
+ ✓ tests/api/schema.test.ts > database constraints from the migration (SDS 4.3) > creates every enum with all of its values, including later sprints
+ ✓ tests/api/checkout-concurrency.test.ts > TEST-22 (AC-22): two checkouts of the same unit > TEST-22 (a): two simultaneous checkouts of one unit for two requests create one loan, 5 rounds 586ms
+ ✓ tests/api/checkout-concurrency.test.ts > TEST-22 (AC-22): two checkouts of the same unit > TEST-22 (b): the database refuses a second ACTIVE loan for a unit (loans_one_active_per_unit)
+ ✓ tests/api/checkout-concurrency.test.ts > TEST-47 (AC-47): two checkouts of the same request > TEST-47: two simultaneous checkouts of one request with two units create one loan, 5 rounds 414ms
+ ✓ tests/unit/error-handler.test.ts > error handler (SDS 6.5) > turns an unexpected error into 500 INTERNAL_ERROR, logs the stack, and sends none of it
+ ✓ tests/unit/error-handler.test.ts > error handler (SDS 6.5) > keeps the status, code and details of an AppError
+ ✓ tests/unit/error-handler.test.ts > error handler (SDS 6.5) > maps a Prisma unique violation to 409 without the Prisma message
+ ✓ tests/unit/error-handler.test.ts > error handler (SDS 6.5) > maps a thrown ZodError to 400 VALIDATION_FAILED
+ ✓ tests/unit/error-handler.test.ts > validate(schema) middleware (SDS 6.4, DD-09) > passes parsed values to the handler
+ ✓ tests/unit/error-handler.test.ts > validate(schema) middleware (SDS 6.4, DD-09) > rejects an unknown field such as an owner (BR-05) even though the schema was not marked strict
+ ✓ tests/unit/error-handler.test.ts > validate(schema) middleware (SDS 6.4, DD-09) > returns one details entry per problem, with array paths
+ ✓ tests/api/checkout-history.test.ts > TEST-23 (AC-23): history entries for checkout > TEST-23: exactly three entries (request, unit, loan) with the Custodian as actor at the loan's checkedOutAt
+ ✓ tests/api/checkout-history.test.ts > TEST-24 (AC-24): history is append-only > TEST-24 (a): UPDATE of a history entry is rejected by the trigger and the entry is unchanged
+ ✓ tests/api/checkout-history.test.ts > TEST-24 (AC-24): history is append-only > TEST-24 (b): DELETE of a history entry is rejected by the trigger and the entry still exists
+ ✓ tests/api/checkout-history.test.ts > TEST-24 (AC-24): history is append-only > TEST-24: patch /api/history/:id as a Custodian is 404 NOT_FOUND, never 2xx
+ ✓ tests/api/checkout-history.test.ts > TEST-24 (AC-24): history is append-only > TEST-24: delete /api/history/:id as a Custodian is 404 NOT_FOUND, never 2xx
+ ✓ tests/api/loans.test.ts > TEST-98 (AC-98): a Borrower's loans > TEST-98: only the Borrower's active loans, earliest due first, with the F07-D5 fields and no borrower
+ ✓ tests/api/loans.test.ts > TEST-99 (AC-99): a Custodian's loans > TEST-99 (a), (b): every Borrower's active loans with the borrower; status=RETURNED lists the returned loan
+ ✓ tests/api/loans.test.ts > TEST-99 (AC-99): a Custodian's loans > TEST-99 (c), (d): ?status=LOST is 400 naming status
+ ✓ tests/api/loans.test.ts > TEST-99 (AC-99): a Custodian's loans > TEST-99 (c), (d): ?x=1 is 400 naming x
+ ✓ tests/unit/config.test.ts > TEST-28 (NFR-07): settings come from the environment > TEST-28: rejects a missing DATABASE_URL and names it without printing any value
+ ✓ tests/unit/config.test.ts > TEST-28 (NFR-07): settings come from the environment > TEST-28: an empty DATABASE_URL counts as missing
+ ✓ tests/unit/config.test.ts > TEST-28 (NFR-07): settings come from the environment > TEST-28: an invalid value is named but not printed
+ ✓ tests/unit/config.test.ts > TEST-28 (NFR-07): settings come from the environment > TEST-28: only DATABASE_URL is required; every other setting has the SDS 9.1 default
+ ✓ tests/unit/config.test.ts > TEST-28 (NFR-07): settings come from the environment > TEST-28: reads each setting from the environment
+ ✓ tests/unit/config.test.ts > Seed settings (SDS 4.8, 8.1) > requires SEED_CUSTODIAN_PASSWORD and names it
+ ✓ tests/unit/config.test.ts > Seed settings (SDS 4.8, 8.1) > requires SEED_BORROWER_PASSWORD only when SEED_DEMO_DATA=true
+ ✓ tests/unit/config.test.ts > Seed settings (SDS 4.8, 8.1) > rejects a password longer than 72 bytes without printing it
+ ✓ tests/unit/config.test.ts > Seed settings (SDS 4.8, 8.1) > accepts a password of exactly 72 bytes
+ ✓ tests/unit/config.test.ts > Seed settings (SDS 4.8, 8.1) > SEED_DEMO_REQUESTS defaults to false and needs SEED_DEMO_DATA=true (#73)
+ ✓ tests/api/due-date-preview.test.ts > TEST-58 (AC-58): due-date preview endpoint > TEST-58 (a): a Custodian gets the due date, and a checkout at the same time stores the same dueAt
+ ✓ tests/api/due-date-preview.test.ts > TEST-58 (AC-58): due-date preview endpoint > TEST-58 (b): a Borrower gets 403 FORBIDDEN
+ ✓ tests/api/due-date-preview.test.ts > TEST-58 (AC-58): due-date preview endpoint > TEST-58 (c): no session gets 401 UNAUTHENTICATED
+ ✓ tests/api/due-date-preview.test.ts > TEST-58 (AC-58): due-date preview endpoint > TEST-58 (d): an unknown item type gets 404 NOT_FOUND
+ ✓ tests/api/due-date-preview.test.ts > TEST-58 (AC-58): due-date preview endpoint > TEST-58 (e): any query field gets 400 VALIDATION_FAILED naming it
+ ✓ tests/api/requests-read.test.ts > TEST-13 (AC-13): a Borrower lists and opens their own requests > TEST-13: the list has only their requests, and each detail matches its list entry
+ ✓ tests/api/requests-read.test.ts > TEST-39 (AC-39): list and detail inputs and order > TEST-39: Borrower lists are newest first and filter by status; a Custodian's list is oldest first
+ ✓ tests/api/requests-read.test.ts > TEST-39 (AC-39): list and detail inputs and order > TEST-39: /api/requests?status=WAITING is 400 VALIDATION_FAILED naming status
+ ✓ tests/api/requests-read.test.ts > TEST-39 (AC-39): list and detail inputs and order > TEST-39: /api/requests?foo=1 is 400 VALIDATION_FAILED naming foo
+ ✓ tests/api/requests-read.test.ts > TEST-39 (AC-39): list and detail inputs and order > TEST-39: /api/requests/abc is 400 VALIDATION_FAILED naming id
+ ✓ tests/api/requests-read.test.ts > TEST-39 (AC-39): list and detail inputs and order > TEST-39: a request ID that does not exist is 404 in the same form as another Borrower's request
+ ✓ tests/api/checkout-access.test.ts > TEST-41 (a) (AC-41): no session or an ended session > TEST-41 (a): GET /api/requests?status=PENDING with no cookie is 401 with only the error object
+ ✓ tests/api/checkout-access.test.ts > TEST-41 (a) (AC-41): no session or an ended session > TEST-41 (a): GET /api/item-types/:id/units?status=AVAILABLE with no cookie is 401 with only the error object
+ ✓ tests/api/checkout-access.test.ts > TEST-41 (a) (AC-41): no session or an ended session > TEST-41 (a): POST /api/requests/:id/checkout with no cookie is 401 with only the error object
+ ✓ tests/api/checkout-access.test.ts > TEST-41 (a) (AC-41): no session or an ended session > TEST-41 (a): GET /api/requests?status=PENDING with a signed-out session cookie is 401 with only the error object
+ ✓ tests/api/checkout-access.test.ts > TEST-41 (a) (AC-41): no session or an ended session > TEST-41 (a): GET /api/item-types/:id/units?status=AVAILABLE with a signed-out session cookie is 401 with only the error object
+ ✓ tests/api/checkout-access.test.ts > TEST-41 (a) (AC-41): no session or an ended session > TEST-41 (a): POST /api/requests/:id/checkout with a signed-out session cookie is 401 with only the error object
+ ✓ tests/api/checkout-access.test.ts > TEST-41 (b) (AC-06): a Borrower cannot list units or check out > TEST-41 (b): GET /api/item-types/:id/units?status=AVAILABLE as a Borrower is 403 with only the error object
+ ✓ tests/api/checkout-access.test.ts > TEST-41 (b) (AC-06): a Borrower cannot list units or check out > TEST-41 (b): POST /api/requests/:id/checkout as a Borrower is 403 with only the error object
+ ✓ tests/api/returns-concurrency.test.ts > TEST-108 (AC-108): concurrent returns > TEST-108 (a): two return-all calls give one 200 and one 409; each loan returned once, 5 rounds 550ms
+ ✓ tests/api/returns-concurrency.test.ts > TEST-108 (AC-108): concurrent returns > TEST-108 (b): early returns of L1 and L2 at once both succeed; exactly one ends the request, 5 rounds 476ms
+ ✓ tests/api/returns-concurrency.test.ts > TEST-108 (AC-108): concurrent returns > TEST-108 (c): a return-all and an early return of L1 at once: one 200, one 409 (never 400), 5 rounds 450ms
+ ✓ tests/api/errors.test.ts > TEST-29 (NFR-08): JSON error shape > TEST-29: unknown API route returns 404 NOT_FOUND in the JSON error shape
+ ✓ tests/api/errors.test.ts > TEST-29 (NFR-08): JSON error shape > TEST-29: malformed JSON returns 400 VALIDATION_FAILED with details and no stack trace
+ ✓ tests/api/errors.test.ts > TEST-29 (NFR-08): JSON error shape > a JSON body of null returns 400 VALIDATION_FAILED: must be a JSON object
+ ✓ tests/api/errors.test.ts > TEST-29 (NFR-08): JSON error shape > a JSON body of "text" returns 400 VALIDATION_FAILED: must be a JSON object
+ ✓ tests/api/errors.test.ts > TEST-29 (NFR-08): JSON error shape > a JSON body of 42 returns 400 VALIDATION_FAILED: must be a JSON object
+ ✓ tests/api/errors.test.ts > Content type (SDS 6.2) > POST without Content-Type: application/json returns 415 UNSUPPORTED_MEDIA_TYPE
+ ✓ tests/api/errors.test.ts > Content type (SDS 6.2) > PATCH with a text/plain body returns 415 UNSUPPORTED_MEDIA_TYPE
+ ✓ tests/api/errors.test.ts > Content type (SDS 6.2) > a JSON POST with an empty body is not rejected as 415
+ ✓ tests/api/errors.test.ts > Content type (SDS 6.2) > a body over 100 KB is rejected with 400 VALIDATION_FAILED
+ ✓ tests/api/units.test.ts > TEST-48 (AC-48): units of an item type > TEST-48 (a): status=AVAILABLE gives only that item type's AVAILABLE units, ordered by asset tag
+ ✓ tests/api/units.test.ts > TEST-48 (AC-48): units of an item type > TEST-48 (b): without status, every unit of the item type in asset-tag order
+ ✓ tests/api/units.test.ts > TEST-48 (AC-48): units of an item type > TEST-48 (c): an unknown item type is 404 NOT_FOUND
+ ✓ tests/api/units.test.ts > TEST-48 (AC-48): units of an item type > TEST-48 (d) status=BROKEN is 400 VALIDATION_FAILED naming status
+ ✓ tests/api/units.test.ts > TEST-48 (AC-48): units of an item type > TEST-48 (e) unknown query field colour=red is 400 VALIDATION_FAILED naming colour
+ ✓ tests/api/units.test.ts > TEST-48 (AC-48): units of an item type > TEST-48 (f) item type id 'abc' is 400 VALIDATION_FAILED naming id
+ ✓ tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50 (a): 14 days from Fri 6 Nov 14:30 ICT is 2026-11-20T10:00:00.000Z
+ ✓ tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50 (b): 3 days from Fri 6 Nov 14:30 ICT is 2026-11-09T10:00:00.000Z
+ ✓ tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50 (c) due day Sat 7 Nov moves to Monday: 1 days from Fri 6 Nov 14:30 ICT is 2026-11-09T10:00:00.000Z
+ ✓ tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50 (d): 14 days from Wed 25 Nov crosses the month end to Wed 9 Dec 17:00
+ ✓ tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50 (e): 0 days throws RangeError
+ ✓ tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50 (e): -1 days throws RangeError
+ ✓ tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50 (e): 1.5 days throws RangeError
+ ✓ tests/unit/due-date.test.ts > TEST-50 (AC-19): computeDueAt, worked examples revised by #71 > TEST-50: the input Date is not modified
+ ✓ tests/unit/due-date.test.ts > TEST-54 (AC-54): business day before 16:00, due day is a business day > TEST-54 (a): Wed 25 Nov 10:00 ICT + 14 days is Wed 9 Dec 17:00 ICT
+ ✓ tests/unit/due-date.test.ts > TEST-55 (AC-55): the 16:00 ICT cutoff > TEST-55 (a) 15:59:59 counts from the checkout date
+ ✓ tests/unit/due-date.test.ts > TEST-55 (AC-55): the 16:00 ICT cutoff > TEST-55 (b) 16:00:00 counts from the next business day
+ ✓ tests/unit/due-date.test.ts > TEST-55 (AC-55): the 16:00 ICT cutoff > TEST-55 (c) 15:59:59.999 still counts from the checkout date
+ ✓ tests/unit/due-date.test.ts > TEST-56 (AC-56): a due day on Saturday or Sunday moves to Monday > TEST-56 (a) Wed 25 Nov + 3 is Sat 28 Nov: due Mon 30 Nov 17:00 ICT
+ ✓ tests/unit/due-date.test.ts > TEST-56 (AC-56): a due day on Saturday or Sunday moves to Monday > TEST-56 (b) Thu 26 Nov + 3 is Sun 29 Nov: due Mon 30 Nov 17:00 ICT
+ ✓ tests/unit/due-date.test.ts > TEST-56 (AC-56): a due day on Saturday or Sunday moves to Monday > TEST-56 (c) Fri 27 Nov + 3 is already Mon 30 Nov: due Mon 30 Nov 17:00 ICT
+ ✓ tests/unit/due-date.test.ts > TEST-57 (AC-57): a checkout on Saturday or Sunday, or after the cutoff on Friday > TEST-57 (a) Sat 28 Nov 10:00 starts Mon 30 Nov
+ ✓ tests/unit/due-date.test.ts > TEST-57 (AC-57): a checkout on Saturday or Sunday, or after the cutoff on Friday > TEST-57 (b) Sun 29 Nov 22:00 starts Mon 30 Nov
+ ✓ tests/unit/due-date.test.ts > TEST-57 (AC-57): a checkout on Saturday or Sunday, or after the cutoff on Friday > TEST-57 (c) Fri 4 Dec 16:00:00 starts Mon 7 Dec
+ ✓ tests/api/requests-decide-concurrency.test.ts > TEST-86 (AC-86): simultaneous decisions > TEST-86 (a): approve and approve give one 200 and one 409, 5 rounds 513ms
+ ✓ tests/api/requests-decide-concurrency.test.ts > TEST-86 (AC-86): simultaneous decisions > TEST-86 (b): approve and reject give one 200 and one 409; the reason is set only when reject won, 5 rounds 354ms
+ ✓ tests/api/catalog.test.ts > TEST-08 (AC-08): GET /api/categories > TEST-08: both roles get categories and item types by name with AVAILABLE counts and no unit data
+ ✓ tests/api/catalog.test.ts > TEST-08 (AC-08): GET /api/categories > TEST-08: any query parameter is rejected with 400 naming it
+ ✓ tests/api/requests-access.test.ts > TEST-14 (AC-14): another Borrower's request > TEST-14: 404 with only the error object and none of the request's fields
+ ✓ tests/api/requests-access.test.ts > TEST-15 (AC-15): a Custodian cannot create a request > TEST-15: 403 FORBIDDEN and nothing stored
+ ✓ tests/api/requests-access.test.ts > TEST-33 (AC-33): every F-02 endpoint needs a session > TEST-33: no cookie gives 401 on every endpoint
+ ✓ tests/api/requests-access.test.ts > TEST-33 (AC-33): every F-02 endpoint needs a session > TEST-33: a signed-out session gives 401 on every endpoint
+ ✓ tests/api/pending-requests.test.ts > TEST-18 (AC-18): Custodian's pending list > TEST-18: lists every Borrower's PENDING requests oldest first, with borrower, line and createdAt
+ ✓ tests/api/persistence.test.ts > TEST-27 (NFR-06): data survives a server restart > TEST-27: a borrow request created before a restart is still present after it
+ ✓ tests/api/checkout-multi-concurrency.test.ts > TEST-96 (AC-96): two checkouts that share units > TEST-96: one 201 and one 409 UNIT_NOT_AVAILABLE; the loser stays APPROVED with no loan; 5 rounds 553ms
+ ✓ tests/api/requests-decide-access.test.ts > TEST-87 (AC-87): Borrowers and calls without a session cannot decide > TEST-87 (a): approve as the owning Borrower is 403 FORBIDDEN with only the error
+ ✓ tests/api/requests-decide-access.test.ts > TEST-87 (AC-87): Borrowers and calls without a session cannot decide > TEST-87 (a): reject as the owning Borrower is 403 FORBIDDEN with only the error
+ ✓ tests/api/requests-decide-access.test.ts > TEST-87 (AC-87): Borrowers and calls without a session cannot decide > TEST-87 (b): approve with no cookie and with a signed-out session is 401 with only the error
+ ✓ tests/api/requests-decide-access.test.ts > TEST-87 (AC-87): Borrowers and calls without a session cannot decide > TEST-87 (b): reject with no cookie and with a signed-out session is 401 with only the error
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): REQUEST APPROVED → CHECKED_OUT is allowed
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): UNIT AVAILABLE → ON_LOAN is allowed
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): LOAN null → ACTIVE is allowed
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): REQUEST PENDING → APPROVED is allowed
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): REQUEST PENDING → REJECTED is allowed
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): LOAN ACTIVE → RETURNED is allowed
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): UNIT ON_LOAN → AVAILABLE is allowed
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): UNIT ON_LOAN → MAINTENANCE is allowed
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): REQUEST CHECKED_OUT → RETURNED is allowed
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): REQUEST CHECKED_OUT → CHECKED_OUT is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): REQUEST CHECKED_OUT → PENDING is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): UNIT ON_LOAN → ON_LOAN is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): UNIT MAINTENANCE → ON_LOAN is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): UNIT RETIRED → ON_LOAN is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): LOAN ACTIVE → ACTIVE is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): REQUEST APPROVED → APPROVED is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): REQUEST REJECTED → APPROVED is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): REQUEST CHECKED_OUT → REJECTED is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): REQUEST PENDING → CHECKED_OUT is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): LOAN RETURNED → RETURNED is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): REQUEST APPROVED → RETURNED is rejected as 409 INVALID_STATE
+ ✓ tests/api/health.test.ts > GET /api/health (SDS 6.7) > returns 200 { status: ok } without touching the database
+ ✓ tests/api/health.test.ts > GET /api/health (SDS 6.7) > sends Cache-Control: no-store and a UUID X-Request-Id on every /api response
+ ✓ tests/api/health.test.ts > GET /api/ready (SDS 6.7) > returns 200 { status: ready, db: connected } with the test database
+stderr | tests/api/health.test.ts > GET /api/ready (SDS 6.7) > returns 503 NOT_READY when the database cannot be reached
+{"time":"2026-11-26T03:33:27.277Z","level":"error","requestId":"2ff67bf9-7207-4394-8d3a-63ca5dc2d35b","path":"/api/ready","error":"PrismaClientInitializationError","message":"\nInvalid `prisma.$queryRaw()` invocation:\n\n\nCan't reach database server at `127.0.0.1:1`\n\nPlease make sure your database server is running at `127.0.0.1:1`."}
+
+ ✓ tests/api/health.test.ts > GET /api/ready (SDS 6.7) > returns 503 NOT_READY when the database cannot be reached 2027ms
+ ✓ tests/api/returns-access.test.ts > TEST-109 (AC-109): Borrowers and calls without a session cannot return > TEST-109: the owning Borrower gets 403 and no session gets 401 on both endpoints; only the error, nothing changes
+ ✓ tests/api/requests-history.test.ts > TEST-16 (AC-16): history entry for request creation > TEST-16: exactly one CREATED entry with the Borrower as actor at the request's createdAt
+ ✓ tests/api/requests-concurrency.test.ts > TEST-37 (AC-37): concurrent duplicate creates > TEST-37: two parallel creates store one request, 20 runs 1410ms
+ ✓ tests/unit/checkout-errors.test.ts > TEST-52 (AC-22): toLoanInsertConflict > TEST-52 (a): P2002 becomes 409 UNIT_NOT_AVAILABLE naming the unit
+ ✓ tests/unit/checkout-errors.test.ts > TEST-52 (AC-22): toLoanInsertConflict > TEST-52 (b): another Prisma error (P2003) is returned unchanged
+ ✓ tests/unit/checkout-errors.test.ts > TEST-52 (AC-22): toLoanInsertConflict > TEST-52 (c): a plain Error is returned unchanged
+ ✓ tests/unit/request-rules.test.ts > requestRuleViolation (BR-01, BR-04, F02-D1) > TEST-10 (unit): 0 available gives ITEM_TYPE_UNAVAILABLE, 1 available gives none
+ ✓ tests/unit/request-rules.test.ts > requestRuleViolation (BR-01, BR-04, F02-D1) > TEST-11 (unit): an open request gives DUPLICATE_OPEN_REQUEST; none gives no violation
+ ✓ tests/unit/request-rules.test.ts > requestRuleViolation (BR-01, BR-04, F02-D1) > TEST-38 (unit): when both rules fail, DUPLICATE_OPEN_REQUEST wins (F02-D1)
+ ✓ tests/unit/request-rules.test.ts > requestRuleViolation (BR-01, BR-04, F02-D1) > fewer available units than the quantity is ITEM_TYPE_UNAVAILABLE
+ ✓ tests/unit/test-db-guard.test.ts > test database guard (SDS 4.8) > accepts a separate *_test database
+ ✓ tests/unit/test-db-guard.test.ts > test database guard (SDS 4.8) > refuses when TEST_DATABASE_URL is not set
+ ✓ tests/unit/test-db-guard.test.ts > test database guard (SDS 4.8) > refuses when TEST_DATABASE_URL equals DATABASE_URL
+ ✓ tests/unit/test-db-guard.test.ts > test database guard (SDS 4.8) > refuses a database whose name does not end in _test, without printing the URL
+ ✓ tests/unit/password.test.ts > TEST-07 (AC-07): salted adaptive password hashes > TEST-07 (a): cost 12 hashes differ from the plain text and from each other 885ms
+ ✓ tests/unit/password.test.ts > TEST-07 (AC-07): salted adaptive password hashes > TEST-07 (b): the default cost is 12 when BCRYPT_COST is not set
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/api/returns.test.ts > TEST-107 (AC-107): states that cannot be returned; unknown request or loan > TEST-107 (c): a loan whose unit is no longer ON_LOAN is 409 and the whole return rolls back (review of PR #94)
+AssertionError: expected 200 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 200
+
+ ❯ tests/api/returns.test.ts:239:26
+    237|       await postReturnLoan(app, cookie, l2.id, {}),
+    238|     ]) {
+    239|       expect(res.status).toBe(409);
+       |                          ^
+    240|       expect(res.body.error.code).toBe("INVALID_STATE");
+    241|       expect(res.body.error.message).toBe("Unit KH-ARD-0002 is AVAILAB…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+ Test Files  1 failed | 35 passed (36)
+      Tests  1 failed | 260 passed (261)
+   Start at  10:32:26
+   Duration  72.63s (transform 822ms, setup 2.29s, collect 6.44s, tests 23.11s, environment 4ms, prepare 1.96s)
+
+exit code: 1

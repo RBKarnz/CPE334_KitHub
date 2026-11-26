@@ -29,7 +29,7 @@ Two values to reconcile in the PDF: M2's 12 rows are listed in `m2-prs.txt`; M5'
 
 The values are healthy: 0 failed tests (M3), 0 failed CI runs (M5), 0 open UAT defects (M4). The risk they show is concentration: 7 of the 12 PRs in M2 were merged within 7 minutes (13:07 to 13:14 UTC), and the D-21 rule reaches the browser through only one of 4 E2E tests (TEST-30). F-07 (#77) replaces the Sprint 1 checkout that TEST-30 uses. Action: Teerakarn keeps TEST-30's 17:00 business-day assertion and reruns TEST-54 to TEST-59 in the F-07 PR before the Sprint 2 release on 28 Nov, recording the counts as in M3.
 
-(98 words.)
+(95 words, counted with `wc -w`.)
 
 ## Part D. Release readiness for the maintained Sprint 1 scope
 
