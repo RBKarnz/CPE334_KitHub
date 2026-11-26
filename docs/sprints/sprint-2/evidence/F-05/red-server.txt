@@ -1,0 +1,956 @@
+# RED, server: typecheck and whole suite on the pre-change code, in CI (no local database on this computer; see README)
+Source: GitHub Actions run 45809666748 (workflow_dispatch, CI & Docker Build), job test-and-docker, step "Install & Test Backend (Typecheck + Prisma Migrate + Seed + Vitest)"
+Command (in the workflow): cd server && npm run typecheck && npm test
+Commit: 711750f6891e9db07062108dd2b2636da0ff1100 test(#75): RED for F-05 edit and cancel
+Log: gh run view 45809666748 --repo RBKarnz/CPE334_KitHub --log-failed, this step only, prefix and colour codes removed
+
+﻿2026-11-26T11:20:38.6169390Z ##[group]Run npm ci
+npm ci
+npm run typecheck
+npx prisma migrate deploy
+SEED_CUSTODIAN_PASSWORD="$(openssl rand -base64 24)"
+SEED_BORROWER_PASSWORD="$(openssl rand -base64 24)"
+echo "::add-mask::$SEED_CUSTODIAN_PASSWORD"
+echo "::add-mask::$SEED_BORROWER_PASSWORD"
+export SEED_CUSTODIAN_PASSWORD SEED_BORROWER_PASSWORD
+npm run prisma:seed
+npm test
+shell: /usr/bin/bash -e {0}
+env:
+  DATABASE_URL: ***localhost:5432/kithub?schema=public
+  TEST_DATABASE_URL: ***localhost:5432/kithub_test?schema=public
+  pythonLocation: /opt/hostedtoolcache/Python/3.14.10/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.14.10/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.10/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.10/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.10/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.14.10/x64/lib
+  SEED_DEMO_DATA: true
+##[endgroup]
+
+added 166 packages, and audited 167 packages in 4s
+
+36 packages are looking for funding
+  run `npm fund` for details
+
+6 vulnerabilities (3 moderate, 1 high, 2 critical)
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+npm warn install-scripts 5 packages have install scripts not yet covered by allowScripts:
+npm warn install-scripts   @prisma/client@5.22.0 (postinstall: node scripts/postinstall.js)
+npm warn install-scripts   @prisma/engines@5.22.0 (postinstall: node scripts/postinstall.js)
+npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+npm warn install-scripts   prisma@5.22.0 (preinstall: node scripts/preinstall-entry.js)
+npm warn install-scripts   esbuild@0.21.5 (postinstall: node install.js)
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+
+> kithub-server@0.1.0 typecheck
+> tsc --noEmit
+
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "kithub", schema "public" at "localhost:5432"
+
+3 migrations found in prisma/migrations
+
+Applying migration `20261106075705_sprint1_init`
+Applying migration `20261125104833_sprint2_columns`
+Applying migration `20261126110000_catalog_names_ci`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261106075705_sprint1_init/
+    └─ migration.sql
+  └─ 20261125104833_sprint2_columns/
+    └─ migration.sql
+  └─ 20261126110000_catalog_names_ci/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+
+> kithub-server@0.1.0 prisma:seed
+> tsx prisma/seed.ts
+
+Seed complete. Created 6 categories, 9 item types, 38 units and 4 accounts; existing records were left unchanged. Demo Borrower accounts: included. Sprint 2 demo requests: skipped (SEED_DEMO_REQUESTS is not true).
+
+> kithub-server@0.1.0 test
+> vitest run
+
+
+ RUN  v2.1.9 /home/runner/work/CPE334_KitHub/CPE334_KitHub/server
+
+ ✓ tests/api/checkout.test.ts (26 tests) 2042ms
+ ✓ tests/api/requests-multi.test.ts (32 tests) 2806ms
+ ✓ tests/api/requests-decide.test.ts (19 tests) 1442ms
+ ✓ tests/api/checkout-multi.test.ts (22 tests) 1727ms
+ ✓ tests/api/returns.test.ts (8 tests) 869ms
+ ✓ tests/api/catalog-manage.test.ts (14 tests) 1111ms
+ ✓ tests/api/units-manage.test.ts (10 tests) 822ms
+ ❯ tests/api/requests-edit.test.ts (12 tests | 12 failed) 881ms
+   × TEST-72 (AC-72): a Borrower edits their own PENDING request > TEST-72: lines and loan length replaced; a kept item type keeps its line ID; one EDITED entry with before and after 132ms
+     → expected 404 to be 200 // Object.is equality
+   × TEST-73 (AC-73): an edit is checked as a new request > TEST-73 (a) two Arduino lines is 400 naming the field; Unchanged 69ms
+     → expected 404 to be 400 // Object.is equality
+   × TEST-73 (AC-73): an edit is checked as a new request > TEST-73 (b) loanDays 0 is 400 naming the field; Unchanged 85ms
+     → expected 404 to be 400 // Object.is equality
+   × TEST-73 (AC-73): an edit is checked as a new request > TEST-73 (c) a line with unitId is 400 naming the field; Unchanged 64ms
+     → expected 404 to be 400 // Object.is equality
+   × TEST-73 (AC-73): an edit is checked as a new request > TEST-73 (d) to (g): the F-04 rule codes; BR-04 counts the Borrower's other open request; Unchanged 65ms
+     → expected 404 to be 409 // Object.is equality
+   × TEST-73 (AC-73): an edit is checked as a new request > TEST-73 (h): the request's own Arduino line does not block it (F05-D3) 67ms
+     → expected 404 to be 200 // Object.is equality
+   × TEST-74 (AC-74): state, scope and a no-change edit > TEST-74 (a): editing a APPROVED request is 409 INVALID_STATE naming the state; Unchanged 63ms
+     → expected 404 to be 409 // Object.is equality
+   × TEST-74 (AC-74): state, scope and a no-change edit > TEST-74 (a): editing a REJECTED request is 409 INVALID_STATE naming the state; Unchanged 61ms
+     → expected 404 to be 409 // Object.is equality
+   × TEST-74 (AC-74): state, scope and a no-change edit > TEST-74 (a): editing a CANCELLED request is 409 INVALID_STATE naming the state; Unchanged 79ms
+     → expected 404 to be 409 // Object.is equality
+   × TEST-74 (AC-74): state, scope and a no-change edit > TEST-74 (a): editing a CHECKED_OUT request is 409 INVALID_STATE naming the state; Unchanged 58ms
+     → expected 404 to be 409 // Object.is equality
+   × TEST-74 (AC-74): state, scope and a no-change edit > TEST-74 (b), (c): another Borrower's request and an unknown ID are 404 with only the error 63ms
+     → expected 'The requested resource was not found.' to be 'Request 2 does not exist.' // Object.is equality
+   × TEST-74 (AC-74): state, scope and a no-change edit > TEST-74 (d): the stored lines in reverse order and the stored loanDays: 200, no history entry, updatedAt unchanged 73ms
+     → expected 404 to be 200 // Object.is equality
+ ✓ tests/api/requests-create.test.ts (19 tests) 1349ms
+ ✓ tests/api/seed.test.ts (8 tests) 1024ms
+ ✓ tests/api/auth.test.ts (14 tests) 742ms
+ ❯ tests/api/requests-access.test.ts (10 tests | 3 failed) 690ms
+   × TEST-77 (AC-77): F-05 edit and cancel > TEST-77 (a): a Custodian gets 403 FORBIDDEN on both, only the error, nothing changes 70ms
+     → expected 404 to be 403 // Object.is equality
+   × TEST-77 (AC-77): F-05 edit and cancel > TEST-77 (b) no cookie: 401 UNAUTHENTICATED on both 48ms
+     → expected 404 to be 401 // Object.is equality
+   × TEST-77 (AC-77): F-05 edit and cancel > TEST-77 (b) a signed-out session: 401 UNAUTHENTICATED on both 54ms
+     → expected 404 to be 401 // Object.is equality
+ ✓ tests/api/schema.test.ts (6 tests) 116ms
+ ✓ tests/api/checkout-concurrency.test.ts (3 tests) 932ms
+   ✓ TEST-22 (AC-22): two checkouts of the same unit > TEST-22 (a): two simultaneous checkouts of one unit for two requests create one loan, 5 rounds 478ms
+   ✓ TEST-47 (AC-47): two checkouts of the same request > TEST-47: two simultaneous checkouts of one request with two units create one loan, 5 rounds 397ms
+ ❯ tests/api/requests-edit-concurrency.test.ts (5 tests | 5 failed) 407ms
+   × TEST-78 (AC-78): concurrent edit, cancel and decision > TEST-78 (a): two cancels: one 200, one 409; one cancel entry, 5 rounds 128ms
+     → expected [ 404, 404 ] to deeply equal [ 200, 409 ]
+   × TEST-78 (AC-78): concurrent edit, cancel and decision > TEST-78 (b): an edit and a cancel: CANCELLED; either both succeed with loanDays 7, or the edit gets 409, 5 rounds 56ms
+     → expected 404 to be 200 // Object.is equality
+   × TEST-78 (AC-78): concurrent edit, cancel and decision > TEST-78 (c): an edit and an approval: APPROVED; either both succeed (loanDays 7) or the edit gets 409, 5 rounds 70ms
+     → expected 404 to be 409 // Object.is equality
+   × TEST-78 (AC-78): concurrent edit, cancel and decision > TEST-78 (d): a cancel and a rejection: exactly one succeeds; one state entry, 5 rounds 82ms
+     → expected [ 200, 404 ] to deeply equal [ 200, 409 ]
+   × TEST-78 (AC-78): concurrent edit, cancel and decision > TEST-78 (e): a cancel and an approval: the request ends CANCELLED, 5 rounds 70ms
+     → expected 404 to be 200 // Object.is equality
+ ✓ tests/unit/error-handler.test.ts (7 tests) 45ms
+ ✓ tests/api/checkout-history.test.ts (5 tests) 436ms
+ ❯ tests/api/requests-cancel.test.ts (7 tests | 7 failed) 523ms
+   × TEST-75 (AC-75): a Borrower cancels their own PENDING and APPROVED requests > TEST-75: each becomes CANCELLED with one entry; no unit changes; the item types can be requested again 131ms
+     → expected 404 to be 200 // Object.is equality
+   × TEST-76 (AC-76): requests that cannot be cancelled > TEST-76 (a): a REJECTED request is 409 INVALID_STATE naming the state; Unchanged 66ms
+     → expected 404 to be 409 // Object.is equality
+   × TEST-76 (AC-76): requests that cannot be cancelled > TEST-76 (a): a CANCELLED request is 409 INVALID_STATE naming the state; Unchanged 61ms
+     → expected 404 to be 409 // Object.is equality
+   × TEST-76 (AC-76): requests that cannot be cancelled > TEST-76 (a): a CHECKED_OUT request is 409 INVALID_STATE naming the state; Unchanged 81ms
+     → expected 404 to be 409 // Object.is equality
+   × TEST-76 (AC-76): requests that cannot be cancelled > TEST-76 (a): a RETURNED request is 409 INVALID_STATE naming the state; Unchanged 59ms
+     → expected 404 to be 409 // Object.is equality
+   × TEST-76 (AC-76): requests that cannot be cancelled > TEST-76 (b): a body with a field is 400 naming it; Unchanged 60ms
+     → expected 404 to be 400 // Object.is equality
+   × TEST-76 (AC-76): requests that cannot be cancelled > TEST-76 (c): another Borrower's request is 404 with only the error; Unchanged 65ms
+     → expected 'The requested resource was not found.' to be 'Request 1 does not exist.' // Object.is equality
+ ✓ tests/api/loans.test.ts (4 tests) 381ms
+ ✓ tests/unit/config.test.ts (10 tests) 8ms
+ ✓ tests/api/due-date-preview.test.ts (5 tests) 818ms
+   ✓ TEST-58 (AC-58): due-date preview endpoint > TEST-58 (b): a Borrower gets 403 FORBIDDEN 337ms
+ ✓ tests/api/units-manage-concurrency.test.ts (4 tests) 1646ms
+   ✓ TEST-119 (AC-119): concurrent catalog management > TEST-119 (a): a retire and a checkout of the same AVAILABLE unit: exactly one wins, 5 rounds 622ms
+   ✓ TEST-119 (AC-119): concurrent catalog management > TEST-119 (b): two adds of KH-SRV-0009 to two item types: one 201, one 409 ASSET_TAG_TAKEN, 5 rounds 424ms
+   ✓ TEST-119 (AC-119): concurrent catalog management > TEST-119 (c) two creates named Robotics: one 201, one 409 NAME_TAKEN, 5 rounds 301ms
+ ✓ tests/api/requests-read.test.ts (6 tests) 549ms
+ ✓ tests/unit/request-rules.test.ts (8 tests) 4ms
+ ✓ tests/api/checkout-access.test.ts (8 tests) 631ms
+ ✓ tests/api/returns-concurrency.test.ts (3 tests) 1396ms
+   ✓ TEST-108 (AC-108): concurrent returns > TEST-108 (a): two return-all calls give one 200 and one 409; each loan returned once, 5 rounds 487ms
+   ✓ TEST-108 (AC-108): concurrent returns > TEST-108 (b): early returns of L1 and L2 at once both succeed; exactly one ends the request, 5 rounds 511ms
+   ✓ TEST-108 (AC-108): concurrent returns > TEST-108 (c): a return-all and an early return of L1 at once: one 200, one 409 (never 400), 5 rounds 397ms
+ ✓ tests/api/errors.test.ts (9 tests) 59ms
+ ✓ tests/api/units.test.ts (6 tests) 470ms
+ ✓ tests/unit/due-date.test.ts (18 tests) 6ms
+ ✓ tests/api/item-types.test.ts (5 tests) 406ms
+ ✓ tests/api/catalog.test.ts (2 tests) 206ms
+ ✓ tests/api/catalog-manage-access.test.ts (2 tests) 242ms
+ ✓ tests/api/requests-decide-concurrency.test.ts (2 tests) 789ms
+   ✓ TEST-86 (AC-86): simultaneous decisions > TEST-86 (a): approve and approve give one 200 and one 409, 5 rounds 407ms
+   ✓ TEST-86 (AC-86): simultaneous decisions > TEST-86 (b): approve and reject give one 200 and one 409; the reason is set only when reject won, 5 rounds 381ms
+ ✓ tests/api/requests-concurrency.test.ts (2 tests) 1840ms
+   ✓ TEST-37 (AC-37): concurrent duplicate creates > TEST-37: two parallel creates store one request, 20 runs 1461ms
+   ✓ TEST-69 (d) (AC-69): concurrent multi-line creates that share an item type > TEST-69 (d): Arduino + HC-SR04 and HC-SR04 + ESP32 at once: one 201, one 409; one request and one entry, 5 rounds 377ms
+ ❯ tests/unit/transitions.test.ts (32 tests | 2 failed) 11ms
+   × TEST-51: assertTransition > TEST-51 (a): REQUEST PENDING → CANCELLED is allowed 4ms
+     → expected [Function] to not throw an error but 'InvalidTransitionError: A request can…' was thrown
+   × TEST-51: assertTransition > TEST-51 (a): REQUEST APPROVED → CANCELLED is allowed 0ms
+     → expected [Function] to not throw an error but 'InvalidTransitionError: A request can…' was thrown
+ ✓ tests/api/pending-requests.test.ts (1 test) 176ms
+ ✓ tests/api/persistence.test.ts (1 test) 147ms
+ ✓ tests/api/checkout-multi-concurrency.test.ts (1 test) 555ms
+   ✓ TEST-96 (AC-96): two checkouts that share units > TEST-96: one 201 and one 409 UNIT_NOT_AVAILABLE; the loser stays APPROVED with no loan; 5 rounds 555ms
+ ✓ tests/api/requests-decide-access.test.ts (4 tests) 322ms
+stderr | tests/api/health.test.ts > GET /api/ready (SDS 6.7) > returns 503 NOT_READY when the database cannot be reached
+{"time":"2026-11-26T11:21:30.142Z","level":"error","requestId":"db04bf86-f494-4e87-9cbb-32610a6d915f","path":"/api/ready","error":"PrismaClientInitializationError","message":"\nInvalid `prisma.$queryRaw()` invocation:\n\n\nCan't reach database server at `127.0.0.1:1`\n\nPlease make sure your database server is running at `127.0.0.1:1`."}
+
+ ✓ tests/api/health.test.ts (4 tests) 57ms
+ ✓ tests/api/returns-access.test.ts (1 test) 245ms
+ ✓ tests/api/requests-history.test.ts (1 test) 141ms
+ ✓ tests/unit/checkout-errors.test.ts (3 tests) 3ms
+ ✓ tests/unit/test-db-guard.test.ts (4 tests) 3ms
+ ✓ tests/unit/password.test.ts (2 tests) 1116ms
+   ✓ TEST-07 (AC-07): salted adaptive password hashes > TEST-07 (a): cost 12 hashes differ from the plain text and from each other 1113ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 29 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/api/requests-access.test.ts > TEST-77 (AC-77): F-05 edit and cancel > TEST-77 (a): a Custodian gets 403 FORBIDDEN on both, only the error, nothing changes
+AssertionError: expected 404 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 404
+
+ ❯ tests/api/requests-access.test.ts:119:26
+    117|     for (const call of calls(custodian, r3.id)) {
+    118|       const res = await call();
+    119|       expect(res.status).toBe(403);
+       |                          ^
+    120|       expect(res.body.error.code).toBe("FORBIDDEN");
+    121|       expect(Object.keys(res.body)).toEqual(["error"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/29]⎯
+
+ FAIL  tests/api/requests-access.test.ts > TEST-77 (AC-77): F-05 edit and cancel > TEST-77 (b) no cookie: 401 UNAUTHENTICATED on both
+ FAIL  tests/api/requests-access.test.ts > TEST-77 (AC-77): F-05 edit and cancel > TEST-77 (b) a signed-out session: 401 UNAUTHENTICATED on both
+AssertionError: expected 404 to be 401 // Object.is equality
+
+- Expected
++ Received
+
+- 401
++ 404
+
+ ❯ tests/api/requests-access.test.ts:135:26
+    133|     for (const call of calls(cookie, r3.id)) {
+    134|       const res = await call();
+    135|       expect(res.status).toBe(401);
+       |                          ^
+    136|       expect(res.body.error.code).toBe("UNAUTHENTICATED");
+    137|       expect(Object.keys(res.body)).toEqual(["error"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/29]⎯
+
+ FAIL  tests/api/requests-cancel.test.ts > TEST-75 (AC-75): a Borrower cancels their own PENDING and APPROVED requests > TEST-75: each becomes CANCELLED with one entry; no unit changes; the item types can be requested again
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/requests-cancel.test.ts:47:26
+     45|     ] as const) {
+     46|       const res = await postCancel(app, w.cookie, r.id);
+     47|       expect(res.status).toBe(200);
+       |                          ^
+     48|       expect(res.body).toMatchObject({ id: r.id, status: "CANCELLED" }…
+     49|       expect((await prisma.borrowRequest.findUniqueOrThrow({ where: { …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/29]⎯
+
+ FAIL  tests/api/requests-cancel.test.ts > TEST-76 (AC-76): requests that cannot be cancelled > TEST-76 (a): a REJECTED request is 409 INVALID_STATE naming the state; Unchanged
+ FAIL  tests/api/requests-cancel.test.ts > TEST-76 (AC-76): requests that cannot be cancelled > TEST-76 (a): a CANCELLED request is 409 INVALID_STATE naming the state; Unchanged
+ FAIL  tests/api/requests-cancel.test.ts > TEST-76 (AC-76): requests that cannot be cancelled > TEST-76 (a): a CHECKED_OUT request is 409 INVALID_STATE naming the state; Unchanged
+ FAIL  tests/api/requests-cancel.test.ts > TEST-76 (AC-76): requests that cannot be cancelled > TEST-76 (a): a RETURNED request is 409 INVALID_STATE naming the state; Unchanged
+AssertionError: expected 404 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 404
+
+ ❯ expectRejected tests/api/requests-cancel.test.ts:28:22
+     26|   const before = await snapshotRequestState(prisma);
+     27|   const res = await promise;
+     28|   expect(res.status).toBe(status);
+       |                      ^
+     29|   expect(Object.keys(res.body)).toEqual(["error"]);
+     30|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-cancel.test.ts:80:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/29]⎯
+
+ FAIL  tests/api/requests-cancel.test.ts > TEST-76 (AC-76): requests that cannot be cancelled > TEST-76 (b): a body with a field is 400 naming it; Unchanged
+AssertionError: expected 404 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 404
+
+ ❯ expectRejected tests/api/requests-cancel.test.ts:28:22
+     26|   const before = await snapshotRequestState(prisma);
+     27|   const res = await promise;
+     28|   expect(res.status).toBe(status);
+       |                      ^
+     29|   expect(Object.keys(res.body)).toEqual(["error"]);
+     30|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-cancel.test.ts:88:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/29]⎯
+
+ FAIL  tests/api/requests-cancel.test.ts > TEST-76 (AC-76): requests that cannot be cancelled > TEST-76 (c): another Borrower's request is 404 with only the error; Unchanged
+AssertionError: expected 'The requested resource was not found.' to be 'Request 1 does not exist.' // Object.is equality
+
+Expected: "Request 1 does not exist."
+Received: "The requested resource was not found."
+
+ ❯ tests/api/requests-cancel.test.ts:96:36
+     94|     const r3 = await createRequest(prisma, { borrowerId: w.b2.id, item…
+     95|     const res = await expectRejected(postCancel(app, w.cookie, r3.id),…
+     96|     expect(res.body.error.message).toBe(`Request ${r3.id} does not exi…
+       |                                    ^
+     97|   });
+     98| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/29]⎯
+
+ FAIL  tests/api/requests-edit-concurrency.test.ts > TEST-78 (AC-78): concurrent edit, cancel and decision > TEST-78 (a): two cancels: one 200, one 409; one cancel entry, 5 rounds
+AssertionError: expected [ 404, 404 ] to deeply equal [ 200, 409 ]
+
+- Expected
++ Received
+
+  Array [
+-   200,
+-   409,
++   404,
++   404,
+  ]
+
+ ❯ tests/api/requests-edit-concurrency.test.ts:33:51
+     31|       const s = await setup();
+     32|       const results = await Promise.all([postCancel(app, s.b, s.r.id),…
+     33|       expect(results.map((x) => x.status).sort()).toEqual([200, 409]);
+       |                                                   ^
+     34|       expect(results.find((x) => x.status === 409)!.body.error.code).t…
+     35|       expect(await entries(s.r.id, { toStatus: "CANCELLED" })).toBe(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/29]⎯
+
+ FAIL  tests/api/requests-edit-concurrency.test.ts > TEST-78 (AC-78): concurrent edit, cancel and decision > TEST-78 (b): an edit and a cancel: CANCELLED; either both succeed with loanDays 7, or the edit gets 409, 5 rounds
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/requests-edit-concurrency.test.ts:46:29
+     44|         postCancel(app, s.b, s.r.id),
+     45|       ]);
+     46|       expect(cancel.status).toBe(200);
+       |                             ^
+     47|       const r = await stored(s.r.id);
+     48|       expect(r.status).toBe(RequestStatus.CANCELLED);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/29]⎯
+
+ FAIL  tests/api/requests-edit-concurrency.test.ts > TEST-78 (AC-78): concurrent edit, cancel and decision > TEST-78 (c): an edit and an approval: APPROVED; either both succeed (loanDays 7) or the edit gets 409, 5 rounds
+AssertionError: expected 404 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 404
+
+ ❯ tests/api/requests-edit-concurrency.test.ts:74:29
+     72|       if (edit.status === 200) expect(r.loanDays).toBe(7);
+     73|       else {
+     74|         expect(edit.status).toBe(409);
+       |                             ^
+     75|         expect(edit.body.error.code).toBe("INVALID_STATE");
+     76|         expect(r.loanDays).toBe(14);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/29]⎯
+
+ FAIL  tests/api/requests-edit-concurrency.test.ts > TEST-78 (AC-78): concurrent edit, cancel and decision > TEST-78 (d): a cancel and a rejection: exactly one succeeds; one state entry, 5 rounds
+AssertionError: expected [ 200, 404 ] to deeply equal [ 200, 409 ]
+
+- Expected
++ Received
+
+  Array [
+    200,
+-   409,
++   404,
+  ]
+
+ ❯ tests/api/requests-edit-concurrency.test.ts:89:51
+     87|         postDecision(app, s.c, s.r.id, "reject", { reason: "Booked for…
+     88|       ]);
+     89|       expect(results.map((x) => x.status).sort()).toEqual([200, 409]);
+       |                                                   ^
+     90|       expect([RequestStatus.CANCELLED, RequestStatus.REJECTED]).toCont…
+     91|       expect(await entries(s.r.id, { action: "STATUS_CHANGED" })).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/29]⎯
+
+ FAIL  tests/api/requests-edit-concurrency.test.ts > TEST-78 (AC-78): concurrent edit, cancel and decision > TEST-78 (e): a cancel and an approval: the request ends CANCELLED, 5 rounds
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/requests-edit-concurrency.test.ts:99:29
+     97|       const s = await setup();
+     98|       const [cancel, approve] = await Promise.all([postCancel(app, s.b…
+     99|       expect(cancel.status).toBe(200);
+       |                             ^
+    100|       expect([200, 409]).toContain(approve.status);
+    101|       expect((await stored(s.r.id)).status).toBe(RequestStatus.CANCELL…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/29]⎯
+
+ FAIL  tests/api/requests-edit.test.ts > TEST-72 (AC-72): a Borrower edits their own PENDING request > TEST-72: lines and loan length replaced; a kept item type keeps its line ID; one EDITED entry with before and after
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/requests-edit.test.ts:47:24
+     45|     const res = await patchRequest(app, await signIn(app, "borrower1")…
+     46| 
+     47|     expect(res.status).toBe(200);
+       |                        ^
+     48|     expect(res.body).toMatchObject({ id: r.id, status: "PENDING", loan…
+     49|     expect(res.body.lines).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/29]⎯
+
+ FAIL  tests/api/requests-edit.test.ts > TEST-73 (AC-73): an edit is checked as a new request > TEST-73 (a) two Arduino lines is 400 naming the field; Unchanged
+ FAIL  tests/api/requests-edit.test.ts > TEST-73 (AC-73): an edit is checked as a new request > TEST-73 (b) loanDays 0 is 400 naming the field; Unchanged
+ FAIL  tests/api/requests-edit.test.ts > TEST-73 (AC-73): an edit is checked as a new request > TEST-73 (c) a line with unitId is 400 naming the field; Unchanged
+AssertionError: expected 404 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 404
+
+ ❯ expectRejected tests/api/requests-edit.test.ts:24:22
+     22|   const before = await snapshotRequestState(prisma);
+     23|   const res = await promise;
+     24|   expect(res.status).toBe(status);
+       |                      ^
+     25|   expect(Object.keys(res.body)).toEqual(["error"]);
+     26|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-edit.test.ts:104:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/29]⎯
+
+ FAIL  tests/api/requests-edit.test.ts > TEST-73 (AC-73): an edit is checked as a new request > TEST-73 (d) to (g): the F-04 rule codes; BR-04 counts the Borrower's other open request; Unchanged
+AssertionError: expected 404 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 404
+
+ ❯ expectRejected tests/api/requests-edit.test.ts:24:22
+     22|   const before = await snapshotRequestState(prisma);
+     23|   const res = await promise;
+     24|   expect(res.status).toBe(status);
+       |                      ^
+     25|   expect(Object.keys(res.body)).toEqual(["error"]);
+     26|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-edit.test.ts:111:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/29]⎯
+
+ FAIL  tests/api/requests-edit.test.ts > TEST-73 (AC-73): an edit is checked as a new request > TEST-73 (h): the request's own Arduino line does not block it (F05-D3)
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/requests-edit.test.ts:134:24
+    132|     const w = await world();
+    133|     const res = await patchRequest(app, w.cookie, w.r.id, linesBody(14…
+    134|     expect(res.status).toBe(200);
+       |                        ^
+    135|     expect(res.body.lines.map((l: { quantity: number }) => l.quantity)…
+    136|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/29]⎯
+
+ FAIL  tests/api/requests-edit.test.ts > TEST-74 (AC-74): state, scope and a no-change edit > TEST-74 (a): editing a APPROVED request is 409 INVALID_STATE naming the state; Unchanged
+ FAIL  tests/api/requests-edit.test.ts > TEST-74 (AC-74): state, scope and a no-change edit > TEST-74 (a): editing a REJECTED request is 409 INVALID_STATE naming the state; Unchanged
+ FAIL  tests/api/requests-edit.test.ts > TEST-74 (AC-74): state, scope and a no-change edit > TEST-74 (a): editing a CANCELLED request is 409 INVALID_STATE naming the state; Unchanged
+ FAIL  tests/api/requests-edit.test.ts > TEST-74 (AC-74): state, scope and a no-change edit > TEST-74 (a): editing a CHECKED_OUT request is 409 INVALID_STATE naming the state; Unchanged
+AssertionError: expected 404 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 404
+
+ ❯ expectRejected tests/api/requests-edit.test.ts:24:22
+     22|   const before = await snapshotRequestState(prisma);
+     23|   const res = await promise;
+     24|   expect(res.status).toBe(status);
+       |                      ^
+     25|   expect(Object.keys(res.body)).toEqual(["error"]);
+     26|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-edit.test.ts:162:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/29]⎯
+
+ FAIL  tests/api/requests-edit.test.ts > TEST-74 (AC-74): state, scope and a no-change edit > TEST-74 (b), (c): another Borrower's request and an unknown ID are 404 with only the error
+AssertionError: expected 'The requested resource was not found.' to be 'Request 2 does not exist.' // Object.is equality
+
+Expected: "Request 2 does not exist."
+Received: "The requested resource was not found."
+
+ ❯ tests/api/requests-edit.test.ts:171:38
+    169|     for (const id of [w.r3.id, 999999]) {
+    170|       const res = await expectRejected(patchRequest(app, w.cookie, id,…
+    171|       expect(res.body.error.message).toBe(`Request ${id} does not exis…
+       |                                      ^
+    172|       expect(JSON.stringify(res.body)).not.toMatch(/borrower2|Arduino/…
+    173|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/29]⎯
+
+ FAIL  tests/api/requests-edit.test.ts > TEST-74 (AC-74): state, scope and a no-change edit > TEST-74 (d): the stored lines in reverse order and the stored loanDays: 200, no history entry, updatedAt unchanged
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/requests-edit.test.ts:183:24
+    181|     const res = await patchRequest(app, w.cookie, w.r.id, linesBody(7,…
+    182| 
+    183|     expect(res.status).toBe(200);
+       |                        ^
+    184|     expect(res.body.id).toBe(w.r.id);
+    185|     expect(await prisma.historyEntry.count()).toBe(historyBefore);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/29]⎯
+
+ FAIL  tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): REQUEST PENDING → CANCELLED is allowed
+ FAIL  tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): REQUEST APPROVED → CANCELLED is allowed
+AssertionError: expected [Function] to not throw an error but 'InvalidTransitionError: A request can…' was thrown
+
+- Expected: 
+undefined
+
++ Received: 
+"InvalidTransitionError: A request cannot change from PENDING to CANCELLED."
+
+ ❯ tests/unit/transitions.test.ts:31:58
+     29|     ["REQUEST", "APPROVED", "CANCELLED"],
+     30|   ])("TEST-51 (a): %s %s → %s is allowed", (entity, from, to) => {
+     31|     expect(() => assertTransition(entity, from, to)).not.toThrow();
+       |                                                          ^
+     32|   });
+     33| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/29]⎯
+
+ Test Files  5 failed | 40 passed (45)
+      Tests  29 failed | 346 passed (375)
+   Start at  11:20:48
+   Duration  44.59s (transform 502ms, setup 2.05s, collect 5.05s, tests 30.19s, environment 6ms, prepare 1.76s)
+
+
+##[error]AssertionError: expected 404 to be 403 // Object.is equality
+
+Expected
++ Received
+
+403
++ 404
+
+ ❯ tests/api/requests-access.test.ts:119:26
+
+
+
+##[error]AssertionError: expected 404 to be 401 // Object.is equality
+
+Expected
++ Received
+
+401
++ 404
+
+ ❯ tests/api/requests-access.test.ts:135:26
+
+
+
+##[error]AssertionError: expected 404 to be 401 // Object.is equality
+
+Expected
++ Received
+
+401
++ 404
+
+ ❯ tests/api/requests-access.test.ts:135:26
+
+
+
+##[error]AssertionError: expected 404 to be 200 // Object.is equality
+
+Expected
++ Received
+
+200
++ 404
+
+ ❯ tests/api/requests-cancel.test.ts:47:26
+
+
+
+##[error]AssertionError: expected 404 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 404
+
+ ❯ expectRejected tests/api/requests-cancel.test.ts:28:22
+ ❯ tests/api/requests-cancel.test.ts:80:19
+
+
+
+##[error]AssertionError: expected 404 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 404
+
+ ❯ expectRejected tests/api/requests-cancel.test.ts:28:22
+ ❯ tests/api/requests-cancel.test.ts:80:19
+
+
+
+##[error]AssertionError: expected 404 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 404
+
+ ❯ expectRejected tests/api/requests-cancel.test.ts:28:22
+ ❯ tests/api/requests-cancel.test.ts:80:19
+
+
+
+##[error]AssertionError: expected 404 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 404
+
+ ❯ expectRejected tests/api/requests-cancel.test.ts:28:22
+ ❯ tests/api/requests-cancel.test.ts:80:19
+
+
+
+##[error]AssertionError: expected 404 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 404
+
+ ❯ expectRejected tests/api/requests-cancel.test.ts:28:22
+ ❯ tests/api/requests-cancel.test.ts:88:17
+
+
+
+##[error]AssertionError: expected 'The requested resource was not found.' to be 'Request 1 does not exist.' // Object.is equality
+
+Expected: "Request 1 does not exist."
+Received: "The requested resource was not found."
+
+ ❯ tests/api/requests-cancel.test.ts:96:36
+
+
+
+##[error]AssertionError: expected [ 404, 404 ] to deeply equal [ 200, 409 ]
+
+Expected
++ Received
+
+  Array [
+  200,
+  409,
++   404,
++   404,
+  ]
+
+ ❯ tests/api/requests-edit-concurrency.test.ts:33:51
+
+
+
+##[error]AssertionError: expected 404 to be 200 // Object.is equality
+
+Expected
++ Received
+
+200
++ 404
+
+ ❯ tests/api/requests-edit-concurrency.test.ts:46:29
+
+
+
+##[error]AssertionError: expected 404 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 404
+
+ ❯ tests/api/requests-edit-concurrency.test.ts:74:29
+
+
+
+##[error]AssertionError: expected [ 200, 404 ] to deeply equal [ 200, 409 ]
+
+Expected
++ Received
+
+  Array [
+    200,
+  409,
++   404,
+  ]
+
+ ❯ tests/api/requests-edit-concurrency.test.ts:89:51
+
+
+
+##[error]AssertionError: expected 404 to be 200 // Object.is equality
+
+Expected
++ Received
+
+200
++ 404
+
+ ❯ tests/api/requests-edit-concurrency.test.ts:99:29
+
+
+
+##[error]AssertionError: expected 404 to be 200 // Object.is equality
+
+Expected
++ Received
+
+200
++ 404
+
+ ❯ tests/api/requests-edit.test.ts:47:24
+
+
+
+##[error]AssertionError: expected 404 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 404
+
+ ❯ expectRejected tests/api/requests-edit.test.ts:24:22
+ ❯ tests/api/requests-edit.test.ts:104:17
+
+
+(node:3268) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 unhandledRejection listeners added to [process]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+##[error]AssertionError: expected 404 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 404
+
+ ❯ expectRejected tests/api/requests-edit.test.ts:24:22
+ ❯ tests/api/requests-edit.test.ts:104:17
+
+
+
+##[error]AssertionError: expected 404 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 404
+
+ ❯ expectRejected tests/api/requests-edit.test.ts:24:22
+ ❯ tests/api/requests-edit.test.ts:104:17
+
+
+
+##[error]AssertionError: expected 404 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 404
+
+ ❯ expectRejected tests/api/requests-edit.test.ts:24:22
+ ❯ tests/api/requests-edit.test.ts:111:5
+
+
+
+##[error]AssertionError: expected 404 to be 200 // Object.is equality
+
+Expected
++ Received
+
+200
++ 404
+
+ ❯ tests/api/requests-edit.test.ts:134:24
+
+
+
+##[error]AssertionError: expected 404 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 404
+
+ ❯ expectRejected tests/api/requests-edit.test.ts:24:22
+ ❯ tests/api/requests-edit.test.ts:162:19
+
+
+
+##[error]AssertionError: expected 404 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 404
+
+ ❯ expectRejected tests/api/requests-edit.test.ts:24:22
+ ❯ tests/api/requests-edit.test.ts:162:19
+
+
+
+##[error]AssertionError: expected 404 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 404
+
+ ❯ expectRejected tests/api/requests-edit.test.ts:24:22
+ ❯ tests/api/requests-edit.test.ts:162:19
+
+
+
+##[error]AssertionError: expected 404 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 404
+
+ ❯ expectRejected tests/api/requests-edit.test.ts:24:22
+ ❯ tests/api/requests-edit.test.ts:162:19
+
+
+
+##[error]AssertionError: expected 'The requested resource was not found.' to be 'Request 2 does not exist.' // Object.is equality
+
+Expected: "Request 2 does not exist."
+Received: "The requested resource was not found."
+
+ ❯ tests/api/requests-edit.test.ts:171:38
+
+
+
+##[error]AssertionError: expected 404 to be 200 // Object.is equality
+
+Expected
++ Received
+
+200
++ 404
+
+ ❯ tests/api/requests-edit.test.ts:183:24
+
+
+
+##[error]AssertionError: expected [Function] to not throw an error but 'InvalidTransitionError: A request can…' was thrown
+
+Expected: 
+undefined
+
++ Received: 
+"InvalidTransitionError: A request cannot change from PENDING to CANCELLED."
+
+ ❯ tests/unit/transitions.test.ts:31:58
+
+
+
+##[error]AssertionError: expected [Function] to not throw an error but 'InvalidTransitionError: A request can…' was thrown
+
+Expected: 
+undefined
+
++ Received: 
+"InvalidTransitionError: A request cannot change from APPROVED to CANCELLED."
+
+ ❯ tests/unit/transitions.test.ts:31:58
+
+
+##[error]Process completed with exit code 1.

@@ -1,0 +1,4918 @@
+# RED, client: whole suite on the pre-change code
+Command: cd client && npx vitest run --reporter=verbose
+Commit: 711750f6891e9db07062108dd2b2636da0ff1100 test(#75): RED for F-05 edit and cancel
+Date: 2026-11-26 18:20:26 ICT
+node -v: v22.19.0   npm -v: 11.11.0
+git status --short:
+?? docs/sprints/sprint-2/evidence/F-05/
+
+
+ RUN  v2.1.9 C:/Users/acer/Desktop/cpe334/CPE334_KitHub/client
+
+stderr | tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: shows Loading… until the slow response arrives
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: shows Loading… until the slow response arrives
+stderr | tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Ready for checkout states > TEST-25 (a): shows Loading… until the first response
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Ready for checkout states > TEST-25 (a): shows Loading… until the first response
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Ready for checkout states > TEST-25 (b): no approved requests shows the empty message
+stderr | tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: shows Loading…, then each request with its line, state and Bangkok time
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/ReturnDialog.test.tsx > TEST-109 (AC-109): return controls on the request detail > TEST-109: a Borrower sees no return control
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (a): lists the AVAILABLE units of the line's item type; confirm is disabled until one is chosen
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: an empty catalog shows its message
+ ✓ tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: an error shows the API message, and Try again calls the API again
+stderr | tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (a): a PENDING request shows Approve and Reject to a Custodian, with the loan length and history
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: shows Loading…, then each request with its line, state and Bangkok time
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: a 0-available item type has a disabled button and 'None available'
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Ready for checkout states > TEST-25 (c): an error shows the API message, and Try again calls the API again
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (a): lists the AVAILABLE units of the line's item type; confirm is disabled until one is chosen
+ ✓ tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (a): a PENDING request shows Approve and Reject to a Custodian, with the loan length and history
+ ✓ tests/ReturnDialog.test.tsx > TEST-109 (AC-109): return controls on the request detail > TEST-109: a Borrower sees no return control
+ ✓ tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: no requests shows the empty message with a link to the catalog
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: Request opens the new request form with the item type and sends no request
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: a Custodian sees the catalog without Request buttons
+ ✓ tests/catalog.test.tsx > TEST-63 (g) (AC-63): the catalog links each item type to its detail > TEST-63 (g): the item type name links to /catalog/item-types/:id
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (b): the confirm button counts the units for the request; a double click sends one call
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Ready for checkout states > TEST-25 (d): a row shows request, borrower, items, loan length, approval time and a Check out button
+ ✓ tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: an error shows the API message, and Try again calls the API again
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Ready for checkout states > TEST-25: rows keep the API order (oldest first, F03-D2)
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > shows the title, state, creation time and lines
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > TEST-60 (AC-60): after checkout the Borrower sees Checked out, the stored due date in ICT, the asset tag and the checkout time (contract F-03 4.4)
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (c): with no AVAILABLE unit the dialog says so and sends no checkout (D-17)
+ ✓ tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (b): Approve asks for confirmation, sends one call, shows the result and loads the detail again
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > a 404 shows 'Request not found.' with a link to My requests
+ ✓ tests/ReturnDialog.test.tsx > TEST-109 (AC-109): return controls on the request detail > TEST-109: Return all defaults every condition to Good and sends both loans once
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > a Custodian's 404 links back to All requests
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > an ID that is not a positive integer shows Not found without calling the API
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (d): a 409 is shown as an alert, the selection is cleared and the units are fetched again
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > moving to another request ID loads that request
+ ✓ tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (c): Reject needs a reason that is not blank, and a double click sends one call
+ ✓ tests/ReturnDialog.test.tsx > TEST-109 (AC-109): return controls on the request detail > TEST-109: a Damaged unit is named in the result
+ ✓ tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (d): a 409 from reject is shown as an alert and the detail is loaded again
+stderr | tests/App.test.tsx > F-01 UI > a first visit with no session opens the sign-in page with no message
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/ReturnDialog.test.tsx > TEST-109 (AC-109): return controls on the request detail > TEST-109: Return this unit returns one loan with Good by default
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (e): on success the dialog closes, shows asset tag and due date, and the list is fetched again
+stderr | tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79 (a): the Borrower's PENDING request shows the right controls
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/request-decision.test.tsx > TEST-89: dialog behaviour while a call runs and on 400 (review of PR #91) > TEST-89 (e): while approve is pending, Cancel and Close are disabled and Escape does not close the dialog
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (e): the dialog passes the checked-out request to onCheckedOut
+ ✓ tests/CheckoutDialog.test.tsx > TEST-58 (AC-58): due-date preview in the checkout dialog (#71) > TEST-58 (f): shows the due date a checkout now would get, with weekday, in ICT
+stderr | tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (a): shows Loading… while the list loads
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/LoansPage.test.tsx > TEST-101 (AC-101) (d): loans pages > TEST-101 (d): My loans shows Loading… first, then the rows with item type, asset tag, request and dates
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/ManageCatalogPage.test.tsx > TEST-121 (AC-121): Manage catalog page > TEST-121 (a): Loading…, then the empty text
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/NewRequestPage.test.tsx > TEST-71 (AC-71): new request form > TEST-71 (a): ?itemTypeId=3 starts with Arduino × 1, loan length 14, quantities 1 to 2
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/CheckoutDialog.test.tsx > TEST-58 (AC-58): due-date preview in the checkout dialog (#71) > TEST-58 (g): a preview error shows 'Due date not available.' and checkout still works
+ ✓ tests/request-decision.test.tsx > TEST-89: dialog behaviour while a call runs and on 400 (review of PR #91) > TEST-89 (f): a 400 from reject keeps the dialog open with the typed reason and shows the message there
+stderr | tests/ManageUnitsPage.test.tsx > TEST-121 (AC-121): units of an item type > TEST-121 (e): Loading…, then the header and every unit with its state; actions only where allowed
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/request-decision.test.tsx > TEST-83 (c) (AC-83): a Borrower's view of a rejected request > TEST-83 (c): shows the time and the reason, no Custodian name, and no Approve or Reject
+stderr | tests/ItemTypePage.test.tsx > TEST-63 (AC-63): item type detail > TEST-63 (a), (b): Loading…, then the name, category, description, limits, count and the Request link
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (a): shows Loading… while the list loads
+ ✓ tests/App.test.tsx > F-01 UI > a first visit with no session opens the sign-in page with no message
+ ✓ tests/ManageCatalogPage.test.tsx > TEST-121 (AC-121): Manage catalog page > TEST-121 (a): Loading…, then the empty text
+ ✓ tests/App.test.tsx > F-01 UI > the sign-in page shows a short tagline under the heading
+ × tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79 (a): the Borrower's PENDING request shows the right controls
+   → expected [] to deeply equal [ 'Edit request' ]
+ ✓ tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (b): an empty list says No requests.
+ ✓ tests/LoansPage.test.tsx > TEST-101 (AC-101) (d): loans pages > TEST-101 (d): My loans shows Loading… first, then the rows with item type, asset tag, request and dates 322ms
+ ✓ tests/ItemTypePage.test.tsx > TEST-63 (AC-63): item type detail > TEST-63 (a), (b): Loading…, then the name, category, description, limits, count and the Request link 322ms
+ ✓ tests/App.test.tsx > F-01 UI > empty fields show messages and do not call the API
+ ✓ tests/LoansPage.test.tsx > TEST-101 (AC-101) (d): loans pages > TEST-101 (d): an empty list says You have no active loans.
+ ✓ tests/NewRequestPage.test.tsx > TEST-71 (AC-71): new request form > TEST-71 (a): ?itemTypeId=3 starts with Arduino × 1, loan length 14, quantities 1 to 2 370ms
+ × tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79 (a): the Borrower's APPROVED request shows the right controls
+   → expected [] to deeply equal [ 'Cancel request' ]
+ ✓ tests/CheckoutDialog.test.tsx > TEST-101 (AC-101) (a) to (c): several lines and quantities > TEST-101 (a): confirm is enabled only when every line has its quantity; the preview uses the loan length
+ ✓ tests/ItemTypePage.test.tsx > TEST-63 (AC-63): item type detail > TEST-63 (c): a Custodian sees no Request
+ ✓ tests/ManageCatalogPage.test.tsx > TEST-121 (AC-121): Manage catalog page > TEST-121 (a): an error with Try again, which loads again
+ ✓ tests/App.test.tsx > F-01 UI > a wrong sign-in keeps the username, clears the password and shows the API message
+ ✓ tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79 (a): the Borrower's CHECKED_OUT request shows the right controls
+ ✓ tests/ManageUnitsPage.test.tsx > TEST-121 (AC-121): units of an item type > TEST-121 (e): Loading…, then the header and every unit with its state; actions only where allowed 457ms
+ ✓ tests/ItemTypePage.test.tsx > TEST-63 (AC-63): item type detail > TEST-63 (d): none available: Request disabled and "None available"
+ ✓ tests/LoansPage.test.tsx > TEST-101 (AC-101) (d): loans pages > TEST-101 (d): an error shows the message and Try again, which calls again
+ ✓ tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (c): an error shows the message and Try again, which calls again
+ ✓ tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79 (b): a Custodian sees neither control on a PENDING request
+ ✓ tests/CheckoutDialog.test.tsx > TEST-101 (AC-101) (a) to (c): several lines and quantities > TEST-101 (b): a line with fewer available units than its quantity blocks the checkout
+ ✓ tests/ItemTypePage.test.tsx > TEST-63 (AC-63): item type detail > TEST-63 (e): a 404 shows "Item type not found." with a link to the catalog
+ ✓ tests/ManageCatalogPage.test.tsx > TEST-121 (AC-121): Manage catalog page > TEST-121 (b): a category with its defaults and an item type row with its limits and count
+ ✓ tests/LoansPage.test.tsx > TEST-101 (AC-101) (d): loans pages > TEST-101 (d): a Custodian's Loans page shows the Borrower and filters Active / Returned
+ ✓ tests/App.test.tsx > F-01 UI > a Custodian lands on Ready for checkout and sees their name and role badge
+ ✓ tests/ManageUnitsPage.test.tsx > TEST-121 (AC-121): units of an item type > TEST-121 (e): no units yet; an unknown item type shows not found with a link back
+ ✓ tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (d): rows show request, Borrower, items, state and time; the navigation links All requests
+ ✓ tests/ItemTypePage.test.tsx > TEST-63 (AC-63): item type detail > TEST-63 (f): another error shows the message and Try again, which calls again
+ ✓ tests/App.test.tsx > F-01 UI > sign-in returns to the page that sent the user to /login
+ ✓ tests/CheckoutDialog.test.tsx > TEST-101 (AC-101) (a) to (c): several lines and quantities > TEST-101 (c): confirm sends the three entries once; the success text lists every asset tag and the due date
+ ✓ tests/CheckoutDialog.test.tsx > TEST-101 (AC-101) (e): the dialog is locked while the checkout runs (review of PR #93) > TEST-101 (e): while checkout is pending, Cancel and Close are disabled and Escape leaves the dialog open
+ ✓ tests/App.test.tsx > F-01 UI > a Borrower sent to /login from a Custodian route lands on the Catalog, not the Forbidden page
+ ✓ tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (e): choosing APPROVED in the filter calls the API with that state
+ ✓ tests/ManageCatalogPage.test.tsx > TEST-121 (AC-121): Manage catalog page > TEST-121 (c): New item type starts at the category's defaults; saving sends them and refreshes the list
+ ✓ tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (f): a Borrower on /requests still sees My requests, without a state filter
+ ✓ tests/App.test.tsx > F-01 UI > a Borrower opening a Custodian route sees the Forbidden page
+ ✓ tests/ManageUnitsPage.test.tsx > TEST-121 (AC-121): units of an item type > TEST-121 (f): Add unit sends the text as typed once, shows the stored tag, clears the field and reloads
+ ✓ tests/NewRequestPage.test.tsx > TEST-71 (AC-71): new request form > TEST-71 (b), (c), (d): a shorter maximum keeps the value with a field error; 3 days submits once and opens the request 351ms
+ ✓ tests/App.test.tsx > F-01 UI > sign out sends Content-Type: application/json and opens the sign-in page with no message
+ ✓ tests/CheckoutDialog.test.tsx > Checkout dialog: other responses and keyboard (contract F-03 4.3) > 409 INVALID_STATE shows the message and asks the page to reload the list
+ ✓ tests/CheckoutDialog.test.tsx > Checkout dialog: other responses and keyboard (contract F-03 4.3) > Cancel and Escape close the dialog without a checkout call
+ ✓ tests/CheckoutDialog.test.tsx > Checkout dialog: other responses and keyboard (contract F-03 4.3) > an error loading the units shows the message and Try again
+ ✓ tests/App.test.tsx > F-01 UI > a 401 after sign-in opens the sign-in page with the session-ended message
+ ✓ tests/ManageUnitsPage.test.tsx > TEST-121 (AC-121): units of an item type > TEST-121 (f): a 409 ASSET_TAG_TAKEN is shown under the field
+ ✓ tests/ManageCatalogPage.test.tsx > TEST-121 (AC-121): Manage catalog page > TEST-121 (d): a 409 NAME_TAKEN on save shows the message under the name; the dialog stays open
+ ✓ tests/ManageCatalogPage.test.tsx > TEST-121 (AC-121): Manage catalog page > TEST-121 (d): Edit category starts with its values; a blank name is caught on submit with no call
+ ✓ tests/NewRequestPage.test.tsx > TEST-71 (AC-71): new request form > TEST-71 (e): a 409 is an alert with the API message; the lines stay and the item types load again
+ ✓ tests/ManageCatalogPage.test.tsx > TEST-121 (AC-121): Manage catalog page > TEST-121 (i): a Borrower who opens /manage sees the Forbidden page and no Manage catalog link
+ ✓ tests/ManageCatalogPage.test.tsx > TEST-121 (AC-121): Manage catalog page > TEST-121 (i): a Custodian has the Manage catalog link
+ ✓ tests/ManageUnitsPage.test.tsx > TEST-121 (AC-121): units of an item type > TEST-121 (g): Retire asks first; Keep unit sends nothing; Retire unit sends one call
+ ✓ tests/ManageUnitsPage.test.tsx > TEST-121 (AC-121): units of an item type > TEST-121 (h): Mark repaired sends one call and says the unit is available again
+ ✓ tests/ManageUnitsPage.test.tsx > TEST-121 (AC-121): units of an item type > TEST-121 (h): a 409 on repair shows the API message and loads the units again
+ ✓ tests/NewRequestPage.test.tsx > TEST-71 (AC-71): new request form > TEST-71 (f): Add line is hidden at 10 lines; Remove is hidden with one line
+ ✓ tests/NewRequestPage.test.tsx > TEST-71 (AC-71): new request form > TEST-71 (g): from the catalog, Request on Arduino and Submit request: 2 clicks, one create
+ ✓ tests/NewRequestPage.test.tsx > TEST-71 (AC-71): new request form > TEST-71: the Borrower navigation has New request; a Custodian at /requests/new sees the Forbidden page
+ × tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79 (c): the edit page starts with the request; Save is enabled after a change and sends one PATCH; back with "updated" 1009ms
+   → Unable to find role="heading" and name "Edit Request #12"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/catalog"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/requests/new"
+            >
+              New request
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              My requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              My loans
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Borrower One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Borrower
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-signpost-split"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Page not found
+        </h1>
+        <p>
+          This page does not exist.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/catalog"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/requests/new"
+            >
+              New request
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              My requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              My loans
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Borrower One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Borrower
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-signpost-split"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Page not found
+        </h1>
+        <p>
+          This page does not exist.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+ × tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79 (d): the edit page of an APPROVED request says it can no longer be edited; no form 1016ms
+   → Unable to find an element with the text: Request #12 can no longer be edited because it is APPROVED.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/catalog"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/requests/new"
+            >
+              New request
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              My requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              My loans
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Borrower One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Borrower
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-signpost-split"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Page not found
+        </h1>
+        <p>
+          This page does not exist.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/catalog"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/requests/new"
+            >
+              New request
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              My requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              My loans
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Borrower One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Borrower
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-signpost-split"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Page not found
+        </h1>
+        <p>
+          This page does not exist.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+ × tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79 (e), (f): Keep request sends nothing; Cancel request sends one call and shows "cancelled" 1005ms
+   → Unable to find role="button" and name "Cancel request"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/catalog"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/requests/new"
+            >
+              New request
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              My requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              My loans
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Borrower One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Borrower
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        30 Nov 2026, 10:00
+      </p>
+      <p
+        class="kh-meta"
+      >
+        Loan length: 
+        3
+         day
+        s
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            1
+          </span>
+        </li>
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Digital multimeter
+             × 
+            1
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/catalog"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/requests/new"
+            >
+              New request
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              My requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              My loans
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Borrower One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Borrower
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        30 Nov 2026, 10:00
+      </p>
+      <p
+        class="kh-meta"
+      >
+        Loan length: 
+        3
+         day
+        s
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            1
+          </span>
+        </li>
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Digital multimeter
+             × 
+            1
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+ × tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79 (g): a 409 on cancel is an alert with the API message 1009ms
+   → Unable to find role="button" and name "Cancel request"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/catalog"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/requests/new"
+            >
+              New request
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              My requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              My loans
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Borrower One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Borrower
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-approved"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-check2"
+          />
+          Approved
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        30 Nov 2026, 10:00
+      </p>
+      <p
+        class="kh-meta"
+      >
+        Loan length: 
+        3
+         day
+        s
+      </p>
+      <p
+        class="kh-meta"
+      >
+        Approved 30 Nov 2026, 11:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            1
+          </span>
+        </li>
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Digital multimeter
+             × 
+            1
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/catalog"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/requests/new"
+            >
+              New request
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              My requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              My loans
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Borrower One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Borrower
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-approved"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-check2"
+          />
+          Approved
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        30 Nov 2026, 10:00
+      </p>
+      <p
+        class="kh-meta"
+      >
+        Loan length: 
+        3
+         day
+        s
+      </p>
+      <p
+        class="kh-meta"
+      >
+        Approved 30 Nov 2026, 11:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            1
+          </span>
+        </li>
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Digital multimeter
+             × 
+            1
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+ × tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79 (h), (i): the edit page shows Loading…, and a 404 shows "Request not found." with a link to My requests
+   → Unable to find an element with the text: Loading…. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/catalog"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/requests/new"
+            >
+              New request
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              My requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              My loans
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Borrower One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Borrower
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-signpost-split"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Page not found
+        </h1>
+        <p>
+          This page does not exist.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+ ✓ tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79 (j): an approved request that was cancelled shows Cancelled, its decision line and no controls
+ × tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79: a Custodian at /requests/12/edit sees the Forbidden page 1015ms
+   → Unable to find an element with the text: You do not have permission to do this.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Ready for checkout
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              All requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              Loans
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/manage"
+            >
+              Manage catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-signpost-split"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Page not found
+        </h1>
+        <p>
+          This page does not exist.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Ready for checkout
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              All requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              Loans
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/manage"
+            >
+              Manage catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-signpost-split"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Page not found
+        </h1>
+        <p>
+          This page does not exist.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79 (a): the Borrower's PENDING request shows the right controls
+AssertionError: expected [] to deeply equal [ 'Edit request' ]
+
+- Expected
++ Received
+
+- Array [
+-   "Edit request",
+- ]
++ Array []
+
+ ❯ tests/request-edit-cancel.test.tsx:76:95
+     74| 
+     75|     expect(await screen.findByText(/^Created /)).toBeInTheDocument();
+     76|     expect(screen.queryAllByRole("link", { name: "Edit request" }).map…
+       |                                                                                               ^
+     77|     if (links.length > 0) expect(screen.getByRole("link", { name: "Edi…
+     78|     expect(screen.queryAllByRole("button", { name: "Cancel request" })…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79 (a): the Borrower's APPROVED request shows the right controls
+AssertionError: expected [] to deeply equal [ 'Cancel request' ]
+
+- Expected
++ Received
+
+- Array [
+-   "Cancel request",
+- ]
++ Array []
+
+ ❯ tests/request-edit-cancel.test.tsx:78:99
+     76|     expect(screen.queryAllByRole("link", { name: "Edit request" }).map…
+     77|     if (links.length > 0) expect(screen.getByRole("link", { name: "Edi…
+     78|     expect(screen.queryAllByRole("button", { name: "Cancel request" })…
+       |                                                                                                   ^
+     79|   });
+     80| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79 (c): the edit page starts with the request; Save is enabled after a change and sends one PATCH; back with "updated"
+TestingLibraryElementError: Unable to find role="heading" and name "Edit Request #12"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/catalog"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/requests/new"
+            >
+              New request
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              My requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              My loans
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Borrower One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Borrower
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-signpost-split"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Page not found
+        </h1>
+        <p>
+          This page does not exist.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/catalog"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/requests/new"
+            >
+              New request
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              My requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              My loans
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Borrower One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Borrower
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-signpost-split"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Page not found
+        </h1>
+        <p>
+          This page does not exist.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ heading tests/request-edit-cancel.test.tsx:64:42
+     62| const detailCalls = () => stub.calls.filter((c) => c === "GET /api/req…
+     63| const posts = (key: string) => stub.bodies.filter((b) => b.key === key…
+     64| const heading = (name: string) => screen.findByRole("heading", { level…
+       |                                          ^
+     65| 
+     66| describe("TEST-79 (AC-79): Edit and Cancel on the Borrower's request",…
+ ❯ tests/request-edit-cancel.test.tsx:96:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79 (d): the edit page of an APPROVED request says it can no longer be edited; no form
+TestingLibraryElementError: Unable to find an element with the text: Request #12 can no longer be edited because it is APPROVED.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/catalog"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/requests/new"
+            >
+              New request
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              My requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              My loans
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Borrower One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Borrower
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-signpost-split"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Page not found
+        </h1>
+        <p>
+          This page does not exist.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/catalog"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/requests/new"
+            >
+              New request
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              My requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              My loans
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Borrower One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Borrower
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-signpost-split"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Page not found
+        </h1>
+        <p>
+          This page does not exist.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/request-edit-cancel.test.tsx:126:25
+    124|     renderAt("/requests/12/edit");
+    125| 
+    126|     expect(await screen.findByText("Request #12 can no longer be edite…
+       |                         ^
+    127|     expect(screen.getByRole("link", { name: "Back to Request #12" })).…
+    128|     expect(screen.queryByRole("button", { name: "Save changes" })).not…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79 (e), (f): Keep request sends nothing; Cancel request sends one call and shows "cancelled"
+TestingLibraryElementError: Unable to find role="button" and name "Cancel request"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/catalog"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/requests/new"
+            >
+              New request
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              My requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              My loans
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Borrower One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Borrower
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        30 Nov 2026, 10:00
+      </p>
+      <p
+        class="kh-meta"
+      >
+        Loan length: 
+        3
+         day
+        s
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            1
+          </span>
+        </li>
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Digital multimeter
+             × 
+            1
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/catalog"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/requests/new"
+            >
+              New request
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              My requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              My loans
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Borrower One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Borrower
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        30 Nov 2026, 10:00
+      </p>
+      <p
+        class="kh-meta"
+      >
+        Loan length: 
+        3
+         day
+        s
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            1
+          </span>
+        </li>
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Digital multimeter
+             × 
+            1
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/request-edit-cancel.test.tsx:135:34
+    133|     renderAt("/requests/12");
+    134| 
+    135|     fireEvent.click(await screen.findByRole("button", { name: "Cancel …
+       |                                  ^
+    136|     let dialog = screen.getByRole("dialog");
+    137|     expect(dialog).toHaveTextContent("Cancel Request #12? You cannot u…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79 (g): a 409 on cancel is an alert with the API message
+TestingLibraryElementError: Unable to find role="button" and name "Cancel request"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/catalog"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/requests/new"
+            >
+              New request
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              My requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              My loans
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Borrower One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Borrower
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-approved"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-check2"
+          />
+          Approved
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        30 Nov 2026, 10:00
+      </p>
+      <p
+        class="kh-meta"
+      >
+        Loan length: 
+        3
+         day
+        s
+      </p>
+      <p
+        class="kh-meta"
+      >
+        Approved 30 Nov 2026, 11:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            1
+          </span>
+        </li>
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Digital multimeter
+             × 
+            1
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/catalog"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/requests/new"
+            >
+              New request
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              My requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              My loans
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Borrower One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Borrower
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-approved"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-check2"
+          />
+          Approved
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        30 Nov 2026, 10:00
+      </p>
+      <p
+        class="kh-meta"
+      >
+        Loan length: 
+        3
+         day
+        s
+      </p>
+      <p
+        class="kh-meta"
+      >
+        Approved 30 Nov 2026, 11:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            1
+          </span>
+        </li>
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Digital multimeter
+             × 
+            1
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/request-edit-cancel.test.tsx:165:34
+    163|     renderAt("/requests/12");
+    164| 
+    165|     fireEvent.click(await screen.findByRole("button", { name: "Cancel …
+       |                                  ^
+    166|     fireEvent.click(within(screen.getByRole("dialog")).getByRole("butt…
+    167| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79 (h), (i): the edit page shows Loading…, and a 404 shows "Request not found." with a link to My requests
+TestingLibraryElementError: Unable to find an element with the text: Loading…. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/catalog"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/requests/new"
+            >
+              New request
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              My requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              My loans
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Borrower One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Borrower
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-signpost-split"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Page not found
+        </h1>
+        <p>
+          This page does not exist.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ tests/request-edit-cancel.test.tsx:177:19
+    175| 
+    176|     await screen.findByRole("link", { name: "My requests" });
+    177|     expect(screen.getByText("Loading…")).toBeInTheDocument();
+       |                   ^
+    178|     await act(async () => slow.resolve({ status: 404, body: errorBody(…
+    179| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  tests/request-edit-cancel.test.tsx > TEST-79 (AC-79): Edit and Cancel on the Borrower's request > TEST-79: a Custodian at /requests/12/edit sees the Forbidden page
+TestingLibraryElementError: Unable to find an element with the text: You do not have permission to do this.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Ready for checkout
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              All requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              Loans
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/manage"
+            >
+              Manage catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-signpost-split"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Page not found
+        </h1>
+        <p>
+          This page does not exist.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Ready for checkout
+            </a>
+          </li>
+          <li>
+            <a
+              aria-current="page"
+              class="kh-nav-link active"
+              href="/requests"
+            >
+              All requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/loans"
+            >
+              Loans
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/manage"
+            >
+              Manage catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-signpost-split"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Page not found
+        </h1>
+        <p>
+          This page does not exist.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/request-edit-cancel.test.tsx:196:25
+    194|   it("TEST-79: a Custodian at /requests/12/edit sees the Forbidden pag…
+    195|     renderAt("/requests/12/edit", custodian);
+    196|     expect(await screen.findByText("You do not have permission to do t…
+       |                         ^
+    197|   });
+    198| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
+ Test Files  1 failed | 13 passed (14)
+      Tests  8 failed | 96 passed (104)
+   Start at  18:20:28
+   Duration  9.21s (transform 1.82s, setup 8.10s, collect 9.77s, tests 14.74s, environment 20.61s, prepare 3.84s)
+
+
+exit code: 1
