@@ -9,7 +9,7 @@
 | Version | 1.7 |
 | Date | 2026-11-27 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
-| Baseline | [SRS v1.3](../srs.md), [System-Level SDS v1.4](../system-sds.md) |
+| Baseline | [SRS v1.6](../srs.md), [System-Level SDS v1.13](../system-sds.md) |
 
 ### Revision history
 
@@ -22,7 +22,7 @@
 | 1.4 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | Issue #36: baseline SRS v1.3 and SDS v1.3. Q-08 is resolved as D-20, so the F-11 dependency (3.1) cites D-20, and the 25 Nov milestone (6.3), the Sprint 3 dependencies (6.4) and the open-questions risk (8) list only Q-07 and Q-09. No feature, requirement or sprint moves |
 | 1.5 | 2026-11-07 | Methipat Mansap | Issue #38 (SR-04 defect fix): baseline SDS v1.4. SR-04 (3.2) covers every width from 320 to 1440 px, with the narrow layout below 768 px instead of 576 px. No feature, requirement or sprint moves |
 | 1.6 | 2026-11-25 | Teerakarn Noiruksa | Change request #71 (Lab 7, review of PR #72): the Sprint 1 due-date row in section 4 follows SRS v1.4 D-21 (17:00 ICT on a business day, 16:00 cutoff). No feature, requirement or sprint moves |
-| 1.7 | 2026-11-27 | Methipat Mansap | Issue #106: Q-07 and Q-09 are settled as D-22 and D-23 (two days after the 25 Nov target in 6.3), so the F-10 contract is no longer blocked and no GCP component is added. Sprint 3 Issues: #107 F-10, #108 F-11, #109 F-12, #110 F-13, #111 F-14, #112 SR-03 |
+| 1.7 | 2026-11-27 | Methipat Mansap | Issue #106: Q-07 and Q-09 are settled as D-22 and D-23 (two days after the 25 Nov target in 6.3), so the F-10 contract is no longer blocked and no GCP component is added. Sprint 3 Issues: #107 F-10, #108 F-11, #109 F-12, #110 F-13, #111 F-14, #112 SR-03. Review of PR #113: the header baseline, stale since v1.6, now names SRS v1.6 and SDS v1.13 |
 
 ## 2. Overview
 
