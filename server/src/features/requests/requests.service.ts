@@ -257,6 +257,10 @@ export function requestsService(prisma: PrismaClient) {
     async cancel(user: AuthUser, id: number) {
       await prisma.$transaction(async (tx) => {
         const now = new Date();
+        // The Borrower row first, as create and edit do (SDS 4.7). The history insert below takes a
+        // key-share lock on that row (actorUserId); locking the request row first deadlocked with a
+        // concurrent edit, which holds the Borrower row and waits for the request row (TEST-78 (b)).
+        await tx.$queryRaw`SELECT id FROM users WHERE id = ${user.id} FOR UPDATE`;
         const [row] = await tx.$queryRaw<{ status: RequestStatus }[]>`
           SELECT status::text AS status FROM borrow_requests WHERE id = ${id} AND "borrowerId" = ${user.id} FOR UPDATE`;
         if (!row) throw new NotFoundError(`Request ${id} does not exist.`);
