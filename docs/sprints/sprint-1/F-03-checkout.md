@@ -6,13 +6,13 @@
 | --- | --- |
 | Feature | F-03 Checkout and active loan |
 | Sprint | 1 (due 2026-11-08) |
-| Version | 1.4 |
+| Version | 1.5 |
 | Status | v1.2 implemented in #19 and accepted in Lab 6 (`495142e`). v1.3 (change request #71) is under review; its code starts only after this version is merged |
-| Date | 2026-11-25 |
+| Date | 2026-11-26 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Baseline | [SRS v1.2](../../srs.md), [System-Level SDS v1.1](../../system-sds.md), [Feature inventory](../../features.md), [Traceability](../../traceability.md), [Three-sprint plan v1.2](../plan.md) |
 | Issues | #16 this contract; #19 implementation; #20 end-to-end journey test; #71 change request (due date on a business day at 17:00, Lab 7) |
-| Definition of Done | [Product Definition of Done](definition-of-done.md) and section 4.9 of this contract |
+| Definition of Done | [Product Definition of Done](definition-of-done.md) and section 9 of this contract |
 
 ### Revision history
 
@@ -23,6 +23,7 @@
 | 1.2 | 2026-11-06 | Methipat Mansap | Header only, found while starting #19: Version and Status were not updated when v1.1 was merged. Sections 2.2 and 2.4 still describe the state before F-02; the F-02 contract (section 3.6) confirmed F02-A1 to F02-A7 with no change. No design, AC or test change |
 | 1.3 | 2026-11-25 | Teerakarn Noiruksa | Change request #71 (Lab 7), written before any code: the due date is now 17:00 ICT on a business day with a 16:00 checkout cutoff (D-21, section 3.4; the old rule is kept there for reference). New preview endpoint `GET /api/item-types/:id/due-date-preview` (5.5) and preview line in the checkout dialog (4.3). AC-19 wording, TEST-19, TEST-49 and TEST-50 expected values revised for the new rule (the old values were correct for v1.2); new AC-54 to AC-60 with TEST-54 to TEST-60 (7.3, 8.2). Examples in 4.3, 4.4, 5.3 and 5.4 use the new due time. No schema change. Impact analysis: `docs/labs/lab-07/change-71.md`. Review of PR #72: RED and fake-clock rules in 8.1; MT-12, MT-13 and plan v1.6 also follow D-21; F03-D5 rationale no longer says `dueAt − checkedOutAt = maxLoanDays × 24 h` |
 | 1.4 | 2026-11-26 | Teerakarn Noiruksa | F-07 (#77, contract F-07 F07-D1, F07-D8): the checkout of a `PENDING` request described here is replaced from Sprint 2 by the checkout of an `APPROVED` request with one unit per quantity (FR-17). This contract stays the Sprint 1 record; its tests now create `APPROVED` requests and keep their rule assertions, TEST-43 checks an `APPROVED` → `CHECKED_OUT` request checked out again, and TEST-49 follows the checkbox dialog of F-07 4. Current behaviour: `docs/sprints/sprint-2/F-07-multi-unit-checkout.md` |
+| 1.5 | 2026-11-26 | Methipat Mansap | Section 1: the Definition of Done row points to section 9, the contract's Definition of Done, instead of "section 4.9", which does not exist. Header only: no AC, TEST or behavior change (#43); listed as a known limitation in Deliverable 1 Part F, F.9 |
 
 Changes after approval get a new version row with the reason. AC and TEST IDs are never reused for a different meaning.
 

@@ -7,9 +7,9 @@
 | Feature | F-02 Browse catalog and borrow request |
 | Sprint | 1 |
 | Issue | #15 (contract), #18 (implementation) |
-| Version | 1.4 |
+| Version | 1.5 |
 | Status | Agreed (PR #30 merged into `staging`); implemented in #18 (PR #32) |
-| Date | 2026-11-24 |
+| Date | 2026-11-26 |
 | Authors | Teerakarn Noiruksa (67070501062) |
 | Baseline | [SRS v1.2](../../srs.md), [System-Level SDS v1.1](../../system-sds.md), [Feature inventory](../../features.md) section 4.2, [Sprint plan v1.2](../plan.md), [Contract F-01 v1.2](F-01-auth.md) |
 
@@ -22,6 +22,7 @@
 | 1.2 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | Status (1) reads "Agreed (PR #30 merged into `staging`); implemented in #18 (PR #32)" instead of "Proposed". Header only: no behavior, AC or TEST change | The contract was merged and implemented; matches the F-03 status line (PR #37 review) |
 | 1.3 | 2026-11-24 | Methipat Mansap | Section 8.2 adds TEST-11b for AC-11: the UAT finding #68 path through the API (`borrower2`, HC-SR04 ultrasonic sensor, a first request that is `PENDING`, then a second request). No AC or behavior change; TEST-11 is unchanged | Lab 6 Part D: regression test for UAT finding #68 (#66, PR #69) |
 | 1.4 | 2026-11-26 | Methipat Mansap | AC-34, TEST-34, AC-40 and TEST-40 are revised by the F-04 contract (section 8.4, F04-D9): a create sends several lines, quantities and `loanDays`, and the catalog's **Request** opens the new request form (F04-D5). The current text is in `docs/features.md`; the text above is kept as the Sprint 1 record | FR-07 (one line) became FR-10 (several lines) in Sprint 2 (#74) |
+| 1.5 | 2026-11-26 | Methipat Mansap | Section 3.1: the sequence diagram's message texts use `,` instead of `;`, and `#35;` for the `#` in "Request #12". The diagram's content is unchanged. No AC, TEST or behavior change (#43) | Mermaid reads `;` as the end of a statement and `#…;` as a character code, so the diagram did not render (parse error on line 9). Listed as a known limitation in Deliverable 1 Part F, F.9 |
 
 A change after this version is merged gets a new row here, and an AC or TEST change is also recorded in `docs/traceability.md` section 5. AC and TEST IDs are never reused for a different meaning.
 
@@ -79,13 +80,13 @@ sequenceDiagram
   B->>UI: Press Request on an item type in the catalog
   UI->>API: POST /api/requests { lines: [ { itemTypeId, quantity: 1 } ] }
   API->>API: authenticate (401), requireRole BORROWER (403), schema (400)
-  API->>DB: BEGIN; lock the Borrower's users row (DD-05)
+  API->>DB: BEGIN, lock the Borrower's users row (DD-05)
   API->>DB: Read the item type (404 if missing)
   API->>DB: Open request of this Borrower with this item type? (409 DUPLICATE_OPEN_REQUEST)
   API->>DB: Count AVAILABLE units of the item type (409 ITEM_TYPE_UNAVAILABLE if fewer than quantity)
-  API->>DB: Insert request (PENDING, borrowerId = req.user.id), line, history entry; COMMIT
+  API->>DB: Insert request (PENDING, borrowerId = req.user.id), line, history entry, COMMIT
   API-->>UI: 201 request
-  UI-->>B: "Request #12 submitted"; catalog refreshed
+  UI-->>B: "Request #35;12 submitted", catalog refreshed
 ```
 
 Any failure rolls back the transaction, so a rejected request stores nothing: no request, no line and no history entry.
