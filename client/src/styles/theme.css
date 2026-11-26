@@ -14,6 +14,9 @@
   --kh-accent: #c2255c; /* buttons and selected things; white text on it is 5.66:1 */
   --kh-accent-hover: #a01d4b;
   --kh-link: #a8204f;
+  --kh-danger: #9b1c2c; /* a step that cannot be undone: cancel, reject, retire */
+  --kh-danger-hover: #7c1623;
+  --kh-danger-active: #64111c;
   --kh-cut: 14px; /* clipped corner of panels */
 
   --bs-body-font-family: "Chakra Petch", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -116,19 +119,19 @@ h5,
   --bs-btn-active-border-color: var(--kh-ink);
 }
 .btn-outline-danger {
-  --bs-btn-color: #9b1c2c;
-  --bs-btn-border-color: #9b1c2c;
-  --bs-btn-hover-bg: #9b1c2c;
-  --bs-btn-hover-border-color: #9b1c2c;
+  --bs-btn-color: var(--kh-danger);
+  --bs-btn-border-color: var(--kh-danger);
+  --bs-btn-hover-bg: var(--kh-danger);
+  --bs-btn-hover-border-color: var(--kh-danger);
 }
 /* The confirming button of a step that cannot be undone (cancel, reject, retire). */
 .btn-danger {
-  --bs-btn-bg: #9b1c2c;
-  --bs-btn-border-color: #9b1c2c;
-  --bs-btn-hover-bg: #7c1623;
-  --bs-btn-hover-border-color: #7c1623;
-  --bs-btn-active-bg: #64111c;
-  --bs-btn-active-border-color: #64111c;
+  --bs-btn-bg: var(--kh-danger);
+  --bs-btn-border-color: var(--kh-danger);
+  --bs-btn-hover-bg: var(--kh-danger-hover);
+  --bs-btn-hover-border-color: var(--kh-danger-hover);
+  --bs-btn-active-bg: var(--kh-danger-active);
+  --bs-btn-active-border-color: var(--kh-danger-active);
   --bs-btn-disabled-bg: #d9dce1;
   --bs-btn-disabled-border-color: #d9dce1;
   --bs-btn-disabled-color: #5a606b;
@@ -346,6 +349,12 @@ h5,
 }
 .kh-title-bar .btn {
   margin: 1.75rem 0 1.25rem;
+}
+/* a short input with its button on one line (Add unit) */
+.kh-input-row {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 28rem;
 }
 .kh-actions {
   display: flex;

@@ -135,7 +135,7 @@ export function ManageUnitsPage() {
         >
           <Field label="Asset tag" error={tagError}>
             {(p) => (
-              <div className="d-flex gap-2" style={{ maxWidth: "28rem" }}>
+              <div className="kh-input-row">
                 <input
                   {...p}
                   className={`form-control${tagError ? " is-invalid" : ""}`}

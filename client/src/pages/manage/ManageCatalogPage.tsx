@@ -115,8 +115,9 @@ export function ManageCatalogPage() {
                           {t.isKit && <span className="badge kh-kit ms-2">Kit</span>}
                         </td>
                         <td data-label="Loan length" className="kh-nowrap">{days(t.maxLoanDays)}</td>
-                        <td data-label="Per request" className="kh-nowrap">{t.maxQuantityPerRequest} per request</td>
-                        <td data-label="Available" className={`kh-nowrap${t.availableCount === 0 ? " text-body-secondary" : ""}`}>
+                        {/* No card label: "2 per request" and "4 available" already say what they are. */}
+                        <td className="kh-nowrap">{t.maxQuantityPerRequest} per request</td>
+                        <td className={`kh-nowrap${t.availableCount === 0 ? " text-body-secondary" : ""}`}>
                           {t.availableCount} available
                         </td>
                         <td className="text-end kh-nowrap kh-row-actions">
