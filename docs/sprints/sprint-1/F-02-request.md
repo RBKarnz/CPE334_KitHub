@@ -7,7 +7,7 @@
 | Feature | F-02 Browse catalog and borrow request |
 | Sprint | 1 |
 | Issue | #15 (contract), #18 (implementation) |
-| Version | 1.3 |
+| Version | 1.4 |
 | Status | Agreed (PR #30 merged into `staging`); implemented in #18 (PR #32) |
 | Date | 2026-11-24 |
 | Authors | Teerakarn Noiruksa (67070501062) |
@@ -21,6 +21,7 @@
 | 1.1 | 2026-11-06 | Teerakarn Noiruksa | AC-39, TEST-14 and TEST-39 compare the `404` form (same `code` and keys, message "Request <id> does not exist." with the requested ID) instead of equal bodies; TEST-37 resets state per iteration; TEST-38 marked **TDD**; DoD path is a link now that #28 is merged | PR #30 review |
 | 1.2 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | Status (1) reads "Agreed (PR #30 merged into `staging`); implemented in #18 (PR #32)" instead of "Proposed". Header only: no behavior, AC or TEST change | The contract was merged and implemented; matches the F-03 status line (PR #37 review) |
 | 1.3 | 2026-11-24 | Methipat Mansap | Section 8.2 adds TEST-11b for AC-11: the UAT finding #68 path through the API (`borrower2`, HC-SR04 ultrasonic sensor, a first request that is `PENDING`, then a second request). No AC or behavior change; TEST-11 is unchanged | Lab 6 Part D: regression test for UAT finding #68 (#66, PR #69) |
+| 1.4 | 2026-11-26 | Methipat Mansap | AC-34, TEST-34, AC-40 and TEST-40 are revised by the F-04 contract (section 8.4, F04-D9): a create sends several lines, quantities and `loanDays`, and the catalog's **Request** opens the new request form (F04-D5). The current text is in `docs/features.md`; the text above is kept as the Sprint 1 record | FR-07 (one line) became FR-10 (several lines) in Sprint 2 (#74) |
 
 A change after this version is merged gets a new row here, and an AC or TEST change is also recorded in `docs/traceability.md` section 5. AC and TEST IDs are never reused for a different meaning.
 

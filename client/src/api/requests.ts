@@ -51,8 +51,13 @@ export interface BorrowRequest {
   lines: { id: number; itemType: { id: number; name: string }; quantity: number; loans: LineLoan[] }[];
 }
 
-export const createRequest = (itemTypeId: number) =>
-  apiFetch<BorrowRequest>("/requests", { method: "POST", body: { lines: [{ itemTypeId, quantity: 1 }] } });
+/** The create body of contract F-04 5.2: 1 to 10 lines and one loan length for the request. */
+export interface RequestInput {
+  lines: { itemTypeId: number; quantity: number }[];
+  loanDays: number;
+}
+
+export const createRequest = (body: RequestInput) => apiFetch<BorrowRequest>("/requests", { method: "POST", body });
 
 export const fetchMyRequests = () => apiFetch<{ items: BorrowRequest[] }>("/requests").then((r) => r.items);
 

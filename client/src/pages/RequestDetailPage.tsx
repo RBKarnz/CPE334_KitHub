@@ -1,7 +1,7 @@
 // One request with its lines; after checkout, each line's unit and the due date (contract F-02 5).
 // F-06 adds the loan length, the decision, Approve and Reject for Custodians, and the history (4.3).
-import { useCallback, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ApiError } from "../api/client";
 import { returnLoan, returnRequest, type ReturnConditionValue } from "../api/loans";
 import { approveRequest, fetchRequest, rejectRequest, type BorrowRequest, type HistoryItem } from "../api/requests";
@@ -55,7 +55,15 @@ export function RequestDetailPage() {
   const { user } = useAuth();
   const [dialog, setDialog] = useState<"approve" | "reject" | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
+  // "Request #12 submitted." after the new request form opens the request (contract F-04 4.3).
+  const location = useLocation();
+  const [notice, setNotice] = useState<string | null>((location.state as { notice?: string } | null)?.notice ?? null);
+  // Shown once: the history entry drops it, so a reload does not show it again.
+  const navigate = useNavigate();
+  const hasStateNotice = Boolean((location.state as { notice?: string } | null)?.notice);
+  useEffect(() => {
+    if (hasStateNotice) navigate(location.pathname, { replace: true, state: null });
+  }, [hasStateNotice, location.pathname, navigate]);
   const [alert, setAlert] = useState<string | null>(null);
   const [dialogError, setDialogError] = useState<string | null>(null);
   // Blocks a second call even before React re-renders the disabled button.
@@ -178,7 +186,7 @@ export function RequestDetailPage() {
               </div>
             )}
             <p className="kh-meta">Created {formatDateTime(r.createdAt)}</p>
-            {r.loanDays != null && <p className="kh-meta">Loan length: {r.loanDays} days</p>}
+            {r.loanDays != null && <p className="kh-meta">Loan length: {r.loanDays} day{r.loanDays === 1 ? "" : "s"}</p>}
             {decisionText(r) && <p className="kh-meta">{decisionText(r)}</p>}
             {r.rejectionReason && <p>Reason: {r.rejectionReason}</p>}
             {r.dueAt && <p className="kh-due">Due {formatDateTime(r.dueAt)}</p>}

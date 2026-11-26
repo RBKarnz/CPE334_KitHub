@@ -70,3 +70,35 @@ describe("TEST-33 (AC-33): every F-02 endpoint needs a session", () => {
     expect(await snapshotRequestState(prisma)).toEqual(before);
   });
 });
+
+// TEST-70 (AC-70, contract F-04 3.3): the multi-line create is Borrower only, and the create and the
+// item type read need a session. Each body has only the error; nothing is stored.
+describe("TEST-70 (AC-70): F-04 create and item type read", () => {
+  const body = () => ({ lines: [{ itemTypeId: arduino.id, quantity: 1 }], loanDays: 7 });
+
+  it("TEST-70 (a): a Custodian's create is 403 FORBIDDEN, only the error, nothing stored", async () => {
+    const before = await snapshotRequestState(prisma);
+    const res = await postRequest(app, await signIn(app, "custodian1"), body());
+    expect(res.status).toBe(403);
+    expect(res.body.error.code).toBe("FORBIDDEN");
+    expect(Object.keys(res.body)).toEqual(["error"]);
+    expect(await snapshotRequestState(prisma)).toEqual(before);
+  });
+
+  it.each([["(b) no cookie"], ["(c) a signed-out session"]])("TEST-70 %s: the create and GET /api/item-types/:id are 401", async (which) => {
+    let cookie: string | undefined;
+    if (which.startsWith("(c)")) {
+      cookie = await signIn(app, "borrower1");
+      expect((await signOut(app, cookie)).status).toBe(204);
+    }
+    const before = await snapshotRequestState(prisma);
+    const read = request(app).get(`/api/item-types/${arduino.id}`);
+
+    for (const res of [await postRequest(app, cookie, body()), await (cookie ? read.set("Cookie", cookie) : read)]) {
+      expect(res.status).toBe(401);
+      expect(res.body.error.code).toBe("UNAUTHENTICATED");
+      expect(Object.keys(res.body)).toEqual(["error"]);
+    }
+    expect(await snapshotRequestState(prisma)).toEqual(before);
+  });
+});

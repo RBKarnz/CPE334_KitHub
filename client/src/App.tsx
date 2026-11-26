@@ -4,6 +4,7 @@ import { AuthProvider, landingPath, useAuth } from "./auth/AuthProvider";
 import { LoadingScreen, RequireAuth, RequireRole } from "./auth/guards";
 import { NavBar } from "./components/NavBar";
 import { CatalogPage } from "./pages/CatalogPage";
+import { ItemTypePage } from "./pages/ItemTypePage";
 import { LoansPage } from "./pages/loans/LoansPage";
 import { LoginPage } from "./pages/LoginPage";
 import { ManageCatalogPage } from "./pages/manage/ManageCatalogPage";
@@ -12,6 +13,7 @@ import { MyRequestsPage } from "./pages/MyRequestsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { PendingRequestsPage } from "./pages/pending/PendingRequestsPage";
 import { AllRequestsPage } from "./pages/requests/AllRequestsPage";
+import { NewRequestPage } from "./pages/requests/NewRequestPage";
 import { RequestDetailPage } from "./pages/RequestDetailPage";
 
 function SignedInLayout() {
@@ -45,6 +47,17 @@ function AppRoutes() {
       <Route element={<SignedInLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/catalog" element={<CatalogPage />} />
+        {/* Item type detail, both roles (contract F-04 4.2). */}
+        <Route path="/catalog/item-types/:id" element={<ItemTypePage />} />
+        {/* New request, Borrower only (contract F-04 4.3). */}
+        <Route
+          path="/requests/new"
+          element={
+            <RequireRole role="BORROWER">
+              <NewRequestPage />
+            </RequireRole>
+          }
+        />
         <Route path="/requests" element={<RequestsPage />} />
         {/* My loans or Loans, scoped by role (F07-D7). */}
         <Route path="/loans" element={<LoansPage />} />

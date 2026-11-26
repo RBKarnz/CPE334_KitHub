@@ -70,6 +70,8 @@ test("MT-20 to MT-30: Sprint 2 walkthrough on the demo seed", async ({ page, db 
     await signOut(page);
     await signInAs(page, "borrower2");
     await page.getByRole("listitem").filter({ hasText: "Digital multimeter" }).getByRole("button", { name: "Request Digital multimeter" }).click();
+    // F-04 (F04-D5): Request opens the new request form; Submit request sends it.
+    await page.getByRole("button", { name: "Submit request" }).click();
     const submitted = page.getByRole("status").filter({ hasText: "submitted" });
     await expect(submitted).toHaveText(/^Request #\d+ submitted\./);
     rejectedId = Number((await submitted.textContent())!.match(/#(\d+)/)![1]);

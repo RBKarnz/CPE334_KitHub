@@ -8,6 +8,8 @@ import { Logo } from "./Logo";
 const LINKS: Record<Role, { to: string; label: string }[]> = {
   BORROWER: [
     { to: "/catalog", label: "Catalog" },
+    // F-04 (contract F-04 4.4): the new request form.
+    { to: "/requests/new", label: "New request" },
     { to: "/requests", label: "My requests" },
     { to: "/loans", label: "My loans" },
   ],

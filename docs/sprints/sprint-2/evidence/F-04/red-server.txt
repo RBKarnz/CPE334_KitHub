@@ -1,0 +1,2267 @@
+# RED, server: typecheck and whole suite on the pre-change code, in CI (no local database on this computer; see README)
+Source: GitHub Actions run 45807798272 (workflow_dispatch, CI & Docker Build), job test-and-docker, step "Install & Test Backend (Typecheck + Prisma Migrate + Seed + Vitest)"
+Command (in the workflow): cd server && npm run typecheck && npm test
+Commit: f67788e462a5fdae1b7be86257b82805da88232d test(#74): RED for F-04 multi-line requests and item type detail
+Log: gh run view 45807798272 --repo RBKarnz/CPE334_KitHub --log-failed, this step only, prefix and colour codes removed
+
+﻿2026-11-26T11:08:38.1947027Z ##[group]Run npm ci
+npm ci
+npm run typecheck
+npx prisma migrate deploy
+SEED_CUSTODIAN_PASSWORD="$(openssl rand -base64 24)"
+SEED_BORROWER_PASSWORD="$(openssl rand -base64 24)"
+echo "::add-mask::$SEED_CUSTODIAN_PASSWORD"
+echo "::add-mask::$SEED_BORROWER_PASSWORD"
+export SEED_CUSTODIAN_PASSWORD SEED_BORROWER_PASSWORD
+npm run prisma:seed
+npm test
+shell: /usr/bin/bash -e {0}
+env:
+  DATABASE_URL: ***localhost:5432/kithub?schema=public
+  TEST_DATABASE_URL: ***localhost:5432/kithub_test?schema=public
+  pythonLocation: /opt/hostedtoolcache/Python/3.14.10/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.14.10/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.10/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.10/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.10/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.14.10/x64/lib
+  SEED_DEMO_DATA: true
+##[endgroup]
+
+added 166 packages, and audited 167 packages in 4s
+
+36 packages are looking for funding
+  run `npm fund` for details
+
+6 vulnerabilities (3 moderate, 1 high, 2 critical)
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+npm warn install-scripts 5 packages have install scripts not yet covered by allowScripts:
+npm warn install-scripts   @prisma/client@5.22.0 (postinstall: node scripts/postinstall.js)
+npm warn install-scripts   @prisma/engines@5.22.0 (postinstall: node scripts/postinstall.js)
+npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+npm warn install-scripts   prisma@5.22.0 (preinstall: node scripts/preinstall-entry.js)
+npm warn install-scripts   esbuild@0.21.5 (postinstall: node install.js)
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+
+> kithub-server@0.1.0 typecheck
+> tsc --noEmit
+
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "kithub", schema "public" at "localhost:5432"
+
+3 migrations found in prisma/migrations
+
+Applying migration `20261106075705_sprint1_init`
+Applying migration `20261125104833_sprint2_columns`
+Applying migration `20261126110000_catalog_names_ci`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261106075705_sprint1_init/
+    └─ migration.sql
+  └─ 20261125104833_sprint2_columns/
+    └─ migration.sql
+  └─ 20261126110000_catalog_names_ci/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+
+> kithub-server@0.1.0 prisma:seed
+> tsx prisma/seed.ts
+
+Seed complete. Created 6 categories, 9 item types, 38 units and 4 accounts; existing records were left unchanged. Demo Borrower accounts: included. Sprint 2 demo requests: skipped (SEED_DEMO_REQUESTS is not true).
+
+> kithub-server@0.1.0 test
+> vitest run
+
+
+ RUN  v2.1.9 /home/runner/work/CPE334_KitHub/CPE334_KitHub/server
+
+ ✓ tests/api/checkout.test.ts (26 tests) 2446ms
+ ❯ tests/api/requests-multi.test.ts (32 tests | 29 failed) 2583ms
+   × TEST-64 (AC-64): a request with several lines and one loan length > TEST-64: 201 PENDING with loanDays and the lines in body order; one CREATED entry; units unchanged 222ms
+     → expected 400 to be 201 // Object.is equality
+   × TEST-65 (AC-65): body shape > TEST-65 (a) no lines: 400 with exactly one detail naming the field; nothing stored 71ms
+     → expected [ 'lines', 'loanDays' ] to deeply equal [ 'lines' ]
+   × TEST-65 (AC-65): body shape > TEST-65 (b) lines []: 400 with exactly one detail naming the field; nothing stored 80ms
+     → expected [ 'lines', 'loanDays' ] to deeply equal [ 'lines' ]
+   × TEST-65 (AC-65): body shape > TEST-65 (c) 11 lines: 400 with exactly one detail naming the field; nothing stored 63ms
+     → expected [ 'lines', 'loanDays' ] to deeply equal [ 'lines' ]
+   × TEST-65 (AC-65): body shape > TEST-65 (d) Arduino twice: 400 with exactly one detail naming the field; nothing stored 69ms
+     → expected [ 'lines', 'loanDays' ] to deeply equal [ 'lines[1].itemTypeId' ]
+   × TEST-65 (AC-65): body shape > TEST-65 (e) quantity 0: 400 with exactly one detail naming the field; nothing stored 104ms
+     → expected [ 'lines[0].quantity', 'loanDays' ] to deeply equal [ 'lines[0].quantity' ]
+   × TEST-65 (AC-65): body shape > TEST-65 (e) quantity 1.5: 400 with exactly one detail naming the field; nothing stored 63ms
+     → expected [ 'lines[0].quantity', 'loanDays' ] to deeply equal [ 'lines[0].quantity' ]
+   × TEST-65 (AC-65): body shape > TEST-65 (e) quantity 11: 400 with exactly one detail naming the field; nothing stored 68ms
+     → expected [ 'lines[0].quantity', 'loanDays' ] to deeply equal [ 'lines[0].quantity' ]
+   × TEST-65 (AC-65): body shape > TEST-65 (f) no loanDays: 400 with exactly one detail naming the field; nothing stored 141ms
+     → expected 201 to be 400 // Object.is equality
+   × TEST-65 (AC-65): body shape > TEST-65 (h) a line with unitId: 400 with exactly one detail naming the field; nothing stored 62ms
+     → expected [ 'lines[0].unitId', 'loanDays' ] to deeply equal [ 'lines[0].unitId' ]
+   × TEST-65 (AC-65): body shape > TEST-65 (i) a line with assetTag: 400 with exactly one detail naming the field; nothing stored 60ms
+     → expected [ 'lines[0].assetTag', 'loanDays' ] to deeply equal [ 'lines[0].assetTag' ]
+   × TEST-65 (AC-65): body shape > TEST-65 (j) top-level borrowerId: 400 with exactly one detail naming the field; nothing stored 66ms
+     → expected [ 'loanDays', 'borrowerId' ] to deeply equal [ 'borrowerId' ]
+   × TEST-66 (AC-66): BR-07, quantity up to the item type's maximum > TEST-66 (a): multimeter × 2 is 409 QUANTITY_LIMIT naming lines[0].quantity 62ms
+     → expected 400 to be 409 // Object.is equality
+   × TEST-66 (AC-66): BR-07, quantity up to the item type's maximum > TEST-66 (b): HC-SR04 × 4 and multimeter × 2 names only lines[1].quantity 64ms
+     → expected 400 to be 409 // Object.is equality
+   × TEST-66 (AC-66): BR-07, quantity up to the item type's maximum > TEST-66 (c): HC-SR04 × 4, its maximum, is accepted 59ms
+     → expected 400 to be 201 // Object.is equality
+   × TEST-66 (AC-66): BR-07, quantity up to the item type's maximum > TEST-66 (d): multimeter × 2 and HC-SR04 × 5: the message names the multimeter, details both lines 86ms
+     → expected 400 to be 409 // Object.is equality
+   × TEST-66 (AC-66): BR-07, quantity up to the item type's maximum > TEST-66 (e): after F-09 lowers HC-SR04 to 2 per request, HC-SR04 × 3 is 409 naming the new maximum 89ms
+     → expected 400 to be 409 // Object.is equality
+   × TEST-67 (AC-67): BR-08, one loan length up to the smallest maximum > TEST-67 (a): both for 7 days is 409 LOAN_LENGTH_LIMIT naming the multimeter 92ms
+     → expected 400 to be 409 // Object.is equality
+   × TEST-67 (AC-67): BR-08, one loan length up to the smallest maximum > TEST-67 (b), (c): both for 3 days and Arduino alone for 14 days are accepted 59ms
+     → expected 400 to be 201 // Object.is equality
+   × TEST-67 (AC-67): BR-08, one loan length up to the smallest maximum > TEST-67 (d): Arduino alone for 15 days is 409 naming Arduino Uno R3 62ms
+     → expected 400 to be 409 // Object.is equality
+   × TEST-67 (AC-67): BR-08, one loan length up to the smallest maximum > TEST-67 (e): after F-09 lowers Arduino to 7 days, Arduino for 10 days is 409 at most 7 days 130ms
+     → expected 400 to be 409 // Object.is equality
+   × TEST-68 (AC-68): BR-01, enough available units on every line > TEST-68 (a): HC-SR04 × 1 and Arduino × 2 with 1 available: 409 naming lines[1]; nothing stored, not even the HC-SR04 line 71ms
+     → expected 400 to be 409 // Object.is equality
+   × TEST-68 (AC-68): BR-01, enough available units on every line > TEST-68 (b): Oscilloscope with none available: "has no available units" 65ms
+     → expected 400 to be 409 // Object.is equality
+   × TEST-68 (AC-68): BR-01, enough available units on every line > TEST-68 (c): Arduino × 1 with 1 available is accepted 82ms
+     → expected 400 to be 201 // Object.is equality
+   × TEST-68 (AC-68): BR-01, enough available units on every line > TEST-68: an unknown item type on a later line is 404 naming that line 65ms
+     → expected 400 to be 404 // Object.is equality
+   × TEST-69 (AC-69): BR-04 and the rule order > TEST-69 (a): a line whose item type is on an open request is 409 DUPLICATE_OPEN_REQUEST naming R1 and lines[1] 71ms
+     → expected 400 to be 409 // Object.is equality
+   × TEST-69 (AC-69): BR-04 and the rule order > TEST-69 (b): when BR-04, BR-07, BR-08 and BR-01 all fail, the code is DUPLICATE_OPEN_REQUEST 87ms
+     → expected 400 to be 409 // Object.is equality
+   × TEST-69 (AC-69): BR-04 and the rule order > TEST-69 (c): another Borrower's open request for HC-SR04 does not block 67ms
+     → expected 400 to be 201 // Object.is equality
+   × TEST-69 (AC-69): BR-04 and the rule order > TEST-69: without BR-04, a quantity over the maximum wins over the loan length and the availability 73ms
+     → expected 400 to be 409 // Object.is equality
+ ✓ tests/api/requests-decide.test.ts (19 tests) 1491ms
+ ✓ tests/api/checkout-multi.test.ts (22 tests) 1895ms
+ ✓ tests/api/returns.test.ts (8 tests) 894ms
+ ✓ tests/api/catalog-manage.test.ts (14 tests) 1122ms
+ ✓ tests/api/units-manage.test.ts (10 tests) 865ms
+ ❯ tests/api/requests-create.test.ts (19 tests | 17 failed) 1446ms
+   × TEST-09 (AC-09): a Borrower requests one available unit > TEST-09: 201 PENDING, owned by the signed-in Borrower, units unchanged 115ms
+     → expected 400 to be 201 // Object.is equality
+   × TEST-10 (AC-10): BR-01, 0 available units > TEST-10: 409 ITEM_TYPE_UNAVAILABLE and nothing stored 68ms
+     → expected 400 to be 409 // Object.is equality
+   × TEST-11 (AC-11): BR-04, one open request per item type > TEST-11: an existing PENDING request for the item type gives 409 DUPLICATE_OPEN_REQUEST 91ms
+     → expected 400 to be 409 // Object.is equality
+   × TEST-11 (AC-11): BR-04, one open request per item type > TEST-11: an existing APPROVED request for the item type gives 409 DUPLICATE_OPEN_REQUEST 71ms
+     → expected 400 to be 409 // Object.is equality
+   × TEST-11 (AC-11): BR-04, one open request per item type > TEST-11b (UAT finding #68): a second request for the same item type through the API is 409 and stores nothing 66ms
+     → expected 400 to be 201 // Object.is equality
+   × TEST-34 (AC-34): body schema > TEST-34: no lines gives 400 with exactly one detail naming the field 68ms
+     → expected [ 'lines', 'loanDays' ] to deeply equal [ 'lines' ]
+   × TEST-34 (AC-34): body schema > TEST-34: empty lines gives 400 with exactly one detail naming the field 86ms
+     → expected [ 'lines', 'loanDays' ] to deeply equal [ 'lines' ]
+   × TEST-34 (AC-34): body schema > TEST-34: the same item type twice gives 400 with exactly one detail naming the field 64ms
+     → expected [ 'lines', 'loanDays' ] to deeply equal [ 'lines[1].itemTypeId' ]
+   × TEST-34 (AC-34): body schema > TEST-34: quantity 0 gives 400 with exactly one detail naming the field 64ms
+     → expected [ 'lines[0].quantity', 'loanDays' ] to deeply equal [ 'lines[0].quantity' ]
+   × TEST-34 (AC-34): body schema > TEST-34: string itemTypeId gives 400 with exactly one detail naming the field 82ms
+     → expected [ 'lines[0].itemTypeId', 'loanDays' ] to deeply equal [ 'lines[0].itemTypeId' ]
+   × TEST-34 (AC-34): body schema > TEST-34: itemTypeId 0 gives 400 with exactly one detail naming the field 74ms
+     → expected [ 'lines[0].itemTypeId', 'loanDays' ] to deeply equal [ 'lines[0].itemTypeId' ]
+   × TEST-34 (AC-34): body schema > TEST-34: no loanDays gives 400 with exactly one detail naming the field 78ms
+     → expected 201 to be 400 // Object.is equality
+   × TEST-34 (AC-34): body schema > TEST-34: extra borrowerId gives 400 with exactly one detail naming the field 84ms
+     → expected [ 'loanDays', 'borrowerId' ] to deeply equal [ 'borrowerId' ]
+   × TEST-34 (AC-34): body schema > TEST-34: unknown field in a line gives 400 with exactly one detail naming the field 65ms
+     → expected [ 'lines[0].unitId', 'loanDays' ] to deeply equal [ 'lines[0].unitId' ]
+   × TEST-35 (AC-35): unknown item type > TEST-35: 404 NOT_FOUND naming lines[0].itemTypeId 63ms
+     → expected 400 to be 404 // Object.is equality
+   × TEST-36 (AC-36): BR-04 limits > TEST-36: other item types, closed requests and other Borrowers do not block; the same item type does 80ms
+     → expected 400 to be 201 // Object.is equality
+   × TEST-38 (AC-38): BR-04 wins over BR-01 (F02-D1) > TEST-38: open request and 0 available gives 409 DUPLICATE_OPEN_REQUEST naming both records 66ms
+     → expected 400 to be 409 // Object.is equality
+ ✓ tests/api/seed.test.ts (8 tests) 1131ms
+ ✓ tests/api/auth.test.ts (14 tests) 794ms
+ ✓ tests/api/schema.test.ts (6 tests) 109ms
+ ✓ tests/api/checkout-concurrency.test.ts (3 tests) 1012ms
+   ✓ TEST-22 (AC-22): two checkouts of the same unit > TEST-22 (a): two simultaneous checkouts of one unit for two requests create one loan, 5 rounds 537ms
+   ✓ TEST-47 (AC-47): two checkouts of the same request > TEST-47: two simultaneous checkouts of one request with two units create one loan, 5 rounds 410ms
+ ✓ tests/unit/error-handler.test.ts (7 tests) 42ms
+ ✓ tests/api/checkout-history.test.ts (5 tests) 458ms
+ ❯ tests/api/requests-access.test.ts (7 tests | 2 failed) 885ms
+   × TEST-70 (AC-70): F-04 create and item type read > TEST-70 (b) no cookie: the create and GET /api/item-types/:id are 401 65ms
+     → expected 404 to be 401 // Object.is equality
+   × TEST-70 (AC-70): F-04 create and item type read > TEST-70 (c) a signed-out session: the create and GET /api/item-types/:id are 401 83ms
+     → expected 404 to be 401 // Object.is equality
+ ✓ tests/api/loans.test.ts (4 tests) 416ms
+ ✓ tests/unit/config.test.ts (10 tests) 8ms
+ ✓ tests/api/due-date-preview.test.ts (5 tests) 545ms
+ ✓ tests/api/units-manage-concurrency.test.ts (4 tests) 1470ms
+   ✓ TEST-119 (AC-119): concurrent catalog management > TEST-119 (a): a retire and a checkout of the same AVAILABLE unit: exactly one wins, 5 rounds 440ms
+   ✓ TEST-119 (AC-119): concurrent catalog management > TEST-119 (b): two adds of KH-SRV-0009 to two item types: one 201, one 409 ASSET_TAG_TAKEN, 5 rounds 389ms
+   ✓ TEST-119 (AC-119): concurrent catalog management > TEST-119 (c) two creates named Robotics: one 201, one 409 NAME_TAKEN, 5 rounds 323ms
+   ✓ TEST-119 (AC-119): concurrent catalog management > TEST-119 (d) Robotics and robotics: one 201, one 409 NAME_TAKEN, 5 rounds 317ms
+ ✓ tests/api/requests-read.test.ts (6 tests) 587ms
+ ❯ tests/unit/request-rules.test.ts (8 tests | 8 failed) 10ms
+   × requestRuleViolation (BR-01, BR-04, BR-07, BR-08; F02-D1, F04-D3) > TEST-10 (unit): 0 available gives ITEM_TYPE_UNAVAILABLE, 1 available gives none 5ms
+     → expected null to deeply equal { rule: 'ITEM_TYPE_UNAVAILABLE', …(1) }
+   × requestRuleViolation (BR-01, BR-04, BR-07, BR-08; F02-D1, F04-D3) > TEST-11 (unit): an open request gives DUPLICATE_OPEN_REQUEST; none gives no violation 1ms
+     → expected null to deeply equal { Object (rule, lines) }
+   × requestRuleViolation (BR-01, BR-04, BR-07, BR-08; F02-D1, F04-D3) > TEST-38 (unit): when BR-04 and BR-01 both fail, DUPLICATE_OPEN_REQUEST wins (F02-D1) 1ms
+     → expected undefined to be 'DUPLICATE_OPEN_REQUEST' // Object.is equality
+   × requestRuleViolation (BR-01, BR-04, BR-07, BR-08; F02-D1, F04-D3) > fewer available units than the quantity is ITEM_TYPE_UNAVAILABLE on that line 0ms
+     → expected null to deeply equal { rule: 'ITEM_TYPE_UNAVAILABLE', …(1) }
+   × requestRuleViolation (BR-01, BR-04, BR-07, BR-08; F02-D1, F04-D3) > TEST-66 (unit): a quantity equal to the maximum is allowed; one above is QUANTITY_LIMIT 1ms
+     → expected null to deeply equal { rule: 'QUANTITY_LIMIT', …(1) }
+   × requestRuleViolation (BR-01, BR-04, BR-07, BR-08; F02-D1, F04-D3) > TEST-67 (unit): the smallest maximum of 14, 3, 14 is 3, set by the multimeter (index 1) 2ms
+     → expected undefined to be type of 'function'
+   × requestRuleViolation (BR-01, BR-04, BR-07, BR-08; F02-D1, F04-D3) > TEST-69 (e) (unit): BR-07, BR-08 and BR-01 fail: QUANTITY_LIMIT 0ms
+     → expected undefined to be 'QUANTITY_LIMIT' // Object.is equality
+   × requestRuleViolation (BR-01, BR-04, BR-07, BR-08; F02-D1, F04-D3) > TEST-69 (f) (unit): BR-08 and BR-01 fail: LOAN_LENGTH_LIMIT 0ms
+     → expected undefined to be 'LOAN_LENGTH_LIMIT' // Object.is equality
+ ✓ tests/api/checkout-access.test.ts (8 tests) 1208ms
+   ✓ TEST-41 (a) (AC-41): no session or an ended session > TEST-41 (a): GET /api/item-types/:id/units?status=AVAILABLE with no cookie is 401 with only the error object 424ms
+ ✓ tests/api/returns-concurrency.test.ts (3 tests) 1485ms
+   ✓ TEST-108 (AC-108): concurrent returns > TEST-108 (a): two return-all calls give one 200 and one 409; each loan returned once, 5 rounds 536ms
+   ✓ TEST-108 (AC-108): concurrent returns > TEST-108 (b): early returns of L1 and L2 at once both succeed; exactly one ends the request, 5 rounds 505ms
+   ✓ TEST-108 (AC-108): concurrent returns > TEST-108 (c): a return-all and an early return of L1 at once: one 200, one 409 (never 400), 5 rounds 443ms
+ ✓ tests/api/errors.test.ts (9 tests) 56ms
+ ✓ tests/api/units.test.ts (6 tests) 482ms
+ ✓ tests/unit/due-date.test.ts (18 tests) 6ms
+ ❯ tests/api/item-types.test.ts (5 tests | 5 failed) 445ms
+   × TEST-62 (AC-62): item type detail > TEST-62 (a), (b): both roles get the F04-D6 fields, 2 available, the category, and no units 113ms
+     → expected 404 to be 200 // Object.is equality
+   × TEST-62 (AC-62): item type detail > TEST-62 (c): an unknown item type is 404 120ms
+     → expected { code: 'NOT_FOUND', …(2) } to match object { code: 'NOT_FOUND', …(1) }
+(1 matching property omitted from actual)
+   × TEST-62 (AC-62): item type detail > TEST-62 (d) a non-integer ID is 400 naming it 67ms
+     → expected 404 to be 400 // Object.is equality
+   × TEST-62 (AC-62): item type detail > TEST-62 (e) a query parameter is 400 naming it 61ms
+     → expected 404 to be 400 // Object.is equality
+   × TEST-62 (AC-62): item type detail > TEST-62 (f): no session is 401 with only the error 84ms
+     → expected 404 to be 401 // Object.is equality
+ ✓ tests/api/catalog.test.ts (2 tests) 230ms
+ ✓ tests/api/catalog-manage-access.test.ts (2 tests) 229ms
+ ✓ tests/api/requests-decide-concurrency.test.ts (2 tests) 833ms
+   ✓ TEST-86 (AC-86): simultaneous decisions > TEST-86 (a): approve and approve give one 200 and one 409, 5 rounds 449ms
+   ✓ TEST-86 (AC-86): simultaneous decisions > TEST-86 (b): approve and reject give one 200 and one 409; the reason is set only when reject won, 5 rounds 383ms
+ ❯ tests/api/requests-concurrency.test.ts (2 tests | 2 failed) 206ms
+   × TEST-37 (AC-37): concurrent duplicate creates > TEST-37: two parallel creates store one request, 20 runs 121ms
+     → expected [ 400, 400 ] to deeply equal [ 201, 409 ]
+   × TEST-69 (d) (AC-69): concurrent multi-line creates that share an item type > TEST-69 (d): Arduino + HC-SR04 and HC-SR04 + ESP32 at once: one 201, one 409; one request and one entry, 5 rounds 85ms
+     → expected [ 400, 400 ] to deeply equal [ 201, 409 ]
+ ✓ tests/api/pending-requests.test.ts (1 test) 136ms
+ ✓ tests/api/persistence.test.ts (1 test) 133ms
+ ✓ tests/unit/transitions.test.ts (28 tests) 5ms
+ ✓ tests/api/checkout-multi-concurrency.test.ts (1 test) 565ms
+   ✓ TEST-96 (AC-96): two checkouts that share units > TEST-96: one 201 and one 409 UNIT_NOT_AVAILABLE; the loser stays APPROVED with no loan; 5 rounds 564ms
+ ✓ tests/api/requests-decide-access.test.ts (4 tests) 305ms
+stderr | tests/api/health.test.ts > GET /api/ready (SDS 6.7) > returns 503 NOT_READY when the database cannot be reached
+{"time":"2026-11-26T11:09:24.781Z","level":"error","requestId":"8a3d37d0-c3bd-4965-ad2a-88a534a42d9a","path":"/api/ready","error":"PrismaClientInitializationError","message":"\nInvalid `prisma.$queryRaw()` invocation:\n\n\nCan't reach database server at `127.0.0.1:1`\n\nPlease make sure your database server is running at `127.0.0.1:1`."}
+
+ ✓ tests/api/health.test.ts (4 tests) 52ms
+ ✓ tests/api/returns-access.test.ts (1 test) 140ms
+ ❯ tests/api/requests-history.test.ts (1 test | 1 failed) 115ms
+   × TEST-16 (AC-16): history entry for request creation > TEST-16: exactly one CREATED entry with the Borrower as actor at the request's createdAt 114ms
+     → expected 400 to be 201 // Object.is equality
+ ✓ tests/unit/checkout-errors.test.ts (3 tests) 3ms
+ ✓ tests/unit/test-db-guard.test.ts (4 tests) 3ms
+ ✓ tests/unit/password.test.ts (2 tests) 1023ms
+   ✓ TEST-07 (AC-07): salted adaptive password hashes > TEST-07 (a): cost 12 hashes differ from the plain text and from each other 1021ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 64 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/api/item-types.test.ts > TEST-62 (AC-62): item type detail > TEST-62 (a), (b): both roles get the F04-D6 fields, 2 available, the category, and no units
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/item-types.test.ts:40:22
+     38| 
+     39|     const a = await get(`/api/item-types/${s.t.id}`, s.b);
+     40|     expect(a.status).toBe(200);
+       |                      ^
+     41|     expect(a.body).toEqual({
+     42|       id: s.t.id,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/64]⎯
+
+ FAIL  tests/api/item-types.test.ts > TEST-62 (AC-62): item type detail > TEST-62 (c): an unknown item type is 404
+AssertionError: expected { code: 'NOT_FOUND', …(2) } to match object { code: 'NOT_FOUND', …(1) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  Object {
+    "code": "NOT_FOUND",
+-   "message": "Item type 999999 does not exist.",
++   "message": "The requested resource was not found.",
+  }
+
+ ❯ tests/api/item-types.test.ts:62:28
+     60|     const res = await get("/api/item-types/999999", s.b);
+     61|     expect(res.status).toBe(404);
+     62|     expect(res.body.error).toMatchObject({ code: "NOT_FOUND", message:…
+       |                            ^
+     63|   });
+     64| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/64]⎯
+
+ FAIL  tests/api/item-types.test.ts > TEST-62 (AC-62): item type detail > TEST-62 (d) a non-integer ID is 400 naming it
+ FAIL  tests/api/item-types.test.ts > TEST-62 (AC-62): item type detail > TEST-62 (e) a query parameter is 400 naming it
+AssertionError: expected 404 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 404
+
+ ❯ tests/api/item-types.test.ts:71:24
+     69|     const s = await world();
+     70|     const res = await get(path.replace("/1?", `/${s.t.id}?`), s.b);
+     71|     expect(res.status).toBe(400);
+       |                        ^
+     72|     expect(res.body.error.code).toBe("VALIDATION_FAILED");
+     73|     expect(detailFields(res).some((f) => f === field || f.endsWith(`.$…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/64]⎯
+
+ FAIL  tests/api/item-types.test.ts > TEST-62 (AC-62): item type detail > TEST-62 (f): no session is 401 with only the error
+AssertionError: expected 404 to be 401 // Object.is equality
+
+- Expected
++ Received
+
+- 401
++ 404
+
+ ❯ tests/api/item-types.test.ts:79:24
+     77|     const s = await world();
+     78|     const res = await get(`/api/item-types/${s.t.id}`);
+     79|     expect(res.status).toBe(401);
+       |                        ^
+     80|     expect(res.body.error.code).toBe("UNAUTHENTICATED");
+     81|     expect(Object.keys(res.body)).toEqual(["error"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/64]⎯
+
+ FAIL  tests/api/requests-access.test.ts > TEST-70 (AC-70): F-04 create and item type read > TEST-70 (b) no cookie: the create and GET /api/item-types/:id are 401
+ FAIL  tests/api/requests-access.test.ts > TEST-70 (AC-70): F-04 create and item type read > TEST-70 (c) a signed-out session: the create and GET /api/item-types/:id are 401
+AssertionError: expected 404 to be 401 // Object.is equality
+
+- Expected
++ Received
+
+- 401
++ 404
+
+ ❯ tests/api/requests-access.test.ts:98:26
+     96| 
+     97|     for (const res of [await postRequest(app, cookie, body()), await (…
+     98|       expect(res.status).toBe(401);
+       |                          ^
+     99|       expect(res.body.error.code).toBe("UNAUTHENTICATED");
+    100|       expect(Object.keys(res.body)).toEqual(["error"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/64]⎯
+
+ FAIL  tests/api/requests-concurrency.test.ts > TEST-37 (AC-37): concurrent duplicate creates > TEST-37: two parallel creates store one request, 20 runs
+AssertionError: expected [ 400, 400 ] to deeply equal [ 201, 409 ]
+
+- Expected
++ Received
+
+  Array [
+-   201,
+-   409,
++   400,
++   400,
+  ]
+
+ ❯ tests/api/requests-concurrency.test.ts:26:51
+     24|       ]);
+     25| 
+     26|       expect(results.map((r) => r.status).sort()).toEqual([201, 409]);
+       |                                                   ^
+     27|       expect(results.find((r) => r.status === 409)!.body.error.code).t…
+     28|       expect(await prisma.borrowRequest.count({ where: { borrowerId: b…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/64]⎯
+
+ FAIL  tests/api/requests-concurrency.test.ts > TEST-69 (d) (AC-69): concurrent multi-line creates that share an item type > TEST-69 (d): Arduino + HC-SR04 and HC-SR04 + ESP32 at once: one 201, one 409; one request and one entry, 5 rounds
+AssertionError: expected [ 400, 400 ] to deeply equal [ 201, 409 ]
+
+- Expected
++ Received
+
+  Array [
+-   201,
+-   409,
++   400,
++   400,
+  ]
+
+ ❯ tests/api/requests-concurrency.test.ts:52:51
+     50|       ]);
+     51| 
+     52|       expect(results.map((r) => r.status).sort()).toEqual([201, 409]);
+       |                                                   ^
+     53|       expect(results.find((r) => r.status === 409)!.body.error.code).t…
+     54|       expect(await prisma.borrowRequest.count({ where: { borrowerId: b…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/64]⎯
+
+ FAIL  tests/api/requests-create.test.ts > TEST-09 (AC-09): a Borrower requests one available unit > TEST-09: 201 PENDING, owned by the signed-in Borrower, units unchanged
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ tests/api/requests-create.test.ts:41:24
+     39|     const res = await postRequest(app, await signIn(app, "borrower1"),…
+     40| 
+     41|     expect(res.status).toBe(201);
+       |                        ^
+     42|     expect(res.body).toEqual({
+     43|       id: expect.any(Number),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/64]⎯
+
+ FAIL  tests/api/requests-create.test.ts > TEST-10 (AC-10): BR-01, 0 available units > TEST-10: 409 ITEM_TYPE_UNAVAILABLE and nothing stored
+AssertionError: expected 400 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 400
+
+ ❯ expectRejected tests/api/requests-create.test.ts:29:22
+     27|   const before = await snapshotRequestState(prisma);
+     28|   const res = await promise;
+     29|   expect(res.status).toBe(status);
+       |                      ^
+     30|   expect(Object.keys(res.body)).toEqual(["error"]);
+     31|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-create.test.ts:64:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/64]⎯
+
+ FAIL  tests/api/requests-create.test.ts > TEST-11 (AC-11): BR-04, one open request per item type > TEST-11: an existing PENDING request for the item type gives 409 DUPLICATE_OPEN_REQUEST
+ FAIL  tests/api/requests-create.test.ts > TEST-11 (AC-11): BR-04, one open request per item type > TEST-11: an existing APPROVED request for the item type gives 409 DUPLICATE_OPEN_REQUEST
+AssertionError: expected 400 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 400
+
+ ❯ expectRejected tests/api/requests-create.test.ts:29:22
+     27|   const before = await snapshotRequestState(prisma);
+     28|   const res = await promise;
+     29|   expect(res.status).toBe(status);
+       |                      ^
+     30|   expect(Object.keys(res.body)).toEqual(["error"]);
+     31|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-create.test.ts:79:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/64]⎯
+
+ FAIL  tests/api/requests-create.test.ts > TEST-11 (AC-11): BR-04, one open request per item type > TEST-11b (UAT finding #68): a second request for the same item type through the API is 409 and stores nothing
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ tests/api/requests-create.test.ts:96:26
+     94|     const asB2 = await signIn(app, "borrower2");
+     95|     const first = await postRequest(app, asB2, oneLine(sr04.id));
+     96|     expect(first.status).toBe(201);
+       |                          ^
+     97|     expect(first.body.status).toBe("PENDING");
+     98| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/64]⎯
+
+ FAIL  tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: no lines gives 400 with exactly one detail naming the field
+ FAIL  tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: empty lines gives 400 with exactly one detail naming the field
+AssertionError: expected [ 'lines', 'loanDays' ] to deeply equal [ 'lines' ]
+
+- Expected
++ Received
+
+  Array [
+    "lines",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-create.test.ts:137:31
+    135|   ])("TEST-34: %s gives 400 with exactly one detail naming the field",…
+    136|     const res = await expectRejected(postRequest(app, await signIn(app…
+    137|     expect(detailFields(res)).toEqual([field]);
+       |                               ^
+    138|   });
+    139| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/64]⎯
+
+ FAIL  tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: the same item type twice gives 400 with exactly one detail naming the field
+AssertionError: expected [ 'lines', 'loanDays' ] to deeply equal [ 'lines[1].itemTypeId' ]
+
+- Expected
++ Received
+
+  Array [
+-   "lines[1].itemTypeId",
++   "lines",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-create.test.ts:137:31
+    135|   ])("TEST-34: %s gives 400 with exactly one detail naming the field",…
+    136|     const res = await expectRejected(postRequest(app, await signIn(app…
+    137|     expect(detailFields(res)).toEqual([field]);
+       |                               ^
+    138|   });
+    139| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/64]⎯
+
+ FAIL  tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: quantity 0 gives 400 with exactly one detail naming the field
+AssertionError: expected [ 'lines[0].quantity', 'loanDays' ] to deeply equal [ 'lines[0].quantity' ]
+
+- Expected
++ Received
+
+  Array [
+    "lines[0].quantity",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-create.test.ts:137:31
+    135|   ])("TEST-34: %s gives 400 with exactly one detail naming the field",…
+    136|     const res = await expectRejected(postRequest(app, await signIn(app…
+    137|     expect(detailFields(res)).toEqual([field]);
+       |                               ^
+    138|   });
+    139| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/64]⎯
+
+ FAIL  tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: string itemTypeId gives 400 with exactly one detail naming the field
+ FAIL  tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: itemTypeId 0 gives 400 with exactly one detail naming the field
+AssertionError: expected [ 'lines[0].itemTypeId', 'loanDays' ] to deeply equal [ 'lines[0].itemTypeId' ]
+
+- Expected
++ Received
+
+  Array [
+    "lines[0].itemTypeId",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-create.test.ts:137:31
+    135|   ])("TEST-34: %s gives 400 with exactly one detail naming the field",…
+    136|     const res = await expectRejected(postRequest(app, await signIn(app…
+    137|     expect(detailFields(res)).toEqual([field]);
+       |                               ^
+    138|   });
+    139| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/64]⎯
+
+ FAIL  tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: no loanDays gives 400 with exactly one detail naming the field
+AssertionError: expected 201 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 201
+
+ ❯ expectRejected tests/api/requests-create.test.ts:29:22
+     27|   const before = await snapshotRequestState(prisma);
+     28|   const res = await promise;
+     29|   expect(res.status).toBe(status);
+       |                      ^
+     30|   expect(Object.keys(res.body)).toEqual(["error"]);
+     31|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-create.test.ts:136:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/64]⎯
+
+ FAIL  tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: extra borrowerId gives 400 with exactly one detail naming the field
+AssertionError: expected [ 'loanDays', 'borrowerId' ] to deeply equal [ 'borrowerId' ]
+
+- Expected
++ Received
+
+  Array [
++   "loanDays",
+    "borrowerId",
+  ]
+
+ ❯ tests/api/requests-create.test.ts:137:31
+    135|   ])("TEST-34: %s gives 400 with exactly one detail naming the field",…
+    136|     const res = await expectRejected(postRequest(app, await signIn(app…
+    137|     expect(detailFields(res)).toEqual([field]);
+       |                               ^
+    138|   });
+    139| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/64]⎯
+
+ FAIL  tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: unknown field in a line gives 400 with exactly one detail naming the field
+AssertionError: expected [ 'lines[0].unitId', 'loanDays' ] to deeply equal [ 'lines[0].unitId' ]
+
+- Expected
++ Received
+
+  Array [
+    "lines[0].unitId",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-create.test.ts:137:31
+    135|   ])("TEST-34: %s gives 400 with exactly one detail naming the field",…
+    136|     const res = await expectRejected(postRequest(app, await signIn(app…
+    137|     expect(detailFields(res)).toEqual([field]);
+       |                               ^
+    138|   });
+    139| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/64]⎯
+
+ FAIL  tests/api/requests-create.test.ts > TEST-35 (AC-35): unknown item type > TEST-35: 404 NOT_FOUND naming lines[0].itemTypeId
+AssertionError: expected 400 to be 404 // Object.is equality
+
+- Expected
++ Received
+
+- 404
++ 400
+
+ ❯ expectRejected tests/api/requests-create.test.ts:29:22
+     27|   const before = await snapshotRequestState(prisma);
+     28|   const res = await promise;
+     29|   expect(res.status).toBe(status);
+       |                      ^
+     30|   expect(Object.keys(res.body)).toEqual(["error"]);
+     31|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-create.test.ts:143:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/64]⎯
+
+ FAIL  tests/api/requests-create.test.ts > TEST-36 (AC-36): BR-04 limits > TEST-36: other item types, closed requests and other Borrowers do not block; the same item type does
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ tests/api/requests-create.test.ts:156:70
+    154|     const asB2 = await signIn(app, "borrower2");
+    155| 
+    156|     expect((await postRequest(app, asB1, oneLine(esp32.id))).status).t…
+       |                                                                      ^
+    157|     expect((await postRequest(app, asB2, oneLine(arduino.id))).status)…
+    158|     await expectRejected(postRequest(app, asB1, oneLine(arduino.id)), …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/64]⎯
+
+ FAIL  tests/api/requests-create.test.ts > TEST-38 (AC-38): BR-04 wins over BR-01 (F02-D1) > TEST-38: open request and 0 available gives 409 DUPLICATE_OPEN_REQUEST naming both records
+AssertionError: expected 400 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 400
+
+ ❯ expectRejected tests/api/requests-create.test.ts:29:22
+     27|   const before = await snapshotRequestState(prisma);
+     28|   const res = await promise;
+     29|   expect(res.status).toBe(status);
+       |                      ^
+     30|   expect(Object.keys(res.body)).toEqual(["error"]);
+     31|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-create.test.ts:165:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/64]⎯
+
+ FAIL  tests/api/requests-history.test.ts > TEST-16 (AC-16): history entry for request creation > TEST-16: exactly one CREATED entry with the Borrower as actor at the request's createdAt
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ tests/api/requests-history.test.ts:20:24
+     18| 
+     19|     const res = await postRequest(app, await signIn(app, "borrower1"),…
+     20|     expect(res.status).toBe(201);
+       |                        ^
+     21| 
+     22|     const entries = await prisma.historyEntry.findMany({ where: { requ…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-64 (AC-64): a request with several lines and one loan length > TEST-64: 201 PENDING with loanDays and the lines in body order; one CREATED entry; units unchanged
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ tests/api/requests-multi.test.ts:49:24
+     47|     const res = await postRequest(app, s.cookie, linesBody(7, [arduino…
+     48| 
+     49|     expect(res.status).toBe(201);
+       |                        ^
+     50|     expect(res.body).toMatchObject({ status: "PENDING", loanDays: 7, d…
+     51|     expect(res.body.lines).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-65 (AC-65): body shape > TEST-65 (a) no lines: 400 with exactly one detail naming the field; nothing stored
+ FAIL  tests/api/requests-multi.test.ts > TEST-65 (AC-65): body shape > TEST-65 (b) lines []: 400 with exactly one detail naming the field; nothing stored
+ FAIL  tests/api/requests-multi.test.ts > TEST-65 (AC-65): body shape > TEST-65 (c) 11 lines: 400 with exactly one detail naming the field; nothing stored
+AssertionError: expected [ 'lines', 'loanDays' ] to deeply equal [ 'lines' ]
+
+- Expected
++ Received
+
+  Array [
+    "lines",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-multi.test.ts:104:31
+    102|     const res = await expectRejected(postRequest(app, s.cookie, body()…
+    103| 
+    104|     expect(detailFields(res)).toEqual([field]);
+       |                               ^
+    105|   });
+    106| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-65 (AC-65): body shape > TEST-65 (d) Arduino twice: 400 with exactly one detail naming the field; nothing stored
+AssertionError: expected [ 'lines', 'loanDays' ] to deeply equal [ 'lines[1].itemTypeId' ]
+
+- Expected
++ Received
+
+  Array [
+-   "lines[1].itemTypeId",
++   "lines",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-multi.test.ts:104:31
+    102|     const res = await expectRejected(postRequest(app, s.cookie, body()…
+    103| 
+    104|     expect(detailFields(res)).toEqual([field]);
+       |                               ^
+    105|   });
+    106| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-65 (AC-65): body shape > TEST-65 (e) quantity 0: 400 with exactly one detail naming the field; nothing stored
+ FAIL  tests/api/requests-multi.test.ts > TEST-65 (AC-65): body shape > TEST-65 (e) quantity 1.5: 400 with exactly one detail naming the field; nothing stored
+ FAIL  tests/api/requests-multi.test.ts > TEST-65 (AC-65): body shape > TEST-65 (e) quantity 11: 400 with exactly one detail naming the field; nothing stored
+AssertionError: expected [ 'lines[0].quantity', 'loanDays' ] to deeply equal [ 'lines[0].quantity' ]
+
+- Expected
++ Received
+
+  Array [
+    "lines[0].quantity",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-multi.test.ts:104:31
+    102|     const res = await expectRejected(postRequest(app, s.cookie, body()…
+    103| 
+    104|     expect(detailFields(res)).toEqual([field]);
+       |                               ^
+    105|   });
+    106| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-65 (AC-65): body shape > TEST-65 (f) no loanDays: 400 with exactly one detail naming the field; nothing stored
+AssertionError: expected 201 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 201
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+     31|   const before = await snapshotRequestState(prisma);
+     32|   const res = await promise;
+     33|   expect(res.status).toBe(status);
+       |                      ^
+     34|   expect(Object.keys(res.body)).toEqual(["error"]);
+     35|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-multi.test.ts:102:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-65 (AC-65): body shape > TEST-65 (h) a line with unitId: 400 with exactly one detail naming the field; nothing stored
+AssertionError: expected [ 'lines[0].unitId', 'loanDays' ] to deeply equal [ 'lines[0].unitId' ]
+
+- Expected
++ Received
+
+  Array [
+    "lines[0].unitId",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-multi.test.ts:104:31
+    102|     const res = await expectRejected(postRequest(app, s.cookie, body()…
+    103| 
+    104|     expect(detailFields(res)).toEqual([field]);
+       |                               ^
+    105|   });
+    106| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-65 (AC-65): body shape > TEST-65 (i) a line with assetTag: 400 with exactly one detail naming the field; nothing stored
+AssertionError: expected [ 'lines[0].assetTag', 'loanDays' ] to deeply equal [ 'lines[0].assetTag' ]
+
+- Expected
++ Received
+
+  Array [
+    "lines[0].assetTag",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-multi.test.ts:104:31
+    102|     const res = await expectRejected(postRequest(app, s.cookie, body()…
+    103| 
+    104|     expect(detailFields(res)).toEqual([field]);
+       |                               ^
+    105|   });
+    106| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-65 (AC-65): body shape > TEST-65 (j) top-level borrowerId: 400 with exactly one detail naming the field; nothing stored
+AssertionError: expected [ 'loanDays', 'borrowerId' ] to deeply equal [ 'borrowerId' ]
+
+- Expected
++ Received
+
+  Array [
++   "loanDays",
+    "borrowerId",
+  ]
+
+ ❯ tests/api/requests-multi.test.ts:104:31
+    102|     const res = await expectRejected(postRequest(app, s.cookie, body()…
+    103| 
+    104|     expect(detailFields(res)).toEqual([field]);
+       |                               ^
+    105|   });
+    106| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-66 (AC-66): BR-07, quantity up to the item type's maximum > TEST-66 (a): multimeter × 2 is 409 QUANTITY_LIMIT naming lines[0].quantity
+AssertionError: expected 400 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+     31|   const before = await snapshotRequestState(prisma);
+     32|   const res = await promise;
+     33|   expect(res.status).toBe(status);
+       |                      ^
+     34|   expect(Object.keys(res.body)).toEqual(["error"]);
+     35|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-multi.test.ts:118:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-66 (AC-66): BR-07, quantity up to the item type's maximum > TEST-66 (b): HC-SR04 × 4 and multimeter × 2 names only lines[1].quantity
+AssertionError: expected 400 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+     31|   const before = await snapshotRequestState(prisma);
+     32|   const res = await promise;
+     33|   expect(res.status).toBe(status);
+       |                      ^
+     34|   expect(Object.keys(res.body)).toEqual(["error"]);
+     35|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-multi.test.ts:125:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-66 (AC-66): BR-07, quantity up to the item type's maximum > TEST-66 (c): HC-SR04 × 4, its maximum, is accepted
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ tests/api/requests-multi.test.ts:132:24
+    130|     const s = await world();
+    131|     const res = await postRequest(app, s.cookie, linesBody(3, [s.senso…
+    132|     expect(res.status).toBe(201);
+       |                        ^
+    133|   });
+    134| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-66 (AC-66): BR-07, quantity up to the item type's maximum > TEST-66 (d): multimeter × 2 and HC-SR04 × 5: the message names the multimeter, details both lines
+AssertionError: expected 400 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+     31|   const before = await snapshotRequestState(prisma);
+     32|   const res = await promise;
+     33|   expect(res.status).toBe(status);
+       |                      ^
+     34|   expect(Object.keys(res.body)).toEqual(["error"]);
+     35|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-multi.test.ts:137:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-66 (AC-66): BR-07, quantity up to the item type's maximum > TEST-66 (e): after F-09 lowers HC-SR04 to 2 per request, HC-SR04 × 3 is 409 naming the new maximum
+AssertionError: expected 400 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+     31|   const before = await snapshotRequestState(prisma);
+     32|   const res = await promise;
+     33|   expect(res.status).toBe(status);
+       |                      ^
+     34|   expect(Object.keys(res.body)).toEqual(["error"]);
+     35|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-multi.test.ts:150:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-67 (AC-67): BR-08, one loan length up to the smallest maximum > TEST-67 (a): both for 7 days is 409 LOAN_LENGTH_LIMIT naming the multimeter
+AssertionError: expected 400 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+     31|   const before = await snapshotRequestState(prisma);
+     32|   const res = await promise;
+     33|   expect(res.status).toBe(status);
+       |                      ^
+     34|   expect(Object.keys(res.body)).toEqual(["error"]);
+     35|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-multi.test.ts:166:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-67 (AC-67): BR-08, one loan length up to the smallest maximum > TEST-67 (b), (c): both for 3 days and Arduino alone for 14 days are accepted
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ tests/api/requests-multi.test.ts:174:22
+    172|     const s = await world();
+    173|     const b = await postRequest(app, s.cookie, linesBody(3, [s.arduino…
+    174|     expect(b.status).toBe(201);
+       |                      ^
+    175|     expect(b.body.loanDays).toBe(3);
+    176| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-67 (AC-67): BR-08, one loan length up to the smallest maximum > TEST-67 (d): Arduino alone for 15 days is 409 naming Arduino Uno R3
+AssertionError: expected 400 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+     31|   const before = await snapshotRequestState(prisma);
+     32|   const res = await promise;
+     33|   expect(res.status).toBe(status);
+       |                      ^
+     34|   expect(Object.keys(res.body)).toEqual(["error"]);
+     35|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-multi.test.ts:185:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-67 (AC-67): BR-08, one loan length up to the smallest maximum > TEST-67 (e): after F-09 lowers Arduino to 7 days, Arduino for 10 days is 409 at most 7 days
+AssertionError: expected 400 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+     31|   const before = await snapshotRequestState(prisma);
+     32|   const res = await promise;
+     33|   expect(res.status).toBe(status);
+       |                      ^
+     34|   expect(Object.keys(res.body)).toEqual(["error"]);
+     35|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-multi.test.ts:194:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-68 (AC-68): BR-01, enough available units on every line > TEST-68 (a): HC-SR04 × 1 and Arduino × 2 with 1 available: 409 naming lines[1]; nothing stored, not even the HC-SR04 line
+AssertionError: expected 400 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+     31|   const before = await snapshotRequestState(prisma);
+     32|   const res = await promise;
+     33|   expect(res.status).toBe(status);
+       |                      ^
+     34|   expect(Object.keys(res.body)).toEqual(["error"]);
+     35|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-multi.test.ts:210:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-68 (AC-68): BR-01, enough available units on every line > TEST-68 (b): Oscilloscope with none available: "has no available units"
+AssertionError: expected 400 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+     31|   const before = await snapshotRequestState(prisma);
+     32|   const res = await promise;
+     33|   expect(res.status).toBe(status);
+       |                      ^
+     34|   expect(Object.keys(res.body)).toEqual(["error"]);
+     35|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-multi.test.ts:218:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-68 (AC-68): BR-01, enough available units on every line > TEST-68 (c): Arduino × 1 with 1 available is accepted
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ tests/api/requests-multi.test.ts:224:88
+    222|   it("TEST-68 (c): Arduino × 1 with 1 available is accepted", async ()…
+    223|     const s = await world();
+    224|     expect((await postRequest(app, s.cookie, linesBody(7, [s.arduino.i…
+       |                                                                                        ^
+    225|   });
+    226| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-68 (AC-68): BR-01, enough available units on every line > TEST-68: an unknown item type on a later line is 404 naming that line
+AssertionError: expected 400 to be 404 // Object.is equality
+
+- Expected
++ Received
+
+- 404
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+     31|   const before = await snapshotRequestState(prisma);
+     32|   const res = await promise;
+     33|   expect(res.status).toBe(status);
+       |                      ^
+     34|   expect(Object.keys(res.body)).toEqual(["error"]);
+     35|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-multi.test.ts:229:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-69 (AC-69): BR-04 and the rule order > TEST-69 (a): a line whose item type is on an open request is 409 DUPLICATE_OPEN_REQUEST naming R1 and lines[1]
+AssertionError: expected 400 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+     31|   const before = await snapshotRequestState(prisma);
+     32|   const res = await promise;
+     33|   expect(res.status).toBe(status);
+       |                      ^
+     34|   expect(Object.keys(res.body)).toEqual(["error"]);
+     35|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-multi.test.ts:249:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-69 (AC-69): BR-04 and the rule order > TEST-69 (b): when BR-04, BR-07, BR-08 and BR-01 all fail, the code is DUPLICATE_OPEN_REQUEST
+AssertionError: expected 400 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+     31|   const before = await snapshotRequestState(prisma);
+     32|   const res = await promise;
+     33|   expect(res.status).toBe(status);
+       |                      ^
+     34|   expect(Object.keys(res.body)).toEqual(["error"]);
+     35|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-multi.test.ts:256:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-69 (AC-69): BR-04 and the rule order > TEST-69 (c): another Borrower's open request for HC-SR04 does not block
+AssertionError: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ tests/api/requests-multi.test.ts:261:87
+    259|   it("TEST-69 (c): another Borrower's open request for HC-SR04 does no…
+    260|     const s = await world();
+    261|     expect((await postRequest(app, s.cookie, linesBody(7, [s.sensor.id…
+       |                                                                                       ^
+    262|   });
+    263| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/64]⎯
+
+ FAIL  tests/api/requests-multi.test.ts > TEST-69 (AC-69): BR-04 and the rule order > TEST-69: without BR-04, a quantity over the maximum wins over the loan length and the availability
+AssertionError: expected 400 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+     31|   const before = await snapshotRequestState(prisma);
+     32|   const res = await promise;
+     33|   expect(res.status).toBe(status);
+       |                      ^
+     34|   expect(Object.keys(res.body)).toEqual(["error"]);
+     35|   expect(res.body.error.code).toBe(code);
+ ❯ tests/api/requests-multi.test.ts:266:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/64]⎯
+
+ FAIL  tests/unit/request-rules.test.ts > requestRuleViolation (BR-01, BR-04, BR-07, BR-08; F02-D1, F04-D3) > TEST-10 (unit): 0 available gives ITEM_TYPE_UNAVAILABLE, 1 available gives none
+AssertionError: expected null to deeply equal { rule: 'ITEM_TYPE_UNAVAILABLE', …(1) }
+
+- Expected: 
+Object {
+  "lines": Array [
+    0,
+  ],
+  "rule": "ITEM_TYPE_UNAVAILABLE",
+}
+
++ Received: 
+null
+
+ ❯ tests/unit/request-rules.test.ts:41:74
+     39| describe("requestRuleViolation (BR-01, BR-04, BR-07, BR-08; F02-D1, F0…
+     40|   it("TEST-10 (unit): 0 available gives ITEM_TYPE_UNAVAILABLE, 1 avail…
+     41|     expect(check({ lines: [line({ availableCount: 0 })], loanDays: 7 }…
+       |                                                                          ^
+     42|     expect(check({ lines: [line({ availableCount: 1 })], loanDays: 7 }…
+     43|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[48/64]⎯
+
+ FAIL  tests/unit/request-rules.test.ts > requestRuleViolation (BR-01, BR-04, BR-07, BR-08; F02-D1, F04-D3) > TEST-11 (unit): an open request gives DUPLICATE_OPEN_REQUEST; none gives no violation
+AssertionError: expected null to deeply equal { Object (rule, lines) }
+
+- Expected: 
+Object {
+  "lines": Array [
+    0,
+  ],
+  "rule": "DUPLICATE_OPEN_REQUEST",
+}
+
++ Received: 
+null
+
+ ❯ tests/unit/request-rules.test.ts:46:74
+     44| 
+     45|   it("TEST-11 (unit): an open request gives DUPLICATE_OPEN_REQUEST; no…
+     46|     expect(check({ lines: [line({ openRequestId: 12 })], loanDays: 7 }…
+       |                                                                          ^
+     47|     expect(check({ lines: [line()], loanDays: 7 })).toBeNull();
+     48|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[49/64]⎯
+
+ FAIL  tests/unit/request-rules.test.ts > requestRuleViolation (BR-01, BR-04, BR-07, BR-08; F02-D1, F04-D3) > TEST-38 (unit): when BR-04 and BR-01 both fail, DUPLICATE_OPEN_REQUEST wins (F02-D1)
+AssertionError: expected undefined to be 'DUPLICATE_OPEN_REQUEST' // Object.is equality
+
+- Expected: 
+"DUPLICATE_OPEN_REQUEST"
+
++ Received: 
+undefined
+
+ ❯ tests/unit/request-rules.test.ts:51:99
+     49| 
+     50|   it("TEST-38 (unit): when BR-04 and BR-01 both fail, DUPLICATE_OPEN_R…
+     51|     expect(check({ lines: [line({ openRequestId: 12, availableCount: 0…
+       |                                                                                                   ^
+     52|   });
+     53| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[50/64]⎯
+
+ FAIL  tests/unit/request-rules.test.ts > requestRuleViolation (BR-01, BR-04, BR-07, BR-08; F02-D1, F04-D3) > fewer available units than the quantity is ITEM_TYPE_UNAVAILABLE on that line
+AssertionError: expected null to deeply equal { rule: 'ITEM_TYPE_UNAVAILABLE', …(1) }
+
+- Expected: 
+Object {
+  "lines": Array [
+    1,
+  ],
+  "rule": "ITEM_TYPE_UNAVAILABLE",
+}
+
++ Received: 
+null
+
+ ❯ tests/unit/request-rules.test.ts:55:110
+     53| 
+     54|   it("fewer available units than the quantity is ITEM_TYPE_UNAVAILABLE…
+     55|     expect(check({ lines: [line(), line({ name: "ESP32", quantity: 2, …
+       |                                                                                                              ^
+     56|       rule: "ITEM_TYPE_UNAVAILABLE",
+     57|       lines: [1],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[51/64]⎯
+
+ FAIL  tests/unit/request-rules.test.ts > requestRuleViolation (BR-01, BR-04, BR-07, BR-08; F02-D1, F04-D3) > TEST-66 (unit): a quantity equal to the maximum is allowed; one above is QUANTITY_LIMIT
+AssertionError: expected null to deeply equal { rule: 'QUANTITY_LIMIT', …(1) }
+
+- Expected: 
+Object {
+  "lines": Array [
+    0,
+  ],
+  "rule": "QUANTITY_LIMIT",
+}
+
++ Received: 
+null
+
+ ❯ tests/unit/request-rules.test.ts:63:68
+     61|   it("TEST-66 (unit): a quantity equal to the maximum is allowed; one …
+     62|     expect(check({ lines: [line({ quantity: 2 })], loanDays: 7 })).toB…
+     63|     expect(check({ lines: [line({ quantity: 3 })], loanDays: 7 })).toE…
+       |                                                                    ^
+     64|     expect(check({ lines: [multimeter({ quantity: 2 }), line({ quantit…
+     65|       rule: "QUANTITY_LIMIT",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[52/64]⎯
+
+ FAIL  tests/unit/request-rules.test.ts > requestRuleViolation (BR-01, BR-04, BR-07, BR-08; F02-D1, F04-D3) > TEST-67 (unit): the smallest maximum of 14, 3, 14 is 3, set by the multimeter (index 1)
+AssertionError: expected undefined to be type of 'function'
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ tests/unit/request-rules.test.ts:72:29
+     70|   it("TEST-67 (unit): the smallest maximum of 14, 3, 14 is 3, set by t…
+     71|     const lines = [line(), multimeter(), line({ name: "HC-SR04" })];
+     72|     expect(loanLengthLimit).toBeTypeOf("function");
+       |                             ^
+     73|     expect(loanLengthLimit!(lines)).toEqual({ days: 3, index: 1 });
+     74|     expect(check({ lines, loanDays: 3 })).toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[53/64]⎯
+
+ FAIL  tests/unit/request-rules.test.ts > requestRuleViolation (BR-01, BR-04, BR-07, BR-08; F02-D1, F04-D3) > TEST-69 (e) (unit): BR-07, BR-08 and BR-01 fail: QUANTITY_LIMIT
+AssertionError: expected undefined to be 'QUANTITY_LIMIT' // Object.is equality
+
+- Expected: 
+"QUANTITY_LIMIT"
+
++ Received: 
+undefined
+
+ ❯ tests/unit/request-rules.test.ts:79:100
+     77| 
+     78|   it("TEST-69 (e) (unit): BR-07, BR-08 and BR-01 fail: QUANTITY_LIMIT"…
+     79|     expect(check({ lines: [multimeter({ quantity: 2, availableCount: 0…
+       |                                                                                                    ^
+     80|   });
+     81| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[54/64]⎯
+
+ FAIL  tests/unit/request-rules.test.ts > requestRuleViolation (BR-01, BR-04, BR-07, BR-08; F02-D1, F04-D3) > TEST-69 (f) (unit): BR-08 and BR-01 fail: LOAN_LENGTH_LIMIT
+AssertionError: expected undefined to be 'LOAN_LENGTH_LIMIT' // Object.is equality
+
+- Expected: 
+"LOAN_LENGTH_LIMIT"
+
++ Received: 
+undefined
+
+ ❯ tests/unit/request-rules.test.ts:83:87
+     81| 
+     82|   it("TEST-69 (f) (unit): BR-08 and BR-01 fail: LOAN_LENGTH_LIMIT", ()…
+     83|     expect(check({ lines: [multimeter({ availableCount: 0 })], loanDay…
+       |                                                                                       ^
+     84|   });
+     85| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[55/64]⎯
+
+ Test Files  7 failed | 35 passed (42)
+      Tests  64 failed | 280 passed (344)
+   Start at  11:08:47
+   Duration  39.83s (transform 509ms, setup 1.64s, collect 4.27s, tests 27.87s, environment 5ms, prepare 1.45s)
+
+
+##[error]AssertionError: expected 404 to be 200 // Object.is equality
+
+Expected
++ Received
+
+200
++ 404
+
+ ❯ tests/api/item-types.test.ts:40:22
+
+
+(node:3251) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 unhandledRejection listeners added to [process]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+##[error]AssertionError: expected { code: 'NOT_FOUND', …(2) } to match object { code: 'NOT_FOUND', …(1) }
+(1 matching property omitted from actual)
+
+Expected
++ Received
+
+  Object {
+    "code": "NOT_FOUND",
+  "message": "Item type 999999 does not exist.",
++   "message": "The requested resource was not found.",
+  }
+
+ ❯ tests/api/item-types.test.ts:62:28
+
+
+
+##[error]AssertionError: expected 404 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 404
+
+ ❯ tests/api/item-types.test.ts:71:24
+
+
+
+##[error]AssertionError: expected 404 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 404
+
+ ❯ tests/api/item-types.test.ts:71:24
+
+
+
+##[error]AssertionError: expected 404 to be 401 // Object.is equality
+
+Expected
++ Received
+
+401
++ 404
+
+ ❯ tests/api/item-types.test.ts:79:24
+
+
+
+##[error]AssertionError: expected 404 to be 401 // Object.is equality
+
+Expected
++ Received
+
+401
++ 404
+
+ ❯ tests/api/requests-access.test.ts:98:26
+
+
+
+##[error]AssertionError: expected 404 to be 401 // Object.is equality
+
+Expected
++ Received
+
+401
++ 404
+
+ ❯ tests/api/requests-access.test.ts:98:26
+
+
+
+##[error]AssertionError: expected [ 400, 400 ] to deeply equal [ 201, 409 ]
+
+Expected
++ Received
+
+  Array [
+  201,
+  409,
++   400,
++   400,
+  ]
+
+ ❯ tests/api/requests-concurrency.test.ts:26:51
+
+
+
+##[error]AssertionError: expected [ 400, 400 ] to deeply equal [ 201, 409 ]
+
+Expected
++ Received
+
+  Array [
+  201,
+  409,
++   400,
++   400,
+  ]
+
+ ❯ tests/api/requests-concurrency.test.ts:52:51
+
+
+
+##[error]AssertionError: expected 400 to be 201 // Object.is equality
+
+Expected
++ Received
+
+201
++ 400
+
+ ❯ tests/api/requests-create.test.ts:41:24
+
+
+
+##[error]AssertionError: expected 400 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 400
+
+ ❯ expectRejected tests/api/requests-create.test.ts:29:22
+ ❯ tests/api/requests-create.test.ts:64:17
+
+
+
+##[error]AssertionError: expected 400 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 400
+
+ ❯ expectRejected tests/api/requests-create.test.ts:29:22
+ ❯ tests/api/requests-create.test.ts:79:19
+
+
+
+##[error]AssertionError: expected 400 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 400
+
+ ❯ expectRejected tests/api/requests-create.test.ts:29:22
+ ❯ tests/api/requests-create.test.ts:79:19
+
+
+
+##[error]AssertionError: expected 400 to be 201 // Object.is equality
+
+Expected
++ Received
+
+201
++ 400
+
+ ❯ tests/api/requests-create.test.ts:96:26
+
+
+
+##[error]AssertionError: expected [ 'lines', 'loanDays' ] to deeply equal [ 'lines' ]
+
+Expected
++ Received
+
+  Array [
+    "lines",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-create.test.ts:137:31
+
+
+
+##[error]AssertionError: expected [ 'lines', 'loanDays' ] to deeply equal [ 'lines' ]
+
+Expected
++ Received
+
+  Array [
+    "lines",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-create.test.ts:137:31
+
+
+
+##[error]AssertionError: expected [ 'lines', 'loanDays' ] to deeply equal [ 'lines[1].itemTypeId' ]
+
+Expected
++ Received
+
+  Array [
+  "lines[1].itemTypeId",
++   "lines",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-create.test.ts:137:31
+
+
+
+##[error]AssertionError: expected [ 'lines[0].quantity', 'loanDays' ] to deeply equal [ 'lines[0].quantity' ]
+
+Expected
++ Received
+
+  Array [
+    "lines[0].quantity",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-create.test.ts:137:31
+
+
+
+##[error]AssertionError: expected [ 'lines[0].itemTypeId', 'loanDays' ] to deeply equal [ 'lines[0].itemTypeId' ]
+
+Expected
++ Received
+
+  Array [
+    "lines[0].itemTypeId",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-create.test.ts:137:31
+
+
+
+##[error]AssertionError: expected [ 'lines[0].itemTypeId', 'loanDays' ] to deeply equal [ 'lines[0].itemTypeId' ]
+
+Expected
++ Received
+
+  Array [
+    "lines[0].itemTypeId",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-create.test.ts:137:31
+
+
+
+##[error]AssertionError: expected 201 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 201
+
+ ❯ expectRejected tests/api/requests-create.test.ts:29:22
+ ❯ tests/api/requests-create.test.ts:136:17
+
+
+
+##[error]AssertionError: expected [ 'loanDays', 'borrowerId' ] to deeply equal [ 'borrowerId' ]
+
+Expected
++ Received
+
+  Array [
++   "loanDays",
+    "borrowerId",
+  ]
+
+ ❯ tests/api/requests-create.test.ts:137:31
+
+
+
+##[error]AssertionError: expected [ 'lines[0].unitId', 'loanDays' ] to deeply equal [ 'lines[0].unitId' ]
+
+Expected
++ Received
+
+  Array [
+    "lines[0].unitId",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-create.test.ts:137:31
+
+
+
+##[error]AssertionError: expected 400 to be 404 // Object.is equality
+
+Expected
++ Received
+
+404
++ 400
+
+ ❯ expectRejected tests/api/requests-create.test.ts:29:22
+ ❯ tests/api/requests-create.test.ts:143:17
+
+
+
+##[error]AssertionError: expected 400 to be 201 // Object.is equality
+
+Expected
++ Received
+
+201
++ 400
+
+ ❯ tests/api/requests-create.test.ts:156:70
+
+
+
+##[error]AssertionError: expected 400 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 400
+
+ ❯ expectRejected tests/api/requests-create.test.ts:29:22
+ ❯ tests/api/requests-create.test.ts:165:17
+
+
+
+##[error]AssertionError: expected 400 to be 201 // Object.is equality
+
+Expected
++ Received
+
+201
++ 400
+
+ ❯ tests/api/requests-history.test.ts:20:24
+
+
+
+##[error]AssertionError: expected 400 to be 201 // Object.is equality
+
+Expected
++ Received
+
+201
++ 400
+
+ ❯ tests/api/requests-multi.test.ts:49:24
+
+
+
+##[error]AssertionError: expected [ 'lines', 'loanDays' ] to deeply equal [ 'lines' ]
+
+Expected
++ Received
+
+  Array [
+    "lines",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-multi.test.ts:104:31
+
+
+
+##[error]AssertionError: expected [ 'lines', 'loanDays' ] to deeply equal [ 'lines' ]
+
+Expected
++ Received
+
+  Array [
+    "lines",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-multi.test.ts:104:31
+
+
+
+##[error]AssertionError: expected [ 'lines', 'loanDays' ] to deeply equal [ 'lines' ]
+
+Expected
++ Received
+
+  Array [
+    "lines",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-multi.test.ts:104:31
+
+
+
+##[error]AssertionError: expected [ 'lines', 'loanDays' ] to deeply equal [ 'lines[1].itemTypeId' ]
+
+Expected
++ Received
+
+  Array [
+  "lines[1].itemTypeId",
++   "lines",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-multi.test.ts:104:31
+
+
+
+##[error]AssertionError: expected [ 'lines[0].quantity', 'loanDays' ] to deeply equal [ 'lines[0].quantity' ]
+
+Expected
++ Received
+
+  Array [
+    "lines[0].quantity",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-multi.test.ts:104:31
+
+
+
+##[error]AssertionError: expected [ 'lines[0].quantity', 'loanDays' ] to deeply equal [ 'lines[0].quantity' ]
+
+Expected
++ Received
+
+  Array [
+    "lines[0].quantity",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-multi.test.ts:104:31
+
+
+
+##[error]AssertionError: expected [ 'lines[0].quantity', 'loanDays' ] to deeply equal [ 'lines[0].quantity' ]
+
+Expected
++ Received
+
+  Array [
+    "lines[0].quantity",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-multi.test.ts:104:31
+
+
+
+##[error]AssertionError: expected 201 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 201
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+ ❯ tests/api/requests-multi.test.ts:102:17
+
+
+
+##[error]AssertionError: expected [ 'lines[0].unitId', 'loanDays' ] to deeply equal [ 'lines[0].unitId' ]
+
+Expected
++ Received
+
+  Array [
+    "lines[0].unitId",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-multi.test.ts:104:31
+
+
+
+##[error]AssertionError: expected [ 'lines[0].assetTag', 'loanDays' ] to deeply equal [ 'lines[0].assetTag' ]
+
+Expected
++ Received
+
+  Array [
+    "lines[0].assetTag",
++   "loanDays",
+  ]
+
+ ❯ tests/api/requests-multi.test.ts:104:31
+
+
+
+##[error]AssertionError: expected [ 'loanDays', 'borrowerId' ] to deeply equal [ 'borrowerId' ]
+
+Expected
++ Received
+
+  Array [
++   "loanDays",
+    "borrowerId",
+  ]
+
+ ❯ tests/api/requests-multi.test.ts:104:31
+
+
+
+##[error]AssertionError: expected 400 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+ ❯ tests/api/requests-multi.test.ts:118:17
+
+
+
+##[error]AssertionError: expected 400 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+ ❯ tests/api/requests-multi.test.ts:125:17
+
+
+
+##[error]AssertionError: expected 400 to be 201 // Object.is equality
+
+Expected
++ Received
+
+201
++ 400
+
+ ❯ tests/api/requests-multi.test.ts:132:24
+
+
+
+##[error]AssertionError: expected 400 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+ ❯ tests/api/requests-multi.test.ts:137:17
+
+
+
+##[error]AssertionError: expected 400 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+ ❯ tests/api/requests-multi.test.ts:150:17
+
+
+
+##[error]AssertionError: expected 400 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+ ❯ tests/api/requests-multi.test.ts:166:17
+
+
+
+##[error]AssertionError: expected 400 to be 201 // Object.is equality
+
+Expected
++ Received
+
+201
++ 400
+
+ ❯ tests/api/requests-multi.test.ts:174:22
+
+
+
+##[error]AssertionError: expected 400 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+ ❯ tests/api/requests-multi.test.ts:185:17
+
+
+
+##[error]AssertionError: expected 400 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+ ❯ tests/api/requests-multi.test.ts:194:17
+
+
+
+##[error]AssertionError: expected 400 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+ ❯ tests/api/requests-multi.test.ts:210:17
+
+
+
+##[error]AssertionError: expected 400 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+ ❯ tests/api/requests-multi.test.ts:218:17
+
+
+
+##[error]AssertionError: expected 400 to be 201 // Object.is equality
+
+Expected
++ Received
+
+201
++ 400
+
+ ❯ tests/api/requests-multi.test.ts:224:88
+
+
+
+##[error]AssertionError: expected 400 to be 404 // Object.is equality
+
+Expected
++ Received
+
+404
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+ ❯ tests/api/requests-multi.test.ts:229:17
+
+
+
+##[error]AssertionError: expected 400 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+ ❯ tests/api/requests-multi.test.ts:249:17
+
+
+
+##[error]AssertionError: expected 400 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+ ❯ tests/api/requests-multi.test.ts:256:5
+
+
+
+##[error]AssertionError: expected 400 to be 201 // Object.is equality
+
+Expected
++ Received
+
+201
++ 400
+
+ ❯ tests/api/requests-multi.test.ts:261:87
+
+
+
+##[error]AssertionError: expected 400 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 400
+
+ ❯ expectRejected tests/api/requests-multi.test.ts:33:22
+ ❯ tests/api/requests-multi.test.ts:266:5
+
+
+
+##[error]AssertionError: expected null to deeply equal { rule: 'ITEM_TYPE_UNAVAILABLE', …(1) }
+
+Expected: 
+Object {
+  "lines": Array [
+    0,
+  ],
+  "rule": "ITEM_TYPE_UNAVAILABLE",
+}
+
++ Received: 
+null
+
+ ❯ tests/unit/request-rules.test.ts:41:74
+
+
+
+##[error]AssertionError: expected null to deeply equal { Object (rule, lines) }
+
+Expected: 
+Object {
+  "lines": Array [
+    0,
+  ],
+  "rule": "DUPLICATE_OPEN_REQUEST",
+}
+
++ Received: 
+null
+
+ ❯ tests/unit/request-rules.test.ts:46:74
+
+
+
+##[error]AssertionError: expected undefined to be 'DUPLICATE_OPEN_REQUEST' // Object.is equality
+
+Expected: 
+"DUPLICATE_OPEN_REQUEST"
+
++ Received: 
+undefined
+
+ ❯ tests/unit/request-rules.test.ts:51:99
+
+
+
+##[error]AssertionError: expected null to deeply equal { rule: 'ITEM_TYPE_UNAVAILABLE', …(1) }
+
+Expected: 
+Object {
+  "lines": Array [
+    1,
+  ],
+  "rule": "ITEM_TYPE_UNAVAILABLE",
+}
+
++ Received: 
+null
+
+ ❯ tests/unit/request-rules.test.ts:55:110
+
+
+
+##[error]AssertionError: expected null to deeply equal { rule: 'QUANTITY_LIMIT', …(1) }
+
+Expected: 
+Object {
+  "lines": Array [
+    0,
+  ],
+  "rule": "QUANTITY_LIMIT",
+}
+
++ Received: 
+null
+
+ ❯ tests/unit/request-rules.test.ts:63:68
+
+
+
+##[error]AssertionError: expected undefined to be type of 'function'
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ tests/unit/request-rules.test.ts:72:29
+
+
+
+##[error]AssertionError: expected undefined to be 'QUANTITY_LIMIT' // Object.is equality
+
+Expected: 
+"QUANTITY_LIMIT"
+
++ Received: 
+undefined
+
+ ❯ tests/unit/request-rules.test.ts:79:100
+
+
+
+##[error]AssertionError: expected undefined to be 'LOAN_LENGTH_LIMIT' // Object.is equality
+
+Expected: 
+"LOAN_LENGTH_LIMIT"
+
++ Received: 
+undefined
+
+ ❯ tests/unit/request-rules.test.ts:83:87
+
+
+##[error]Process completed with exit code 1.
