@@ -217,4 +217,30 @@ describe("TEST-107 (AC-107): states that cannot be returned; unknown request or 
     expect((await loanRow(l2.id)).status).toBe("ACTIVE");
     expect(await snapshotCheckoutState(prisma)).toEqual(before);
   });
+
+  it("TEST-107 (c): a loan whose unit is no longer ON_LOAN is 409 and the whole return rolls back (review of PR #94)", async () => {
+    const w = await createCheckoutWorld(prisma);
+    const { request: r, loans } = await createCheckedOutRequest(prisma, {
+      borrowerId: w.b1.id,
+      custodianId: w.c1.id,
+      lines: [{ itemTypeId: w.arduino.id, assetTags: ["KH-ARD-0001", "KH-ARD-0002"] }],
+    });
+    const [l1, l2] = loans;
+    // Test data only: the unit's state no longer matches its ACTIVE loan.
+    await prisma.unit.update({ where: { id: l2.unitId }, data: { status: UnitStatus.AVAILABLE } });
+    const cookie = await signIn(app, "custodian1");
+    const before = await snapshotCheckoutState(prisma);
+    const loansBefore = await prisma.loan.findMany({ orderBy: { id: "asc" } });
+
+    for (const res of [
+      await postReturnAll(app, cookie, r.id, { loans: [{ loanId: l1.id }, { loanId: l2.id }] }),
+      await postReturnLoan(app, cookie, l2.id, {}),
+    ]) {
+      expect(res.status).toBe(409);
+      expect(res.body.error.code).toBe("INVALID_STATE");
+      expect(res.body.error.message).toBe("Unit KH-ARD-0002 is AVAILABLE, not ON_LOAN.");
+    }
+    expect(await snapshotCheckoutState(prisma)).toEqual(before);
+    expect(await prisma.loan.findMany({ orderBy: { id: "asc" } })).toEqual(loansBefore);
+  });
 });
