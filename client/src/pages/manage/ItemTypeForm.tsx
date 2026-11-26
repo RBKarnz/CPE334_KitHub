@@ -5,7 +5,7 @@ import type { CatalogCategory, CatalogItemType } from "../../api/catalog";
 import { ApiError } from "../../api/client";
 import { createItemType, updateItemType, type ItemTypeInput } from "../../api/manage";
 import { apiErrorsFor } from "./CategoryForm";
-import { checkName, checkWhole, Field, ManageDialog } from "./ManageDialog";
+import { changedFields, checkName, checkWhole, Field, ManageDialog } from "./ManageDialog";
 
 type FieldName = "categoryId" | "name" | "description" | "maxLoanDays" | "maxQuantityPerRequest";
 const FIELDS: readonly FieldName[] = ["categoryId", "name", "description", "maxLoanDays", "maxQuantityPerRequest"];
@@ -55,11 +55,23 @@ export function ItemTypeForm({ categories, categoryId, itemType, onClose, onSave
       maxLoanDays: d.value!,
       maxQuantityPerRequest: q.value!,
     };
+    const changes = itemType
+      ? changedFields(body, {
+          categoryId,
+          name: itemType.name,
+          description: itemType.description,
+          isKit: itemType.isKit,
+          maxLoanDays: itemType.maxLoanDays,
+          maxQuantityPerRequest: itemType.maxQuantityPerRequest,
+        })
+      : body;
+    // An edit with no change needs no call (the API refuses an empty edit).
+    if (Object.keys(changes).length === 0) return onClose();
     busy.current = true;
     setSubmitting(true);
     setErrors({});
     try {
-      const saved = itemType ? await updateItemType(itemType.id, body) : await createItemType(body);
+      const saved = itemType ? await updateItemType(itemType.id, changes) : await createItemType(body);
       onSaved(saved.name);
     } catch (err) {
       const apiError = err instanceof ApiError ? err : new ApiError(0, "INTERNAL_ERROR", "Something went wrong.");

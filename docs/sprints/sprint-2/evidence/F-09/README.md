@@ -14,6 +14,8 @@ The server suite needs PostgreSQL. This computer has none it can use: Docker Des
 | `green-ci-server.txt` | `4aec247` | Server typecheck and whole suite, CI run 45805552602 (conclusion success) | 298 passed, 0 failed, 0 skipped |
 | `green-ci-client.txt` | `4aec247` | Client tests and production build, same run | 82 passed, 0 failed, 0 skipped |
 | `green-ci-e2e.txt` | `4aec247` | E2E typecheck and `npm run test:e2e`, same run | 5 passed |
+| `review-red-client.txt` | `2a04d00` (test only) | Whole client suite after the review of #98 added a TEST-121 (d) case, local | 1 failed / 82 passed: each edit sent every field |
+| `review-green-client.txt` | `c002446` | Client typecheck and whole suite after the fix, local | 83 passed, 0 failed, 0 skipped |
 
 Notes:
 
@@ -22,3 +24,4 @@ Notes:
 - **E2E TEST-30 and the walkthrough** clicked `getByRole("link", { name: "Catalog" })`. Playwright matches that name as a substring, so it also found the new "Manage catalog" link and stopped on a strict-mode violation (`e2e-41e20f0-catalog-link.txt`). `4aec247` adds `exact: true` to both selectors. The steps and assertions are unchanged.
 - **Wrong test IDs in a commit message:** `7b4aefc`'s message says the client catalog fixtures belong to "TEST-09". They belong to TEST-17 and TEST-40 (`client/tests/catalog.test.tsx`). Only the two category fields were added, for the typecheck.
 - **The `skipped` in `green-ci-server.txt`** is the seed's own message ("Sprint 2 demo requests: skipped"). It is not a skipped test.
+- **Review of #98 (nit fixed here):** the category and item type forms sent every field on an edit. If another Custodian had moved the item type meanwhile, saving an unrelated change moved it back. `2a04d00` adds a TEST-121 (d) case; `c002446` sends only the fields that differ from the record as the form opened it, and an edit with no change closes the form with no call (the API refuses an empty edit, 3.4).

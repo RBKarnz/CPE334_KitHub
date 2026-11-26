@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import type { CatalogCategory } from "../../api/catalog";
 import { ApiError } from "../../api/client";
 import { createCategory, updateCategory, type CategoryInput } from "../../api/manage";
-import { checkName, checkWhole, Field, ManageDialog } from "./ManageDialog";
+import { changedFields, checkName, checkWhole, Field, ManageDialog } from "./ManageDialog";
 
 type FieldName = "name" | "description" | "defaultMaxLoanDays" | "defaultMaxQuantity";
 export type FormErrors = Partial<Record<FieldName | "form", string>>;
@@ -60,11 +60,21 @@ export function CategoryForm({ category, onClose, onSaved, onNotFound }: Categor
       defaultMaxLoanDays: d.value!,
       defaultMaxQuantity: q.value!,
     };
+    const changes = category
+      ? changedFields(body, {
+          name: category.name,
+          description: category.description ?? null,
+          defaultMaxLoanDays: category.defaultMaxLoanDays,
+          defaultMaxQuantity: category.defaultMaxQuantity,
+        })
+      : body;
+    // An edit with no change needs no call (the API refuses an empty edit).
+    if (Object.keys(changes).length === 0) return onClose();
     busy.current = true;
     setSubmitting(true);
     setErrors({});
     try {
-      const saved = category ? await updateCategory(category.id, body) : await createCategory(body);
+      const saved = category ? await updateCategory(category.id, changes) : await createCategory(body);
       onSaved(saved.name);
     } catch (err) {
       const apiError = err instanceof ApiError ? err : new ApiError(0, "INTERNAL_ERROR", "Something went wrong.");
