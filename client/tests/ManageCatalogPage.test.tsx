@@ -148,6 +148,35 @@ describe("TEST-121 (AC-121): Manage catalog page", () => {
     expect(stub.calls.filter((c) => c.startsWith("PATCH"))).toEqual([]);
   });
 
+  it("TEST-121 (d): an edit sends only the changed fields, so it never puts back another Custodian's change; no change, no call", async () => {
+    renderManage(custodian, ok([instruments]), ok([instruments]), ok([instruments]));
+    stub.routes["PATCH /api/item-types/9"] = [
+      { status: 200, body: { ...instruments.itemTypes[0], maxQuantityPerRequest: 2, category: { id: 2, name: "Instruments" } } },
+    ];
+    stub.routes["PATCH /api/categories/2"] = [{ status: 200, body: { ...instruments, description: null } }];
+
+    fireEvent.click(await screen.findByRole("button", { name: "Edit Digital multimeter" }));
+    let dialog = screen.getByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText("Maximum per request"), { target: { value: "2" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save item type" }));
+    expect(await screen.findByText("Item type Digital multimeter saved.")).toBeInTheDocument();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Edit category Instruments" }));
+    dialog = screen.getByRole("dialog");
+    fireEvent.change(within(dialog).getByLabelText("Description"), { target: { value: "  " } });
+    fireEvent.click(within(dialog).getByRole("button", { name: "Save category" }));
+    expect(await screen.findByText("Category Instruments saved.")).toBeInTheDocument();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Edit Digital multimeter" }));
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Save item type" }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+
+    expect(stub.bodies).toEqual([
+      { key: "PATCH /api/item-types/9", body: { maxQuantityPerRequest: 2 } },
+      { key: "PATCH /api/categories/2", body: { description: null } },
+    ]);
+  });
+
   it("TEST-121 (i): a Borrower who opens /manage sees the Forbidden page and no Manage catalog link", async () => {
     renderManage(borrower, ok([instruments]));
 
