@@ -10,6 +10,10 @@ Raw output files are kept exactly as recorded. Corrections are written here, not
 | `green-server.txt` | `e7387f9` | Server typecheck and full suite | 243 passed, 0 failed, 0 skipped |
 | `green-client.txt` | `e7387f9` | Client typecheck and full suite | 62 passed, 0 failed, 0 skipped |
 | `green-e2e.txt` | `e7387f9` | E2E typecheck and `npm run test:e2e` | 4 passed |
+| `red2-client.txt` | `5239463` (tests only) | Review of PR #93: TEST-101 (e), the dialog is locked while the checkout runs; whole client suite before the fix | 1 failed / 62 passed, an assertion |
+| `green2-server.txt` | `36366e5` | Server typecheck and full suite after the fix | 243 passed, 0 failed, 0 skipped |
+| `green2-client.txt` | `36366e5` | Client typecheck and full suite after the fix | 63 passed, 0 failed, 0 skipped |
+| `green2-e2e.txt` | `36366e5` | E2E typecheck and `npm run test:e2e` | 4 passed |
 
 Corrections:
 
