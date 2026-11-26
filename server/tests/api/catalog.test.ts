@@ -50,7 +50,8 @@ describe("TEST-08 (AC-08): GET /api/categories", () => {
       availableCount: 2,
     });
     expect(items[0].itemTypes[0]).toMatchObject({ name: "Oscilloscope", availableCount: 0 });
-    expect(Object.keys(items[0]).sort()).toEqual(["description", "id", "itemTypes", "name"]);
+    // F-09 (F09-D9) adds the category default limits for both roles.
+    expect(Object.keys(items[0]).sort()).toEqual(["defaultMaxLoanDays", "defaultMaxQuantity", "description", "id", "itemTypes", "name"]);
 
     // F02-D7: no unit IDs or asset tags for either role.
     const text = JSON.stringify(asBorrower.body);
