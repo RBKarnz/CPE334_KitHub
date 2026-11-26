@@ -1,0 +1,478 @@
+# RED, server: the F-06 test files and the revised ones, on the pre-change code
+Command: cd server && npx vitest run --reporter=verbose tests/api/requests-decide.test.ts tests/api/requests-decide-concurrency.test.ts tests/api/requests-decide-access.test.ts tests/api/pending-requests.test.ts tests/api/requests-create.test.ts tests/unit/transitions.test.ts
+Commit: cb800c96aee21b2bb269044d5977565f6af4892a test(#76): RED for F-06 approve, reject and the all-requests view
+Date: 2026-11-26 00:15:59 ICT
+node -v: v24.14.0   npm -v: 10.8.2
+git status --short:
+ M server/prisma/migrations/migration_lock.toml
+?? docs/sprints/sprint-2/evidence/
+----
+
+ RUN  v2.1.9 E:/CPE334_KitHub/server
+
+ × tests/api/requests-decide.test.ts > TEST-80 (AC-80): a Custodian lists every request; decision fields on each item > TEST-80 (a) to (d): all states oldest first, the status filter, and the Borrower's own list without decidedBy
+   → expected { id: 1, status: 'PENDING', …(4) } to have property "loanDays"
+ × tests/api/requests-decide.test.ts > TEST-81 (AC-81): request detail with history for a Custodian > TEST-81 (a): a Custodian gets the history oldest first, each item with exactly the F06-D5 fields
+   → expected undefined to deeply equal { id: 1, username: 'custodian1', …(1) }
+ × tests/api/requests-decide.test.ts > TEST-81 (AC-81): request detail with history for a Custodian > TEST-81 (b), (c): the owner gets the decision time without decidedBy or history; another Borrower gets 404
+   → expected undefined to be '2026-11-20T08:00:00.000Z' // Object.is equality
+ × tests/api/requests-decide.test.ts > TEST-82 (AC-82): approve a PENDING request > TEST-82: APPROVED with decidedBy and decidedAt, one history entry with the same time, nothing else changes
+   → expected 404 to be 200 // Object.is equality
+ × tests/api/requests-decide.test.ts > TEST-83 (AC-83): reject a PENDING request with a reason > TEST-83 (a), (b): the trimmed reason is stored with one history entry; the owner sees state, time and reason only
+   → expected 404 to be 200 // Object.is equality
+ × tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84 (a) reject with {} is 400 VALIDATION_FAILED naming the field, and nothing changes
+   → expected 404 to be 400 // Object.is equality
+ × tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84 (b) reject with a blank reason is 400 VALIDATION_FAILED naming the field, and nothing changes
+   → expected 404 to be 400 // Object.is equality
+ × tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84 (c) reject with 501 characters is 400 VALIDATION_FAILED naming the field, and nothing changes
+   → expected 404 to be 400 // Object.is equality
+ × tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84 (d) reject with an unknown field is 400 VALIDATION_FAILED naming the field, and nothing changes
+   → expected 404 to be 400 // Object.is equality
+ × tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84 (e) approve with an unknown field is 400 VALIDATION_FAILED naming the field, and nothing changes
+   → expected 404 to be 400 // Object.is equality
+ × tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84 (f): a reason of exactly 500 characters is accepted and stored whole
+   → expected 404 to be 200 // Object.is equality
+ × tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84: a path id that is not 1 to 2 147 483 647 is 400 naming id
+   → expected 404 to be 400 // Object.is equality
+ × tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: APPROVED request, approve is 409 INVALID_STATE naming the state
+   → expected 404 to be 409 // Object.is equality
+ × tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: APPROVED request, reject is 409 INVALID_STATE naming the state
+   → expected 404 to be 409 // Object.is equality
+ × tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: REJECTED request, approve is 409 INVALID_STATE naming the state
+   → expected 404 to be 409 // Object.is equality
+ × tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: REJECTED request, reject is 409 INVALID_STATE naming the state
+   → expected 404 to be 409 // Object.is equality
+ × tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: CHECKED_OUT request, approve is 409 INVALID_STATE naming the state
+   → expected 404 to be 409 // Object.is equality
+ × tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: CHECKED_OUT request, reject is 409 INVALID_STATE naming the state
+   → expected 404 to be 409 // Object.is equality
+ × tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: approving request 999999 is 404 NOT_FOUND
+   → expected 'The requested resource was not found.' to be 'Request 999999 does not exist.' // Object.is equality
+ × tests/api/requests-create.test.ts > TEST-09 (AC-09): a Borrower requests one available unit > TEST-09: 201 PENDING, owned by the signed-in Borrower, units unchanged
+   → expected { id: 1, status: 'PENDING', …(4) } to deeply equal { id: Any<Number>, …(8) }
+ ✓ tests/api/requests-create.test.ts > TEST-10 (AC-10): BR-01, 0 available units > TEST-10: 409 ITEM_TYPE_UNAVAILABLE and nothing stored
+ ✓ tests/api/requests-create.test.ts > TEST-11 (AC-11): BR-04, one open request per item type > TEST-11: an existing PENDING request for the item type gives 409 DUPLICATE_OPEN_REQUEST
+ ✓ tests/api/requests-create.test.ts > TEST-11 (AC-11): BR-04, one open request per item type > TEST-11: an existing APPROVED request for the item type gives 409 DUPLICATE_OPEN_REQUEST
+ ✓ tests/api/requests-create.test.ts > TEST-11 (AC-11): BR-04, one open request per item type > TEST-11b (UAT finding #68): a second request for the same item type through the API is 409 and stores nothing
+ ✓ tests/api/requests-create.test.ts > TEST-12 (AC-12): the owner cannot be chosen by the client > TEST-12: a body with borrowerId is 400 VALIDATION_FAILED naming it
+ ✓ tests/api/requests-create.test.ts > TEST-12 (AC-12): the owner cannot be chosen by the client > TEST-12: a body with role is 400 VALIDATION_FAILED naming it
+ ✓ tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: no lines gives 400 naming the field
+ ✓ tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: empty lines gives 400 naming the field
+ ✓ tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: two lines gives 400 naming the field
+ ✓ tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: quantity 2 gives 400 naming the field
+ ✓ tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: string itemTypeId gives 400 naming the field
+ ✓ tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: itemTypeId 0 gives 400 naming the field
+ ✓ tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: extra loanDays gives 400 naming the field
+ ✓ tests/api/requests-create.test.ts > TEST-34 (AC-34): body schema > TEST-34: unknown field in a line gives 400 naming the field
+ ✓ tests/api/requests-create.test.ts > TEST-35 (AC-35): unknown item type > TEST-35: 404 NOT_FOUND naming lines[0].itemTypeId
+ ✓ tests/api/requests-create.test.ts > TEST-36 (AC-36): BR-04 limits > TEST-36: other item types, closed requests and other Borrowers do not block; the same item type does
+ ✓ tests/api/requests-create.test.ts > TEST-38 (AC-38): BR-04 wins over BR-01 (F02-D1) > TEST-38: open request and 0 available gives 409 DUPLICATE_OPEN_REQUEST naming both records
+ × tests/api/requests-decide-concurrency.test.ts > TEST-86 (AC-86): simultaneous decisions > TEST-86 (a): approve and approve give one 200 and one 409, 5 rounds
+   → expected [ 404, 404 ] to deeply equal [ 200, 409 ]
+ × tests/api/requests-decide-concurrency.test.ts > TEST-86 (AC-86): simultaneous decisions > TEST-86 (b): approve and reject give one 200 and one 409; the reason is set only when reject won, 5 rounds
+   → expected [ 404, 404 ] to deeply equal [ 200, 409 ]
+ × tests/api/pending-requests.test.ts > TEST-18 (AC-18): Custodian's pending list > TEST-18: lists every Borrower's PENDING requests oldest first, with borrower, line and createdAt
+   → expected [ 'borrower', 'createdAt', …(4) ] to deeply equal [ 'borrower', 'createdAt', …(8) ]
+ × tests/api/requests-decide-access.test.ts > TEST-87 (AC-87): Borrowers and calls without a session cannot decide > TEST-87 (a): approve as the owning Borrower is 403 FORBIDDEN with only the error
+   → expected 404 to be 403 // Object.is equality
+ × tests/api/requests-decide-access.test.ts > TEST-87 (AC-87): Borrowers and calls without a session cannot decide > TEST-87 (a): reject as the owning Borrower is 403 FORBIDDEN with only the error
+   → expected 404 to be 403 // Object.is equality
+ × tests/api/requests-decide-access.test.ts > TEST-87 (AC-87): Borrowers and calls without a session cannot decide > TEST-87 (b): approve with no cookie and with a signed-out session is 401 with only the error
+   → expected 404 to be 401 // Object.is equality
+ × tests/api/requests-decide-access.test.ts > TEST-87 (AC-87): Borrowers and calls without a session cannot decide > TEST-87 (b): reject with no cookie and with a signed-out session is 401 with only the error
+   → expected 404 to be 401 // Object.is equality
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): REQUEST PENDING → CHECKED_OUT is allowed
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): UNIT AVAILABLE → ON_LOAN is allowed
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): LOAN null → ACTIVE is allowed
+ × tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): REQUEST PENDING → APPROVED is allowed
+   → expected [Function] to not throw an error but 'InvalidTransitionError: A request can…' was thrown
+ × tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): REQUEST PENDING → REJECTED is allowed
+   → expected [Function] to not throw an error but 'InvalidTransitionError: A request can…' was thrown
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): REQUEST CHECKED_OUT → CHECKED_OUT is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): REQUEST CHECKED_OUT → PENDING is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): UNIT ON_LOAN → ON_LOAN is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): UNIT MAINTENANCE → ON_LOAN is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): UNIT RETIRED → ON_LOAN is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): LOAN ACTIVE → ACTIVE is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): REQUEST APPROVED → APPROVED is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): REQUEST REJECTED → APPROVED is rejected as 409 INVALID_STATE
+ ✓ tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (b): REQUEST CHECKED_OUT → REJECTED is rejected as 409 INVALID_STATE
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 29 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/api/pending-requests.test.ts > TEST-18 (AC-18): Custodian's pending list > TEST-18: lists every Borrower's PENDING requests oldest first, with borrower, line and createdAt
+AssertionError: expected [ 'borrower', 'createdAt', …(4) ] to deeply equal [ 'borrower', 'createdAt', …(8) ]
+
+- Expected
++ Received
+
+  Array [
+    "borrower",
+    "createdAt",
+-   "decidedAt",
+-   "decidedBy",
+    "dueAt",
+    "id",
+    "lines",
+-   "loanDays",
+-   "rejectionReason",
+    "status",
+  ]
+
+ ❯ tests/api/pending-requests.test.ts:44:40
+     42|     for (const item of res.body.items) {
+     43|       // F-06 (F06-D4) adds the decision fields; a Custodian also sees…
+     44|       expect(Object.keys(item).sort()).toEqual(
+       |                                        ^
+     45|         ["borrower", "createdAt", "decidedAt", "decidedBy", "dueAt", "…
+     46|       );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/29]⎯
+
+ FAIL  tests/api/requests-create.test.ts > TEST-09 (AC-09): a Borrower requests one available unit > TEST-09: 201 PENDING, owned by the signed-in Borrower, units unchanged
+AssertionError: expected { id: 1, status: 'PENDING', …(4) } to deeply equal { id: Any<Number>, …(8) }
+
+- Expected
++ Received
+
+  Object {
+    "borrower": Object {
+      "displayName": Any<String>,
+      "id": 1,
+      "username": "borrower1",
+    },
+    "createdAt": Any<String>,
+-   "decidedAt": null,
+    "dueAt": null,
+    "id": Any<Number>,
+    "lines": Array [
+      Object {
+        "id": Any<Number>,
+        "itemType": Object {
+          "id": 1,
+          "name": "Arduino Uno R3",
+        },
+        "loans": Array [],
+        "quantity": 1,
+      },
+    ],
+-   "loanDays": null,
+-   "rejectionReason": null,
+    "status": "PENDING",
+  }
+
+ ❯ tests/api/requests-create.test.ts:42:22
+     40| 
+     41|     expect(res.status).toBe(201);
+     42|     expect(res.body).toEqual({
+       |                      ^
+     43|       id: expect.any(Number),
+     44|       status: "PENDING",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/29]⎯
+
+ FAIL  tests/api/requests-decide-access.test.ts > TEST-87 (AC-87): Borrowers and calls without a session cannot decide > TEST-87 (a): approve as the owning Borrower is 403 FORBIDDEN with only the error
+ FAIL  tests/api/requests-decide-access.test.ts > TEST-87 (AC-87): Borrowers and calls without a session cannot decide > TEST-87 (a): reject as the owning Borrower is 403 FORBIDDEN with only the error
+AssertionError: expected 404 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 404
+
+ ❯ tests/api/requests-decide-access.test.ts:37:24
+     35|     const res = await postDecision(app, cookie, r.id, decision, body);
+     36| 
+     37|     expect(res.status).toBe(403);
+       |                        ^
+     38|     expect(res.body.error.code).toBe("FORBIDDEN");
+     39|     expect(Object.keys(res.body)).toEqual(["error"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/29]⎯
+
+ FAIL  tests/api/requests-decide-access.test.ts > TEST-87 (AC-87): Borrowers and calls without a session cannot decide > TEST-87 (b): approve with no cookie and with a signed-out session is 401 with only the error
+ FAIL  tests/api/requests-decide-access.test.ts > TEST-87 (AC-87): Borrowers and calls without a session cannot decide > TEST-87 (b): reject with no cookie and with a signed-out session is 401 with only the error
+AssertionError: expected 404 to be 401 // Object.is equality
+
+- Expected
++ Received
+
+- 401
++ 404
+
+ ❯ tests/api/requests-decide-access.test.ts:51:26
+     49|     for (const cookie of [undefined, ended]) {
+     50|       const res = await postDecision(app, cookie, r.id, decision, body…
+     51|       expect(res.status).toBe(401);
+       |                          ^
+     52|       expect(res.body.error.code).toBe("UNAUTHENTICATED");
+     53|       expect(Object.keys(res.body)).toEqual(["error"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/29]⎯
+
+ FAIL  tests/api/requests-decide-concurrency.test.ts > TEST-86 (AC-86): simultaneous decisions > TEST-86 (a): approve and approve give one 200 and one 409, 5 rounds
+AssertionError: expected [ 404, 404 ] to deeply equal [ 200, 409 ]
+
+- Expected
++ Received
+
+  Array [
+-   200,
+-   409,
++   404,
++   404,
+  ]
+
+ ❯ tests/api/requests-decide-concurrency.test.ts:33:51
+     31|       ]);
+     32| 
+     33|       expect(results.map((x) => x.status).sort()).toEqual([200, 409]);
+       |                                                   ^
+     34|       const winner = results.find((x) => x.status === 200)!;
+     35|       const loser = results.find((x) => x.status === 409)!;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/29]⎯
+
+ FAIL  tests/api/requests-decide-concurrency.test.ts > TEST-86 (AC-86): simultaneous decisions > TEST-86 (b): approve and reject give one 200 and one 409; the reason is set only when reject won, 5 rounds
+AssertionError: expected [ 404, 404 ] to deeply equal [ 200, 409 ]
+
+- Expected
++ Received
+
+  Array [
+-   200,
+-   409,
++   404,
++   404,
+  ]
+
+ ❯ tests/api/requests-decide-concurrency.test.ts:54:51
+     52|       ]);
+     53| 
+     54|       expect(results.map((x) => x.status).sort()).toEqual([200, 409]);
+       |                                                   ^
+     55|       const winner = results.find((x) => x.status === 200)!;
+     56|       expect(results.find((x) => x.status === 409)!.body.error.code).t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/29]⎯
+
+ FAIL  tests/api/requests-decide.test.ts > TEST-80 (AC-80): a Custodian lists every request; decision fields on each item > TEST-80 (a) to (d): all states oldest first, the status filter, and the Borrower's own list without decidedBy
+AssertionError: expected { id: 1, status: 'PENDING', …(4) } to have property "loanDays"
+ ❯ tests/api/requests-decide.test.ts:89:97
+     87|     expect(ids(all)).toEqual([s.r1.id, s.r2.id, s.r3.id, s.r4.id, s.r5…
+     88|     for (const item of all.body.items) {
+     89|       for (const key of ["loanDays", "decidedAt", "decidedBy", "reject…
+       |                                                                                                 ^
+     90|     }
+     91|     const r2 = all.body.items[1];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/29]⎯
+
+ FAIL  tests/api/requests-decide.test.ts > TEST-81 (AC-81): request detail with history for a Custodian > TEST-81 (a): a Custodian gets the history oldest first, each item with exactly the F06-D5 fields
+AssertionError: expected undefined to deeply equal { id: 1, username: 'custodian1', …(1) }
+
+- Expected: 
+Object {
+  "displayName": "Custodian One",
+  "id": 1,
+  "username": "custodian1",
+}
+
++ Received: 
+undefined
+
+ ❯ tests/api/requests-decide.test.ts:119:32
+    117| 
+    118|     expect(res.status).toBe(200);
+    119|     expect(res.body.decidedBy).toEqual({ id: s.c.id, username: "custod…
+       |                                ^
+    120|     expect(res.body.history).toHaveLength(2);
+    121|     for (const h of res.body.history) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/29]⎯
+
+ FAIL  tests/api/requests-decide.test.ts > TEST-81 (AC-81): request detail with history for a Custodian > TEST-81 (b), (c): the owner gets the decision time without decidedBy or history; another Borrower gets 404
+AssertionError: expected undefined to be '2026-11-20T08:00:00.000Z' // Object.is equality
+
+- Expected: 
+"2026-11-20T08:00:00.000Z"
+
++ Received: 
+undefined
+
+ ❯ tests/api/requests-decide.test.ts:149:32
+    147|     const own = await getAs(app, await signIn(app, "borrower1"), `/api…
+    148|     expect(own.status).toBe(200);
+    149|     expect(own.body.decidedAt).toBe(at(5).toISOString());
+       |                                ^
+    150|     expect(own.body).toHaveProperty("rejectionReason", null);
+    151|     expect(own.body).not.toHaveProperty("decidedBy");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/29]⎯
+
+ FAIL  tests/api/requests-decide.test.ts > TEST-82 (AC-82): approve a PENDING request > TEST-82: APPROVED with decidedBy and decidedAt, one history entry with the same time, nothing else changes
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/requests-decide.test.ts:175:24
+    173|     const t1 = Date.now();
+    174| 
+    175|     expect(res.status).toBe(200);
+       |                        ^
+    176|     expect(res.body).toMatchObject({
+    177|       id: r.id,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/29]⎯
+
+ FAIL  tests/api/requests-decide.test.ts > TEST-83 (AC-83): reject a PENDING request with a reason > TEST-83 (a), (b): the trimmed reason is stored with one history entry; the owner sees state, time and reason only
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/requests-decide.test.ts:221:24
+    219|     });
+    220| 
+    221|     expect(res.status).toBe(200);
+       |                        ^
+    222|     expect(res.body).toMatchObject({
+    223|       status: "REJECTED",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/29]⎯
+
+ FAIL  tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84 (a) reject with {} is 400 VALIDATION_FAILED naming the field, and nothing changes
+ FAIL  tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84 (b) reject with a blank reason is 400 VALIDATION_FAILED naming the field, and nothing changes
+ FAIL  tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84 (c) reject with 501 characters is 400 VALIDATION_FAILED naming the field, and nothing changes
+ FAIL  tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84 (d) reject with an unknown field is 400 VALIDATION_FAILED naming the field, and nothing changes
+ FAIL  tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84 (e) approve with an unknown field is 400 VALIDATION_FAILED naming the field, and nothing changes
+AssertionError: expected 404 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 404
+
+ ❯ tests/api/requests-decide.test.ts:255:24
+    253|     const res = await postDecision(app, cookie, r.id, decision, body);
+    254| 
+    255|     expect(res.status).toBe(400);
+       |                        ^
+    256|     expect(res.body.error.code).toBe("VALIDATION_FAILED");
+    257|     expect(detailFields(res)).toContain(field);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/29]⎯
+
+ FAIL  tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84 (f): a reason of exactly 500 characters is accepted and stored whole
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/requests-decide.test.ts:267:24
+    265|     const res = await postDecision(app, await signIn(app, "custodian1"…
+    266| 
+    267|     expect(res.status).toBe(200);
+       |                        ^
+    268|     const row = await prisma.borrowRequest.findUniqueOrThrow({ where: …
+    269|     expect(row.rejectionReason).toHaveLength(500);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/29]⎯
+
+ FAIL  tests/api/requests-decide.test.ts > TEST-84 (AC-84): bodies that fail the schema > TEST-84: a path id that is not 1 to 2 147 483 647 is 400 naming id
+AssertionError: expected 404 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 404
+
+ ❯ tests/api/requests-decide.test.ts:277:26
+    275|     for (const id of ["abc", "0", "2147483648"]) {
+    276|       const res = await postDecision(app, cookie, id, "approve", {});
+    277|       expect(res.status).toBe(400);
+       |                          ^
+    278|       expect(detailFields(res)).toContain("id");
+    279|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/29]⎯
+
+ FAIL  tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: APPROVED request, approve is 409 INVALID_STATE naming the state
+ FAIL  tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: APPROVED request, reject is 409 INVALID_STATE naming the state
+ FAIL  tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: REJECTED request, approve is 409 INVALID_STATE naming the state
+ FAIL  tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: REJECTED request, reject is 409 INVALID_STATE naming the state
+ FAIL  tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: CHECKED_OUT request, approve is 409 INVALID_STATE naming the state
+ FAIL  tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: CHECKED_OUT request, reject is 409 INVALID_STATE naming the state
+AssertionError: expected 404 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 404
+
+ ❯ tests/api/requests-decide.test.ts:305:24
+    303|     const res = await postDecision(app, cookie, r.id, decision, decisi…
+    304| 
+    305|     expect(res.status).toBe(409);
+       |                        ^
+    306|     expect(res.body.error.code).toBe("INVALID_STATE");
+    307|     expect(res.body.error.message).toBe(`Request #${r.id} cannot be ${…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/29]⎯
+
+ FAIL  tests/api/requests-decide.test.ts > TEST-85 (AC-85): only PENDING can be decided; unknown request > TEST-85: approving request 999999 is 404 NOT_FOUND
+AssertionError: expected 'The requested resource was not found.' to be 'Request 999999 does not exist.' // Object.is equality
+
+Expected: "Request 999999 does not exist."
+Received: "The requested resource was not found."
+
+ ❯ tests/api/requests-decide.test.ts:320:36
+    318|     expect(res.status).toBe(404);
+    319|     expect(res.body.error.code).toBe("NOT_FOUND");
+    320|     expect(res.body.error.message).toBe("Request 999999 does not exist…
+       |                                    ^
+    321|     expect(await snapshotRequestState(prisma)).toEqual(before);
+    322|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/29]⎯
+
+ FAIL  tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): REQUEST PENDING → APPROVED is allowed
+ FAIL  tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): REQUEST PENDING → REJECTED is allowed
+AssertionError: expected [Function] to not throw an error but 'InvalidTransitionError: A request can…' was thrown
+
+- Expected: 
+undefined
+
++ Received: 
+"InvalidTransitionError: A request cannot change from PENDING to APPROVED."
+
+ ❯ tests/unit/transitions.test.ts:17:58
+     15|     ["REQUEST", "PENDING", "REJECTED"],
+     16|   ])("TEST-51 (a): %s %s → %s is allowed", (entity, from, to) => {
+     17|     expect(() => assertTransition(entity, from, to)).not.toThrow();
+       |                                                          ^
+     18|   });
+     19| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/29]⎯
+
+ Test Files  6 failed (6)
+      Tests  29 failed | 29 passed (58)
+   Start at  00:16:08
+   Duration  15.27s (transform 165ms, setup 361ms, collect 989ms, tests 2.89s, environment 1ms, prepare 308ms)
+
+exit code: 1

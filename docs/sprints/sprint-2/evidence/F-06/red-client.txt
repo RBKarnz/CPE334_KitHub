@@ -1,0 +1,4732 @@
+# RED, client: the whole client suite on the pre-change code
+Command: cd client && npx vitest run --reporter=verbose
+Commit: cb800c96aee21b2bb269044d5977565f6af4892a test(#76): RED for F-06 approve, reject and the all-requests view
+Date: 2026-11-26 00:16:24 ICT
+node -v: v24.14.0   npm -v: 10.8.2
+git status --short:
+ M server/prisma/migrations/migration_lock.toml
+?? docs/sprints/sprint-2/evidence/
+----
+
+ RUN  v2.1.9 E:/CPE334_KitHub/client
+
+stderr | tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: shows Loading… until the slow response arrives
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Pending requests states > TEST-25 (a): shows Loading… until the first response
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: shows Loading… until the slow response arrives
+stderr | tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: shows Loading…, then each request with its line, state and Bangkok time
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (a): a PENDING request shows Approve and Reject to a Custodian, with the loan length and history
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (a): lists the AVAILABLE units of the line's item type; confirm is disabled until one is chosen
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: an empty catalog shows its message
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Pending requests states > TEST-25 (a): shows Loading… until the first response
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Pending requests states > TEST-25 (b): no pending requests shows the empty message
+stderr | tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (a): shows Loading… while the list loads
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/App.test.tsx > F-01 UI > a first visit with no session opens the sign-in page with no message
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: an error shows the API message, and Try again calls the API again
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: a 0-available item type has a disabled button and 'None available'
+ ✓ tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: shows Loading…, then each request with its line, state and Bangkok time
+ ✓ tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: no requests shows the empty message with a link to the catalog
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (a): lists the AVAILABLE units of the line's item type; confirm is disabled until one is chosen
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Pending requests states > TEST-25 (c): an error shows the API message, and Try again calls the API again
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: a double press sends one request, shows the confirmation and refetches the catalog
+ ✓ tests/App.test.tsx > F-01 UI > a first visit with no session opens the sign-in page with no message
+ ✓ tests/App.test.tsx > F-01 UI > the sign-in page shows a short tagline under the heading
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Pending requests states > TEST-25 (d): a row shows request, borrower, item type, quantity, Bangkok time and a Check out button
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Pending requests states > TEST-25: rows keep the API order (oldest first, F03-D2)
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: a 409 shows the API message as an alert and refetches the catalog
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: a Custodian sees the catalog without Request buttons
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (b): the confirm button names the unit and request; a double click sends one call
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (c): with no AVAILABLE unit the dialog says so and sends no checkout (D-17)
+ ✓ tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: an error shows the API message, and Try again calls the API again
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > shows the title, state, creation time and lines
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > TEST-60 (AC-60): after checkout the Borrower sees Checked out, the stored due date in ICT, the asset tag and the checkout time (contract F-03 4.4)
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > a 404 shows 'Request not found.' with a link to My requests
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > a Custodian's 404 links back to Pending requests, not the Borrower-only list
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > an ID that is not a positive integer shows Not found without calling the API
+ ✓ tests/App.test.tsx > F-01 UI > empty fields show messages and do not call the API
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (d): a 409 is shown as an alert, the selection is cleared and the units are fetched again
+ × tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (a): a PENDING request shows Approve and Reject to a Custodian, with the loan length and history 1027ms
+   → Unable to find role="button" and name "Approve"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+ × tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (a): shows Loading… while the list loads 1019ms
+   → Unable to find role="heading" and name "All requests"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > moving to another request ID loads that request
+ ✓ tests/App.test.tsx > F-01 UI > a wrong sign-in keeps the username, clears the password and shows the API message
+ ✓ tests/App.test.tsx > F-01 UI > a Custodian lands on Pending requests and sees their name and role badge
+ ✓ tests/App.test.tsx > F-01 UI > sign-in returns to the page that sent the user to /login
+ ✓ tests/App.test.tsx > F-01 UI > a Borrower sent to /login from a Custodian route lands on the Catalog, not the Forbidden page
+ ✓ tests/App.test.tsx > F-01 UI > a Borrower opening a Custodian route sees the Forbidden page
+ ✓ tests/App.test.tsx > F-01 UI > sign out sends Content-Type: application/json and opens the sign-in page with no message
+ ✓ tests/App.test.tsx > F-01 UI > a 401 after sign-in opens the sign-in page with the session-ended message
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (e): on success the dialog closes, shows asset tag and due date, and the pending list is fetched again
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (e): the dialog passes the checked-out request to onCheckedOut
+ ✓ tests/CheckoutDialog.test.tsx > TEST-58 (AC-58): due-date preview in the checkout dialog (#71) > TEST-58 (f): shows the due date a checkout now would get, with weekday, in ICT
+ ✓ tests/CheckoutDialog.test.tsx > TEST-58 (AC-58): due-date preview in the checkout dialog (#71) > TEST-58 (g): a preview error shows 'Due date not available.' and checkout still works
+ ✓ tests/CheckoutDialog.test.tsx > Checkout dialog: other responses and keyboard (contract F-03 4.3) > 409 INVALID_STATE shows the message and asks the page to reload the pending list
+ ✓ tests/CheckoutDialog.test.tsx > Checkout dialog: other responses and keyboard (contract F-03 4.3) > Cancel and Escape close the dialog without a checkout call
+ ✓ tests/CheckoutDialog.test.tsx > Checkout dialog: other responses and keyboard (contract F-03 4.3) > an error loading the units shows the message and Try again
+ × tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (b): Approve asks for confirmation, sends one call, shows the result and loads the detail again 1013ms
+   → Unable to find role="button" and name "Approve"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+ × tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (b): an empty list says No requests. 1015ms
+   → Unable to find an element with the text: No requests.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+ × tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (c): Reject needs a reason that is not blank, and a double click sends one call 1009ms
+   → Unable to find role="button" and name "Reject"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+ × tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (d): a 409 from reject is shown as an alert and the detail is loaded again 1008ms
+   → Unable to find role="button" and name "Reject"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+ × tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (c): an error shows the message and Try again, which calls again 1008ms
+   → Unable to find an element with the text: Something went wrong.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+ × tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (d): rows show request, Borrower, items, state and time; the navigation links All requests 1008ms
+   → Unable to find role="link" and name "#1"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+ × tests/request-decision.test.tsx > TEST-83 (c) (AC-83): a Borrower's view of a rejected request > TEST-83 (c): shows the time and the reason, no Custodian name, and no Approve or Reject 1007ms
+   → Unable to find an element with the text: Rejected 21 Nov 2026, 10:00. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-rejected"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-x-circle"
+          />
+          Rejected
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-rejected"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-x-circle"
+          />
+          Rejected
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+ × tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (e): choosing APPROVED in the filter calls the API with that state 1008ms
+   → Unable to find role="link" and name "#1"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+ ✓ tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (f): a Borrower on /requests still sees My requests, without a state filter
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (a): shows Loading… while the list loads
+TestingLibraryElementError: Unable to find role="heading" and name "All requests"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/AllRequestsPage.test.tsx:63:25
+     61|     renderAt(custodian, "/requests");
+     62| 
+     63|     expect(await screen.findByRole("heading", { name: "All requests" }…
+       |                         ^
+     64|     expect(screen.getByText("Loading…")).toBeInTheDocument();
+     65|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (b): an empty list says No requests.
+TestingLibraryElementError: Unable to find an element with the text: No requests.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/AllRequestsPage.test.tsx:71:25
+     69|     renderAt(custodian, "/requests");
+     70| 
+     71|     expect(await screen.findByText("No requests.")).toBeInTheDocument(…
+       |                         ^
+     72|   });
+     73| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (c): an error shows the message and Try again, which calls again
+TestingLibraryElementError: Unable to find an element with the text: Something went wrong.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/AllRequestsPage.test.tsx:80:25
+     78|     renderAt(custodian, "/requests");
+     79| 
+     80|     expect(await screen.findByText("Something went wrong.")).toBeInThe…
+       |                         ^
+     81|     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+     82|     expect(await screen.findByRole("link", { name: "#1" })).toBeInTheD…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (d): rows show request, Borrower, items, state and time; the navigation links All requests
+TestingLibraryElementError: Unable to find role="link" and name "#1"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/AllRequestsPage.test.tsx:90:33
+     88|     renderAt(custodian, "/requests");
+     89| 
+     90|     const first = (await screen.findByRole("link", { name: "#1" })).cl…
+       |                                 ^
+     91|     expect(first).toHaveTextContent("Borrower One (borrower1)");
+     92|     expect(first).toHaveTextContent("Arduino Uno R3 × 2");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (e): choosing APPROVED in the filter calls the API with that state
+TestingLibraryElementError: Unable to find role="link" and name "#1"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <nav
+      aria-label="Main"
+      class="kh-nav"
+    >
+      <div
+        class="container kh-nav-inner"
+      >
+        <a
+          class="kh-brand"
+          href="/pending"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="30"
+            viewBox="0 0 32 32"
+            width="30"
+          >
+            <g
+              fill="#b8bec8"
+            >
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="8"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="13"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="18"
+                  y="26"
+                />
+              </g>
+              <g>
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="1"
+                />
+                <rect
+                  height="5"
+                  width="2.4"
+                  x="23"
+                  y="26"
+                />
+              </g>
+            </g>
+            <rect
+              fill="#f2a7c3"
+              height="22"
+              width="26"
+              x="3"
+              y="5"
+            />
+            <circle
+              cx="7.5"
+              cy="9.5"
+              fill="#23262e"
+              r="1.6"
+            />
+            <path
+              d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+              fill="none"
+              stroke="#23262e"
+              stroke-linecap="square"
+              stroke-width="2.8"
+            />
+          </svg>
+          KitHub
+        </a>
+        <ul
+          class="kh-nav-links"
+        >
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/pending"
+            >
+              Pending requests
+            </a>
+          </li>
+          <li>
+            <a
+              class="kh-nav-link"
+              href="/catalog"
+            >
+              Catalog
+            </a>
+          </li>
+        </ul>
+        <span
+          class="kh-nav-user"
+        >
+          <span>
+            Custodian One
+          </span>
+           
+          <span
+            class="badge kh-role"
+          >
+            Custodian
+          </span>
+        </span>
+        <button
+          class="btn btn-sm kh-signout"
+          type="button"
+        >
+          Sign out
+        </button>
+      </div>
+    </nav>
+    <div
+      aria-hidden="true"
+      class="kh-foam kh-foam-strip mb-2"
+    />
+    <main
+      class="container kh-main"
+    >
+      <div
+        class="kh-panel kh-message"
+      >
+        <i
+          aria-hidden="true"
+          class="bi bi-shield-lock"
+        />
+        <h1
+          class="h3 mt-2"
+        >
+          Forbidden
+        </h1>
+        <p>
+          You do not have permission to do this.
+        </p>
+        <a
+          href="/"
+        >
+          Go to the home page
+        </a>
+      </div>
+    </main>
+  </div>
+</body>
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/AllRequestsPage.test.tsx:106:18
+    104|     fetchRequests.mockResolvedValue([r1, r2]);
+    105|     renderAt(custodian, "/requests");
+    106|     await screen.findByRole("link", { name: "#1" });
+       |                  ^
+    107| 
+    108|     fetchRequests.mockResolvedValue([r2]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (a): a PENDING request shows Approve and Reject to a Custodian, with the loan length and history
+TestingLibraryElementError: Unable to find role="button" and name "Approve"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/request-decision.test.tsx:77:25
+     75|     renderDetail();
+     76| 
+     77|     expect(await screen.findByRole("button", { name: "Approve" })).toB…
+       |                         ^
+     78|     expect(screen.getByRole("button", { name: "Reject" })).toBeInTheDo…
+     79|     expect(screen.getByText("Loan length: 7 days")).toBeInTheDocument(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (b): Approve asks for confirmation, sends one call, shows the result and loads the detail again
+TestingLibraryElementError: Unable to find role="button" and name "Approve"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/request-decision.test.tsx:89:34
+     87|     renderDetail();
+     88| 
+     89|     fireEvent.click(await screen.findByRole("button", { name: "Approve…
+       |                                  ^
+     90|     expect(screen.getByRole("dialog")).toHaveTextContent("Approve Requ…
+     91|     const confirm = screen.getByRole("button", { name: "Approve Reques…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (c): Reject needs a reason that is not blank, and a double click sends one call
+TestingLibraryElementError: Unable to find role="button" and name "Reject"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/request-decision.test.tsx:110:34
+    108|     renderDetail();
+    109| 
+    110|     fireEvent.click(await screen.findByRole("button", { name: "Reject"…
+       |                                  ^
+    111|     expect(screen.getByRole("dialog")).toHaveTextContent("Reject Reque…
+    112|     const confirm = screen.getByRole("button", { name: "Reject Request…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (d): a 409 from reject is shown as an alert and the detail is loaded again
+TestingLibraryElementError: Unable to find role="button" and name "Reject"
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-pending"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-hourglass-split"
+          />
+          Pending
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/request-decision.test.tsx:133:34
+    131|     renderDetail();
+    132| 
+    133|     fireEvent.click(await screen.findByRole("button", { name: "Reject"…
+       |                                  ^
+    134|     fireEvent.change(screen.getByLabelText("Reason"), { target: { valu…
+    135|     fireEvent.click(screen.getByRole("button", { name: "Reject Request…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  tests/request-decision.test.tsx > TEST-83 (c) (AC-83): a Borrower's view of a rejected request > TEST-83 (c): shows the time and the reason, no Custodian name, and no Approve or Reject
+TestingLibraryElementError: Unable to find an element with the text: Rejected 21 Nov 2026, 10:00. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-rejected"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-x-circle"
+          />
+          Rejected
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <main
+      class="container kh-main"
+    >
+      <h1
+        class="kh-page-title kh-page-title-row"
+      >
+        Request #
+        12
+         
+        <span
+          class="kh-status kh-status-rejected"
+        >
+          <i
+            aria-hidden="true"
+            class="bi bi-x-circle"
+          />
+          Rejected
+        </span>
+      </h1>
+      <p
+        class="kh-meta"
+      >
+        Created 
+        20 Nov 2026, 10:00
+      </p>
+      <ul
+        class="kh-panel kh-rows"
+      >
+        <li
+          class="kh-row d-block"
+        >
+          <span
+            class="fw-semibold"
+          >
+            Arduino Uno R3
+             × 
+            2
+          </span>
+        </li>
+      </ul>
+    </main>
+  </div>
+</body>
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ tests/request-decision.test.tsx:147:25
+    145|     renderDetail(borrower);
+    146| 
+    147|     expect(await screen.findByText("Rejected 21 Nov 2026, 10:00")).toB…
+       |                         ^
+    148|     expect(screen.getByText("Reason: Only one unit left.")).toBeInTheD…
+    149|     expect(screen.queryByText(/Custodian One/)).not.toBeInTheDocument(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+ Test Files  2 failed | 5 passed (7)
+      Tests  10 failed | 43 passed (53)
+   Start at  00:16:32
+   Duration  22.79s (transform 449ms, setup 1.16s, collect 1.13s, tests 11.37s, environment 3.37s, prepare 665ms)
+
+exit code: 1

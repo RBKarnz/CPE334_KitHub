@@ -1,0 +1,6 @@
+# M4 UAT defect status. Snapshot: 2026-11-26 00:43 ICT (2026-11-25T17:43:00Z)
+Scope: every Issue with label uat-finding in RBKarnz/CPE334_KitHub (all time), status at the snapshot
+Command: gh issue list --state all --label uat-finding --json number,title,state,createdAt,closedAt
+----
+number	state	createdAt (UTC)	closedAt (UTC)	title
+68	CLOSED	2026-11-23T18:25:58Z	2026-11-24T12:48:21Z	[UAT] Borrower can submit a second HC-SR04 request while the first is Pending

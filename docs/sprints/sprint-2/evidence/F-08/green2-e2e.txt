@@ -1,0 +1,31 @@
+# GREEN 2 (review of PR #94), end-to-end
+Command: npm run typecheck:e2e && npm run test:e2e
+Commit: ef16ebcb8bdf239b50a3e18da43a426592c12134 fix(#78): review of PR #94, a return whose unit is not ON_LOAN is 409 INVALID_STATE and writes nothing
+Date: 2026-11-26 10:35:55 ICT
+node -v: v24.14.0   npm -v: 10.8.2
+git status --short:
+ M server/prisma/migrations/migration_lock.toml
+?? docs/sprints/sprint-2/evidence/F-08/green2-client.txt
+?? docs/sprints/sprint-2/evidence/F-08/green2-e2e.txt
+?? docs/sprints/sprint-2/evidence/F-08/green2-server.txt
+?? docs/sprints/sprint-2/evidence/F-08/red2-server.txt
+----
+
+> kithub-e2e@0.1.0 typecheck:e2e
+> tsc -p tsconfig.json
+
+typecheck exit code: 0
+
+> kithub-e2e@0.1.0 test:e2e
+> playwright test
+
+
+Running 4 tests using 1 worker
+
+  ok 1 [chromium] › e2e\forbidden.spec.ts:9:1 › TEST-32: a Borrower sees the Forbidden page at /pending and the API refuses checkout with 403 (715ms)
+  ok 2 [chromium] › e2e\journey.spec.ts:11:1 › TEST-30: Borrower requests, Custodian checks out, Borrower sees Checked out (2.0s)
+  ok 3 [chromium] › e2e\narrow-screens.spec.ts:60:1 › TEST-53: Check out is reachable at 640 and 760 px and Sign out is visible at 600 px (2.0s)
+  ok 4 [chromium] › e2e\rejection.spec.ts:8:1 › TEST-31: a second request for an item type with an open request is refused with the BR-04 message (752ms)
+
+  4 passed (24.5s)
+exit code: 0

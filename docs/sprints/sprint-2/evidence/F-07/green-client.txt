@@ -1,0 +1,114 @@
+# GREEN, client: typecheck and the full client suite
+Command: cd client && npx tsc --noEmit -p . && npx vitest run --reporter=verbose
+Commit: e7387f998008dd8d5d02498ba3dbcd405df5b951 feat(#77): multi-unit checkout of APPROVED requests; loan lists; preview with days
+Date: 2026-11-26 01:48:59 ICT
+node -v: v24.14.0   npm -v: 10.8.2
+git status --short:
+ M server/prisma/migrations/migration_lock.toml
+?? docs/sprints/sprint-2/evidence/F-07/
+----
+typecheck exit code: 0
+
+ RUN  v2.1.9 E:/CPE334_KitHub/client
+
+stderr | tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: shows Loading… until the slow response arrives
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: shows Loading… until the slow response arrives
+stderr | tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Ready for checkout states > TEST-25 (a): shows Loading… until the first response
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: shows Loading…, then each request with its line, state and Bangkok time
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Ready for checkout states > TEST-25 (a): shows Loading… until the first response
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Ready for checkout states > TEST-25 (b): no approved requests shows the empty message
+stderr | tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (a): lists the AVAILABLE units of the line's item type; confirm is disabled until one is chosen
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (a): a PENDING request shows Approve and Reject to a Custodian, with the loan length and history
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: an empty catalog shows its message
+ ✓ tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: shows Loading…, then each request with its line, state and Bangkok time
+ ✓ tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: an error shows the API message, and Try again calls the API again
+stderr | tests/App.test.tsx > F-01 UI > a first visit with no session opens the sign-in page with no message
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: no requests shows the empty message with a link to the catalog
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Ready for checkout states > TEST-25 (c): an error shows the API message, and Try again calls the API again
+ ✓ tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (a): a PENDING request shows Approve and Reject to a Custodian, with the loan length and history
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: a 0-available item type has a disabled button and 'None available'
+ ✓ tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: an error shows the API message, and Try again calls the API again
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (a): lists the AVAILABLE units of the line's item type; confirm is disabled until one is chosen
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Ready for checkout states > TEST-25 (d): a row shows request, borrower, items, loan length, approval time and a Check out button
+stderr | tests/LoansPage.test.tsx > TEST-101 (AC-101) (d): loans pages > TEST-101 (d): My loans shows Loading… first, then the rows with item type, asset tag, request and dates
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > shows the title, state, creation time and lines
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: a double press sends one request, shows the confirmation and refetches the catalog
+stderr | tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (a): shows Loading… while the list loads
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > TEST-60 (AC-60): after checkout the Borrower sees Checked out, the stored due date in ICT, the asset tag and the checkout time (contract F-03 4.4)
+ ✓ tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Ready for checkout states > TEST-25: rows keep the API order (oldest first, F03-D2)
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > a 404 shows 'Request not found.' with a link to My requests
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: a 409 shows the API message as an alert and refetches the catalog
+ ✓ tests/catalog.test.tsx > TEST-40 (AC-40): the Request action > TEST-40: a Custodian sees the catalog without Request buttons
+ ✓ tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (a): shows Loading… while the list loads
+ ✓ tests/App.test.tsx > F-01 UI > a first visit with no session opens the sign-in page with no message
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > a Custodian's 404 links back to All requests
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > an ID that is not a positive integer shows Not found without calling the API
+ ✓ tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (b): Approve asks for confirmation, sends one call, shows the result and loads the detail again
+ ✓ tests/LoansPage.test.tsx > TEST-101 (AC-101) (d): loans pages > TEST-101 (d): My loans shows Loading… first, then the rows with item type, asset tag, request and dates
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (b): the confirm button counts the units for the request; a double click sends one call
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (c): with no AVAILABLE unit the dialog says so and sends no checkout (D-17)
+ ✓ tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (b): an empty list says No requests.
+ ✓ tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (c): an error shows the message and Try again, which calls again
+ ✓ tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (d): rows show request, Borrower, items, state and time; the navigation links All requests
+ ✓ tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (e): choosing APPROVED in the filter calls the API with that state
+ ✓ tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (f): a Borrower on /requests still sees My requests, without a state filter
+ ✓ tests/App.test.tsx > F-01 UI > the sign-in page shows a short tagline under the heading
+ ✓ tests/App.test.tsx > F-01 UI > empty fields show messages and do not call the API
+ ✓ tests/App.test.tsx > F-01 UI > a wrong sign-in keeps the username, clears the password and shows the API message
+ ✓ tests/App.test.tsx > F-01 UI > a Custodian lands on Ready for checkout and sees their name and role badge
+ ✓ tests/App.test.tsx > F-01 UI > sign-in returns to the page that sent the user to /login
+ ✓ tests/App.test.tsx > F-01 UI > a Borrower sent to /login from a Custodian route lands on the Catalog, not the Forbidden page
+ ✓ tests/App.test.tsx > F-01 UI > a Borrower opening a Custodian route sees the Forbidden page
+ ✓ tests/App.test.tsx > F-01 UI > sign out sends Content-Type: application/json and opens the sign-in page with no message
+ ✓ tests/App.test.tsx > F-01 UI > a 401 after sign-in opens the sign-in page with the session-ended message
+ ✓ tests/my-requests.test.tsx > Request detail (contract F-02 section 5) > moving to another request ID loads that request
+ ✓ tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (c): Reject needs a reason that is not blank, and a double click sends one call
+ ✓ tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (d): a 409 from reject is shown as an alert and the detail is loaded again
+ ✓ tests/request-decision.test.tsx > TEST-89: dialog behaviour while a call runs and on 400 (review of PR #91) > TEST-89 (e): while approve is pending, Cancel and Close are disabled and Escape does not close the dialog
+ ✓ tests/request-decision.test.tsx > TEST-89: dialog behaviour while a call runs and on 400 (review of PR #91) > TEST-89 (f): a 400 from reject keeps the dialog open with the typed reason and shows the message there
+ ✓ tests/request-decision.test.tsx > TEST-83 (c) (AC-83): a Borrower's view of a rejected request > TEST-83 (c): shows the time and the reason, no Custodian name, and no Approve or Reject
+ ✓ tests/LoansPage.test.tsx > TEST-101 (AC-101) (d): loans pages > TEST-101 (d): an empty list says You have no active loans.
+ ✓ tests/LoansPage.test.tsx > TEST-101 (AC-101) (d): loans pages > TEST-101 (d): an error shows the message and Try again, which calls again
+ ✓ tests/LoansPage.test.tsx > TEST-101 (AC-101) (d): loans pages > TEST-101 (d): a Custodian's Loans page shows the Borrower and filters Active / Returned
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (d): a 409 is shown as an alert, the selection is cleared and the units are fetched again
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (e): on success the dialog closes, shows asset tag and due date, and the list is fetched again
+ ✓ tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (e): the dialog passes the checked-out request to onCheckedOut
+ ✓ tests/CheckoutDialog.test.tsx > TEST-58 (AC-58): due-date preview in the checkout dialog (#71) > TEST-58 (f): shows the due date a checkout now would get, with weekday, in ICT
+ ✓ tests/CheckoutDialog.test.tsx > TEST-58 (AC-58): due-date preview in the checkout dialog (#71) > TEST-58 (g): a preview error shows 'Due date not available.' and checkout still works
+ ✓ tests/CheckoutDialog.test.tsx > TEST-101 (AC-101) (a) to (c): several lines and quantities > TEST-101 (a): confirm is enabled only when every line has its quantity; the preview uses the loan length
+ ✓ tests/CheckoutDialog.test.tsx > TEST-101 (AC-101) (a) to (c): several lines and quantities > TEST-101 (b): a line with fewer available units than its quantity blocks the checkout
+ ✓ tests/CheckoutDialog.test.tsx > TEST-101 (AC-101) (a) to (c): several lines and quantities > TEST-101 (c): confirm sends the three entries once; the success text lists every asset tag and the due date
+ ✓ tests/CheckoutDialog.test.tsx > Checkout dialog: other responses and keyboard (contract F-03 4.3) > 409 INVALID_STATE shows the message and asks the page to reload the list
+ ✓ tests/CheckoutDialog.test.tsx > Checkout dialog: other responses and keyboard (contract F-03 4.3) > Cancel and Escape close the dialog without a checkout call
+ ✓ tests/CheckoutDialog.test.tsx > Checkout dialog: other responses and keyboard (contract F-03 4.3) > an error loading the units shows the message and Try again
+
+ Test Files  8 passed (8)
+      Tests  62 passed (62)
+   Start at  01:49:13
+   Duration  23.84s (transform 1.51s, setup 2.92s, collect 3.75s, tests 4.36s, environment 9.03s, prepare 1.70s)
+
+exit code: 0

@@ -1,0 +1,26 @@
+# GREEN 2 (review of PR #91), end-to-end (Playwright; CI runs it too)
+Command: npm run test:e2e
+Commit: 6e4361eb902eb007f9446d1a55065ab7d72fe184 fix(#76): review of PR #91, lock the decision dialog while running, keep the reason on 400, no stale rows on a filter change
+Date: 2026-11-26 01:02:17 ICT
+node -v: v24.14.0   npm -v: 10.8.2
+git status --short:
+ M server/prisma/migrations/migration_lock.toml
+?? docs/sprints/sprint-2/evidence/F-06/green2-client.txt
+?? docs/sprints/sprint-2/evidence/F-06/green2-e2e.txt
+?? docs/sprints/sprint-2/evidence/F-06/green2-server.txt
+?? docs/sprints/sprint-2/evidence/F-06/red2-client.txt
+----
+
+> kithub-e2e@0.1.0 test:e2e
+> playwright test
+
+
+Running 4 tests using 1 worker
+
+  ok 1 [chromium] › e2e\forbidden.spec.ts:8:1 › TEST-32: a Borrower sees the Forbidden page at /pending and the API refuses checkout with 403 (962ms)
+  ok 2 [chromium] › e2e\journey.spec.ts:9:1 › TEST-30: Borrower requests, Custodian checks out, Borrower sees Checked out (1.9s)
+  ok 3 [chromium] › e2e\narrow-screens.spec.ts:59:1 › TEST-53: Check out is reachable at 640 and 760 px and Sign out is visible at 600 px (2.5s)
+  ok 4 [chromium] › e2e\rejection.spec.ts:8:1 › TEST-31: a second request for an item type with an open request is refused with the BR-04 message (999ms)
+
+  4 passed (26.1s)
+exit code: 0

@@ -26,6 +26,8 @@ beforeEach(() => {
     "GET /api/categories": [{ status: 200, body: { items: [] } }],
     "GET /api/requests": [{ status: 200, body: { items: [] } }],
     "GET /api/requests?status=PENDING": [{ status: 200, body: { items: [] } }],
+    // F-07 (F07-D6): the Custodian landing page lists APPROVED requests.
+    "GET /api/requests?status=APPROVED": [{ status: 200, body: { items: [] } }],
   };
   calls = [];
   vi.stubGlobal(
@@ -110,7 +112,8 @@ describe("F-01 UI", () => {
     expect((login.init.headers as Record<string, string>)["Content-Type"]).toBe("application/json");
   });
 
-  it("a Custodian lands on Pending requests and sees their name and role badge", async () => {
+  // F-07 (F07-D6, F07-D8): the landing page is renamed "Ready for checkout" (was "Pending requests").
+  it("a Custodian lands on Ready for checkout and sees their name and role badge", async () => {
     reply("GET /api/auth/me", unauthenticated);
     reply("POST /api/auth/login", { status: 200, body: { user: custodian } });
     renderAt("/login");
@@ -118,7 +121,7 @@ describe("F-01 UI", () => {
 
     submitLogin("custodian1", "right");
 
-    expect(await screen.findByRole("heading", { name: "Pending requests" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Ready for checkout" })).toBeInTheDocument();
     expect(screen.getByText("Custodian One")).toBeInTheDocument();
     expect(screen.getByText("Custodian")).toBeInTheDocument();
   });

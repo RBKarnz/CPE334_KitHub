@@ -1,11 +1,15 @@
-// Catalog page: TEST-17 (catalog states) and TEST-40 (Request action), contract F-02 8.2.
-import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
+// Catalog page: TEST-17 (catalog states) and TEST-40 (Request action), contract F-02 8.2; TEST-40
+// revised and TEST-63 (g) added by F-04 (contract F-04 8.2, 8.4).
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import * as authApi from "../src/api/auth";
 import * as catalogApi from "../src/api/catalog";
 import type { CatalogCategory } from "../src/api/catalog";
 import { ApiError } from "../src/api/client";
 import * as requestsApi from "../src/api/requests";
 import type { BorrowRequest } from "../src/api/requests";
+import { AuthProvider } from "../src/auth/AuthProvider";
 import { CatalogPage } from "../src/pages/CatalogPage";
 import { borrower, custodian, deferred, renderAs } from "./render";
 
@@ -14,6 +18,9 @@ const catalog: CatalogCategory[] = [
     id: 1,
     name: "Instruments",
     description: null,
+    // F-09 (F09-D9): GET /api/categories also returns the category default limits.
+    defaultMaxLoanDays: 3,
+    defaultMaxQuantity: 1,
     itemTypes: [
       { id: 10, name: "Oscilloscope", description: "", isKit: false, maxLoanDays: 3, maxQuantityPerRequest: 1, availableCount: 0 },
     ],
@@ -22,6 +29,8 @@ const catalog: CatalogCategory[] = [
     id: 2,
     name: "Microcontroller boards",
     description: null,
+    defaultMaxLoanDays: 14,
+    defaultMaxQuantity: 2,
     itemTypes: [
       { id: 3, name: "Arduino Uno R3", description: "", isKit: false, maxLoanDays: 14, maxQuantityPerRequest: 2, availableCount: 2 },
     ],
@@ -65,6 +74,27 @@ describe("TEST-17 (AC-17): catalog loading, empty and error states", () => {
   });
 });
 
+// TEST-40 revised by F-04 (F04-D5, contract F-04 8.4): Request opens the new request form with the
+// item type instead of sending the request. The one-call double press, the submitted message and the
+// 409 alert move to TEST-71 (d), (e) and (g) (client/tests/NewRequestPage.test.tsx).
+function renderCatalogWithForm(user: typeof borrower) {
+  vi.spyOn(authApi, "fetchCurrentUser").mockResolvedValue(user);
+  function FormProbe() {
+    const location = useLocation();
+    return <div>new request form at {location.pathname + location.search}</div>;
+  }
+  return render(
+    <MemoryRouter initialEntries={["/catalog"]}>
+      <AuthProvider>
+        <Routes>
+          <Route path="/catalog" element={<CatalogPage />} />
+          <Route path="/requests/new" element={<FormProbe />} />
+        </Routes>
+      </AuthProvider>
+    </MemoryRouter>,
+  );
+}
+
 describe("TEST-40 (AC-40): the Request action", () => {
   it("TEST-40: a 0-available item type has a disabled button and 'None available'", async () => {
     vi.spyOn(catalogApi, "fetchCategories").mockResolvedValue(catalog);
@@ -77,38 +107,15 @@ describe("TEST-40 (AC-40): the Request action", () => {
     expect(within(arduino).getByText("2 available")).toBeInTheDocument();
   });
 
-  it("TEST-40: a double press sends one request, shows the confirmation and refetches the catalog", async () => {
-    const fetch = vi.spyOn(catalogApi, "fetchCategories").mockResolvedValue(catalog);
-    const pending = deferred<BorrowRequest>();
-    const create = vi.spyOn(requestsApi, "createRequest").mockReturnValue(pending.promise);
-    renderAs(borrower, <CatalogPage />);
-
-    const button = await screen.findByRole("button", { name: "Request Arduino Uno R3" });
-    fireEvent.click(button);
-    fireEvent.click(button);
-    expect(button).toBeDisabled();
-    await act(async () => pending.resolve(created));
-
-    expect(create).toHaveBeenCalledTimes(1);
-    expect(create).toHaveBeenCalledWith(3);
-    expect(await screen.findByText(/Request #12 submitted/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "See My requests" })).toHaveAttribute("href", "/requests");
-    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
-  });
-
-  it("TEST-40: a 409 shows the API message as an alert and refetches the catalog", async () => {
-    const fetch = vi.spyOn(catalogApi, "fetchCategories").mockResolvedValue(catalog);
-    vi.spyOn(requestsApi, "createRequest").mockRejectedValue(
-      new ApiError(409, "DUPLICATE_OPEN_REQUEST", "You already have an open request for Arduino Uno R3 (Request #9)."),
-    );
-    renderAs(borrower, <CatalogPage />);
+  it("TEST-40: Request opens the new request form with the item type and sends no request", async () => {
+    vi.spyOn(catalogApi, "fetchCategories").mockResolvedValue(catalog);
+    const create = vi.spyOn(requestsApi, "createRequest");
+    renderCatalogWithForm(borrower);
 
     fireEvent.click(await screen.findByRole("button", { name: "Request Arduino Uno R3" }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent(
-      "You already have an open request for Arduino Uno R3 (Request #9).",
-    );
-    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
+    expect(await screen.findByText("new request form at /requests/new?itemTypeId=3")).toBeInTheDocument();
+    expect(create).not.toHaveBeenCalled();
   });
 
   it("TEST-40: a Custodian sees the catalog without Request buttons", async () => {
@@ -117,5 +124,14 @@ describe("TEST-40 (AC-40): the Request action", () => {
 
     expect(await screen.findByText("Arduino Uno R3")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /^Request / })).not.toBeInTheDocument();
+  });
+});
+
+describe("TEST-63 (g) (AC-63): the catalog links each item type to its detail", () => {
+  it("TEST-63 (g): the item type name links to /catalog/item-types/:id", async () => {
+    vi.spyOn(catalogApi, "fetchCategories").mockResolvedValue(catalog);
+    renderAs(borrower, <CatalogPage />);
+
+    expect(await screen.findByRole("link", { name: "Arduino Uno R3" })).toHaveAttribute("href", "/catalog/item-types/3");
   });
 });

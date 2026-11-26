@@ -98,13 +98,28 @@ export async function createUnit(
  */
 export async function createRequest(
   prisma: PrismaClient,
-  options: { borrowerId: number; itemTypeId: number; status?: RequestStatus; createdAt?: Date; quantity?: number },
+  options: {
+    borrowerId: number;
+    itemTypeId: number;
+    status?: RequestStatus;
+    createdAt?: Date;
+    quantity?: number;
+    /** Sprint 2 decision columns (#73), for requests created already decided (F-06 tests). */
+    decidedById?: number;
+    decidedAt?: Date;
+    rejectionReason?: string;
+    loanDays?: number;
+  },
 ) {
   return prisma.borrowRequest.create({
     data: {
       borrowerId: options.borrowerId,
       status: options.status ?? RequestStatus.PENDING,
       ...(options.createdAt ? { createdAt: options.createdAt } : {}),
+      ...(options.decidedById !== undefined ? { decidedById: options.decidedById } : {}),
+      ...(options.decidedAt ? { decidedAt: options.decidedAt } : {}),
+      ...(options.rejectionReason !== undefined ? { rejectionReason: options.rejectionReason } : {}),
+      ...(options.loanDays !== undefined ? { loanDays: options.loanDays } : {}),
       lines: { create: { itemTypeId: options.itemTypeId, quantity: options.quantity ?? 1 } },
     },
     include: { lines: true },
@@ -122,4 +137,9 @@ export async function createItemTypeWithUnits(
     for (let i = 0; i < count; i++) await createUnit(prisma, { itemTypeId: itemType.id, status });
   }
   return itemType;
+}
+
+/** Adds a line to an existing request (Sprint 2 multi-line requests, F-07 tests). Test data only. */
+export function addLine(prisma: PrismaClient, requestId: number, itemTypeId: number, quantity = 1) {
+  return prisma.requestLine.create({ data: { requestId, itemTypeId, quantity } });
 }

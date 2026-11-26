@@ -1,5 +1,8 @@
 // TEST-23 (AC-23): checkout writes the three history entries of contract F-03 3.10.
 // TEST-24 (AC-24): history entries cannot be updated or deleted (BR-16, DD-07).
+// F-07 (F07-D8): checkout now needs an APPROVED request (FR-17 replaces FR-16), so these tests
+// create their requests APPROVED; their rule assertions are unchanged.
+import { RequestStatus } from "@prisma/client";
 import request from "supertest";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createTestApp, prisma } from "../helpers/app.js";
@@ -17,7 +20,7 @@ beforeEach(async () => {
 async function checkOutOne() {
   const w = await createCheckoutWorld(prisma);
   const u = await createUnit(prisma, { itemTypeId: w.arduino.id, assetTag: "KH-ARD-0007" });
-  const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+  const r = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b1.id, itemTypeId: w.arduino.id });
   const cookie = await signIn(app, "custodian1");
   const historyBefore = await prisma.historyEntry.count();
   const res = await postCheckout(app, cookie, r.id, checkoutBody(r.lines[0].id, u.id));
@@ -42,7 +45,7 @@ describe("TEST-23 (AC-23): history entries for checkout", () => {
     expect(byEntity.REQUEST).toMatchObject({
       ...common,
       action: "STATUS_CHANGED",
-      fromStatus: "PENDING",
+      fromStatus: "APPROVED",
       toStatus: "CHECKED_OUT",
       requestId: r.id,
       unitId: null,

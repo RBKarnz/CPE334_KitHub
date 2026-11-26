@@ -3,15 +3,22 @@ import { Role, type PrismaClient } from "@prisma/client";
 import { authenticate, requireRole } from "../../core/middleware/authenticate.js";
 import { validate } from "../../core/middleware/validate.js";
 import {
+  approveBody,
+  cancelBody,
   createRequestBody,
   listRequestsQuery,
+  rejectBody,
   requestIdParams,
   type CreateRequestBody,
   type ListRequestsQuery,
+  type RejectBody,
 } from "./requests.schemas.js";
 import { requestsService } from "./requests.service.js";
 
-/** POST /requests, GET /requests, GET /requests/:id (contract F-02 4.2 to 4.4). */
+/**
+ * POST /requests, GET /requests, GET /requests/:id (contract F-02 4.2 to 4.4) and
+ * POST /requests/:id/approve and /reject (contract F-06 5.1, 5.2).
+ */
 export function requestsRouter(prisma: PrismaClient): Router {
   const router = Router();
   const service = requestsService(prisma);
@@ -46,6 +53,69 @@ export function requestsRouter(prisma: PrismaClient): Router {
       next(err);
     }
   });
+
+  // Edit and cancel by the owning Borrower (contract F-05 5.1, 5.2). 415 → 401 → 403 → 400 path, then
+  // body → service: 404 → 409 INVALID_STATE → the F-04 rules (F-05 3.5).
+  router.patch(
+    "/requests/:id",
+    authenticate(prisma),
+    requireRole(Role.BORROWER),
+    validate({ params: requestIdParams, body: createRequestBody }),
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as unknown as { id: number };
+        res.status(200).json(await service.edit(req.user!, id, req.body as CreateRequestBody));
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
+
+  router.post(
+    "/requests/:id/cancel",
+    authenticate(prisma),
+    requireRole(Role.BORROWER),
+    validate({ params: requestIdParams, body: cancelBody }),
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as unknown as { id: number };
+        res.status(200).json(await service.cancel(req.user!, id));
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
+
+  // 415 (whole /api router) → 401 → 403 → 400 path, then body → service: 404 → 409 (contract F-06 3.5).
+  router.post(
+    "/requests/:id/approve",
+    authenticate(prisma),
+    requireRole(Role.CUSTODIAN),
+    validate({ params: requestIdParams, body: approveBody }),
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as unknown as { id: number };
+        res.status(200).json(await service.decide(req.user!, id, "approve"));
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
+
+  router.post(
+    "/requests/:id/reject",
+    authenticate(prisma),
+    requireRole(Role.CUSTODIAN),
+    validate({ params: requestIdParams, body: rejectBody }),
+    async (req, res, next) => {
+      try {
+        const { id } = req.params as unknown as { id: number };
+        res.status(200).json(await service.decide(req.user!, id, "reject", (req.body as RejectBody).reason));
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
 
   return router;
 }

@@ -7,6 +7,8 @@
 | Time needed | About 20 minutes |
 | Used for | Teammate and Lab 6 UAT walkthroughs; screenshots for Deliverable 1 Part F |
 
+**Sprint 2 note (F-07, #77).** This guide stays the record of the Sprint 1 walkthrough. From F-07, a request must be approved before checkout, so MT-11, MT-12, MT-14 and MT-15 no longer match the app; the [Sprint 2 guide](../sprint-2/manual-test-guide.md) replaces them (its section 5 lists which Sprint 1 scenarios still apply).
+
 **MT scenarios are manual checks.** They supplement the automated tests (TEST-xx) and do not replace them. Every rule shown here is also checked by an automated API or UI test against the real test database. Section 7 maps each MT scenario to its tests.
 
 ## 1. Start from zero

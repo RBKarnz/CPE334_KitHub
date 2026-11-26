@@ -1,0 +1,131 @@
+# GREEN, client, in CI
+Source: GitHub Actions run 45805552602 (workflow_dispatch, CI & Docker Build, conclusion success), job test-and-docker, step matching "Install, Test & Build Frontend"
+Command (in the workflow): cd client \&\& npm test and the production build
+Commit: 4aec2475e4315bff04dce0c6e5739e61e4fb0257 test(#79): E2E Catalog link selectors match the name exactly
+Log: gh run view 45805552602 --repo RBKarnz/CPE334_KitHub --log, this step only, prefix and colour codes removed
+
+﻿2026-11-26T10:55:10.8600950Z ##[group]Run npm ci
+npm ci
+npm test
+npm run build
+shell: /usr/bin/bash -e {0}
+env:
+  DATABASE_URL: ***localhost:5432/kithub?schema=public
+  TEST_DATABASE_URL: ***localhost:5432/kithub_test?schema=public
+  pythonLocation: /opt/hostedtoolcache/Python/3.14.10/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.14.10/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.10/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.10/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.10/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.14.10/x64/lib
+##[endgroup]
+npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+
+added 192 packages, and audited 193 packages in 3s
+
+36 packages are looking for funding
+  run `npm fund` for details
+npm warn install-scripts 3 packages have install scripts not yet covered by allowScripts:
+
+npm warn install-scripts   esbuild@0.25.12 (postinstall: node install.js)
+npm warn install-scripts   esbuild@0.21.5 (postinstall: node install.js)
+npm warn install-scripts   esbuild@0.21.5 (postinstall: node install.js)
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+8 vulnerabilities (5 moderate, 1 high, 2 critical)
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+> kithub-client@0.1.0 test
+> vitest run
+
+
+ RUN  v2.1.9 /home/runner/work/CPE334_KitHub/CPE334_KitHub/client
+
+stderr | tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (a): a PENDING request shows Approve and Reject to a Custodian, with the loan length and history
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (a): lists the AVAILABLE units of the line's item type; confirm is disabled until one is chosen
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/App.test.tsx > F-01 UI > a first visit with no session opens the sign-in page with no message
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/request-decision.test.tsx (7 tests) 332ms
+ ✓ tests/App.test.tsx (10 tests) 395ms
+ ✓ tests/CheckoutDialog.test.tsx (15 tests) 647ms
+stderr | tests/ManageUnitsPage.test.tsx > TEST-121 (AC-121): units of an item type > TEST-121 (e): Loading…, then the header and every unit with its state; actions only where allowed
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/ManageCatalogPage.test.tsx > TEST-121 (AC-121): Manage catalog page > TEST-121 (a): Loading…, then the empty text
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: shows Loading…, then each request with its line, state and Bangkok time
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/my-requests.test.tsx (9 tests) 253ms
+ ✓ tests/ManageUnitsPage.test.tsx (7 tests) 489ms
+ ✓ tests/ManageCatalogPage.test.tsx (8 tests) 488ms
+stderr | tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: shows Loading… until the slow response arrives
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (a): shows Loading… while the list loads
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/ReturnDialog.test.tsx > TEST-109 (AC-109): return controls on the request detail > TEST-109: a Borrower sees no return control
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/catalog.test.tsx (7 tests) 194ms
+ ✓ tests/AllRequestsPage.test.tsx (6 tests) 374ms
+ ✓ tests/ReturnDialog.test.tsx (4 tests) 295ms
+stderr | tests/LoansPage.test.tsx > TEST-101 (AC-101) (d): loans pages > TEST-101 (d): My loans shows Loading… first, then the rows with item type, asset tag, request and dates
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Ready for checkout states > TEST-25 (a): shows Loading… until the first response
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/LoansPage.test.tsx (4 tests) 181ms
+ ✓ tests/PendingRequestsPage.test.tsx (5 tests) 136ms
+
+ Test Files  11 passed (11)
+      Tests  82 passed (82)
+   Start at  10:55:14
+   Duration  4.55s (transform 502ms, setup 1.04s, collect 1.83s, tests 3.78s, environment 3.82s, prepare 688ms)
+
+
+> kithub-client@0.1.0 build
+> tsc --noEmit && vite build
+
+vite v6.4.5 building for production...
+transforming...
+✓ 72 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                             0.51 kB │ gzip:  0.31 kB
+dist/assets/chakra-petch-latin-400-normal-SafcrIr2.woff2    9.76 kB
+dist/assets/chakra-petch-latin-700-normal-CnDBPjkL.woff2    9.90 kB
+dist/assets/chakra-petch-latin-500-normal-BR1ody1F.woff2    9.96 kB
+dist/assets/chakra-petch-latin-600-normal-DVQm9bgb.woff2    9.97 kB
+dist/assets/chakra-petch-latin-400-normal-D7EtbySE.woff    13.16 kB
+dist/assets/chakra-petch-latin-700-normal-D1s_c2du.woff    13.33 kB
+dist/assets/chakra-petch-latin-500-normal-CnUQnZ4D.woff    13.41 kB
+dist/assets/chakra-petch-latin-600-normal-DQKfcdKo.woff    13.43 kB
+dist/assets/bootstrap-icons-DJdhg9lH.woff2                134.01 kB
+dist/assets/bootstrap-icons-BHUGvtHM.woff                 180.29 kB
+dist/assets/index-HJHyMLGc.css                            322.79 kB │ gzip: 47.96 kB
+dist/assets/index-BC8-9gBI.js                             218.55 kB │ gzip: 67.33 kB
+✓ built in 971ms

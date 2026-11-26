@@ -1,0 +1,1118 @@
+# RED, server: whole suite on the pre-change code, in CI (no local database on this computer; see README)
+Source: GitHub Actions run 45803528589 (workflow_dispatch, CI & Docker Build), job test-and-docker, step "Install & Test Backend (Typecheck + Prisma Migrate + Seed + Vitest)"
+Command (in the workflow): cd server && npm test
+Commit: 567c5307d40a12db4287e333bd82d8d1e3d3c37c test(#79): RED for F-09 catalog management
+Log: gh run view 45803528589 --repo RBKarnz/CPE334_KitHub --log-failed, this step only, prefix and colour codes removed
+
+﻿2026-11-26T10:40:56.5897008Z ##[group]Run npm ci
+npm ci
+npm run typecheck
+npx prisma migrate deploy
+SEED_CUSTODIAN_PASSWORD="$(openssl rand -base64 24)"
+SEED_BORROWER_PASSWORD="$(openssl rand -base64 24)"
+echo "::add-mask::$SEED_CUSTODIAN_PASSWORD"
+echo "::add-mask::$SEED_BORROWER_PASSWORD"
+export SEED_CUSTODIAN_PASSWORD SEED_BORROWER_PASSWORD
+npm run prisma:seed
+npm test
+shell: /usr/bin/bash -e {0}
+env:
+  DATABASE_URL: ***localhost:5432/kithub?schema=public
+  TEST_DATABASE_URL: ***localhost:5432/kithub_test?schema=public
+  pythonLocation: /opt/hostedtoolcache/Python/3.14.10/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.14.10/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.10/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.10/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.10/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.14.10/x64/lib
+  SEED_DEMO_DATA: true
+##[endgroup]
+
+added 166 packages, and audited 167 packages in 4s
+
+36 packages are looking for funding
+  run `npm fund` for details
+
+6 vulnerabilities (3 moderate, 1 high, 2 critical)
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+npm warn install-scripts 5 packages have install scripts not yet covered by allowScripts:
+npm warn install-scripts   @prisma/client@5.22.0 (postinstall: node scripts/postinstall.js)
+npm warn install-scripts   @prisma/engines@5.22.0 (postinstall: node scripts/postinstall.js)
+npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+npm warn install-scripts   prisma@5.22.0 (preinstall: node scripts/preinstall-entry.js)
+npm warn install-scripts   esbuild@0.21.5 (postinstall: node install.js)
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+
+> kithub-server@0.1.0 typecheck
+> tsc --noEmit
+
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "kithub", schema "public" at "localhost:5432"
+
+2 migrations found in prisma/migrations
+
+Applying migration `20261106075705_sprint1_init`
+Applying migration `20261125104833_sprint2_columns`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261106075705_sprint1_init/
+    └─ migration.sql
+  └─ 20261125104833_sprint2_columns/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+
+> kithub-server@0.1.0 prisma:seed
+> tsx prisma/seed.ts
+
+Seed complete. Created 6 categories, 9 item types, 38 units and 4 accounts; existing records were left unchanged. Demo Borrower accounts: included. Sprint 2 demo requests: skipped (SEED_DEMO_REQUESTS is not true).
+
+> kithub-server@0.1.0 test
+> vitest run
+
+
+ RUN  v2.1.9 /home/runner/work/CPE334_KitHub/CPE334_KitHub/server
+
+ ✓ tests/api/checkout.test.ts (26 tests) 2119ms
+ ✓ tests/api/requests-decide.test.ts (19 tests) 1480ms
+ ✓ tests/api/checkout-multi.test.ts (22 tests) 1668ms
+ ✓ tests/api/returns.test.ts (8 tests) 832ms
+ ❯ tests/api/catalog-manage.test.ts (14 tests | 14 failed) 1120ms
+   × TEST-110 (AC-110): create a category > TEST-110: the trimmed name, a null description and the defaults are stored; no history; listed with no item types 124ms
+     → expected 404 to be 201 // Object.is equality
+   × TEST-111 (AC-111): edit a category > TEST-111: only the sent fields change; new defaults do not change existing item types 59ms
+     → expected 404 to be 200 // Object.is equality
+   × TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (a) a blank name on create is 400 naming the field; Unchanged 153ms
+     → expected 404 to be 400 // Object.is equality
+   × TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (b) a 101-character name on create is 400 naming the field; Unchanged 228ms
+     → expected 404 to be 400 // Object.is equality
+   × TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (c) defaultMaxLoanDays 0 on create is 400 naming the field; Unchanged 58ms
+     → expected 404 to be 400 // Object.is equality
+   × TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (c) defaultMaxLoanDays 366 on create is 400 naming the field; Unchanged 51ms
+     → expected 404 to be 400 // Object.is equality
+   × TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (d) defaultMaxQuantity 11 on create is 400 naming the field; Unchanged 53ms
+     → expected 404 to be 400 // Object.is equality
+   × TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (e) an unknown field id on create is 400 naming the field; Unchanged 48ms
+     → expected 404 to be 400 // Object.is equality
+   × TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (f): an edit with no field is 400 naming body; Unchanged 59ms
+     → expected 404 to be 400 // Object.is equality
+   × TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (g), (h): a name used in another letter case is 409 NAME_TAKEN with the F09-D2 message; Unchanged 62ms
+     → expected 404 to be 409 // Object.is equality
+   × TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (i), (j): an unknown category or item type ID is 404; Unchanged 53ms
+     → expected { code: 'NOT_FOUND', …(2) } to match object { code: 'NOT_FOUND', …(1) }
+(1 matching property omitted from actual)
+   × TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (k), (l): a record's own name, also in another letter case, does not collide with itself 61ms
+     → expected 404 to be 200 // Object.is equality
+   × TEST-113 (AC-113): create an item type > TEST-113: limits left out come from the category; sent values are stored; listed with 0 available; unknown category 404 54ms
+     → expected 404 to be 201 // Object.is equality
+   × TEST-114 (AC-114): edit an item type > TEST-114: new limits are stored and listed; open requests keep their lines; a move keeps the limits 57ms
+     → expected 404 to be 200 // Object.is equality
+ ❯ tests/api/units-manage.test.ts (10 tests | 10 failed) 641ms
+   × TEST-115 (AC-115): add a unit > TEST-115: stored trimmed and upper case as AVAILABLE; the count rises; one CREATED history entry by C 110ms
+     → expected 404 to be 201 // Object.is equality
+   × TEST-116 (AC-116): a unit that cannot be added > TEST-116 (a) ARD-0001 is 400 naming the field; Unchanged 76ms
+     → expected 404 to be 400 // Object.is equality
+   × TEST-116 (AC-116): a unit that cannot be added > TEST-116 (b) KH-ARD-1 is 400 naming the field; Unchanged 60ms
+     → expected 404 to be 400 // Object.is equality
+   × TEST-116 (AC-116): a unit that cannot be added > TEST-116 (e) KH-X-0001 is 400 naming the field; Unchanged 53ms
+     → expected 404 to be 400 // Object.is equality
+   × TEST-116 (AC-116): a unit that cannot be added > TEST-116 (f) an extra status is 400 naming the field; Unchanged 51ms
+     → expected 404 to be 400 // Object.is equality
+   × TEST-116 (AC-116): a unit that cannot be added > TEST-116 (c) KH-ARD-0001, used by a unit of another item type, is 409 ASSET_TAG_TAKEN; Unchanged 54ms
+     → expected 404 to be 409 // Object.is equality
+   × TEST-116 (AC-116): a unit that cannot be added > TEST-116 (d) kh-ard-0001, used by a unit of another item type, is 409 ASSET_TAG_TAKEN; Unchanged 53ms
+     → expected 404 to be 409 // Object.is equality
+   × TEST-116 (AC-116): a unit that cannot be added > TEST-116 (g): an unknown item type is 404; Unchanged 50ms
+     → expected { code: 'NOT_FOUND', …(2) } to match object { code: 'NOT_FOUND', …(1) }
+(1 matching property omitted from actual)
+   × TEST-117 (AC-117): mark a unit repaired > TEST-117: MAINTENANCE → AVAILABLE with one history entry; counted, listed and lendable; other states 409 63ms
+     → expected 404 to be 200 // Object.is equality
+   × TEST-118 (AC-118): retire a unit > TEST-118: AVAILABLE and MAINTENANCE → RETIRED with history; ON_LOAN and RETIRED 409; a retired unit cannot be checked out 71ms
+     → expected 404 to be 200 // Object.is equality
+ ✓ tests/api/seed.test.ts (8 tests) 952ms
+ ✓ tests/api/requests-create.test.ts (18 tests) 1263ms
+ ✓ tests/api/auth.test.ts (14 tests) 902ms
+ ✓ tests/api/schema.test.ts (6 tests) 113ms
+ ✓ tests/api/checkout-concurrency.test.ts (3 tests) 1006ms
+   ✓ TEST-22 (AC-22): two checkouts of the same unit > TEST-22 (a): two simultaneous checkouts of one unit for two requests create one loan, 5 rounds 561ms
+   ✓ TEST-47 (AC-47): two checkouts of the same request > TEST-47: two simultaneous checkouts of one request with two units create one loan, 5 rounds 391ms
+ ✓ tests/unit/error-handler.test.ts (7 tests) 46ms
+ ✓ tests/api/checkout-history.test.ts (5 tests) 474ms
+ ✓ tests/api/loans.test.ts (4 tests) 449ms
+ ✓ tests/unit/config.test.ts (10 tests) 8ms
+ ✓ tests/api/due-date-preview.test.ts (5 tests) 441ms
+ ❯ tests/api/units-manage-concurrency.test.ts (4 tests | 4 failed) 333ms
+   × TEST-119 (AC-119): concurrent catalog management > TEST-119 (a): a retire and a checkout of the same AVAILABLE unit: exactly one wins, 5 rounds 136ms
+     → expected 404 to be 409 // Object.is equality
+   × TEST-119 (AC-119): concurrent catalog management > TEST-119 (b): two adds of KH-SRV-0009 to two item types: one 201, one 409 ASSET_TAG_TAKEN, 5 rounds 97ms
+     → expected [ 404, 404 ] to deeply equal [ 201, 409 ]
+   × TEST-119 (AC-119): concurrent catalog management > TEST-119 (c) two creates named Robotics: one 201, one 409 NAME_TAKEN, 5 rounds 54ms
+     → expected [ 404, 404 ] to deeply equal [ 201, 409 ]
+   × TEST-119 (AC-119): concurrent catalog management > TEST-119 (d) Robotics and robotics: one 201, one 409 NAME_TAKEN, 5 rounds 45ms
+     → expected [ 404, 404 ] to deeply equal [ 201, 409 ]
+ ✓ tests/api/requests-read.test.ts (6 tests) 463ms
+ ✓ tests/api/checkout-access.test.ts (8 tests) 531ms
+ ✓ tests/api/returns-concurrency.test.ts (3 tests) 1270ms
+   ✓ TEST-108 (AC-108): concurrent returns > TEST-108 (a): two return-all calls give one 200 and one 409; each loan returned once, 5 rounds 471ms
+   ✓ TEST-108 (AC-108): concurrent returns > TEST-108 (b): early returns of L1 and L2 at once both succeed; exactly one ends the request, 5 rounds 430ms
+   ✓ TEST-108 (AC-108): concurrent returns > TEST-108 (c): a return-all and an early return of L1 at once: one 200, one 409 (never 400), 5 rounds 368ms
+ ✓ tests/api/errors.test.ts (9 tests) 56ms
+ ✓ tests/api/units.test.ts (6 tests) 392ms
+ ✓ tests/unit/due-date.test.ts (18 tests) 5ms
+ ❯ tests/api/catalog.test.ts (2 tests | 1 failed) 215ms
+   × TEST-08 (AC-08): GET /api/categories > TEST-08: both roles get categories and item types by name with AVAILABLE counts and no unit data 158ms
+     → expected [ 'description', 'id', …(2) ] to deeply equal [ 'defaultMaxLoanDays', …(5) ]
+ ❯ tests/api/catalog-manage-access.test.ts (2 tests | 2 failed) 469ms
+   × TEST-120 (AC-120): Borrowers and calls without a session cannot manage the catalog > TEST-120 (a): a Borrower gets 403 FORBIDDEN on each endpoint, only the error, Unchanged 362ms
+     → POST /api/categories: expected 404 to be 403 // Object.is equality
+   × TEST-120 (AC-120): Borrowers and calls without a session cannot manage the catalog > TEST-120 (b): no cookie and a signed-out session get 401 UNAUTHENTICATED on each endpoint, only the error, Unchanged 107ms
+     → POST /api/categories: expected 404 to be 401 // Object.is equality
+ ✓ tests/api/requests-decide-concurrency.test.ts (2 tests) 752ms
+   ✓ TEST-86 (AC-86): simultaneous decisions > TEST-86 (a): approve and approve give one 200 and one 409, 5 rounds 439ms
+   ✓ TEST-86 (AC-86): simultaneous decisions > TEST-86 (b): approve and reject give one 200 and one 409; the reason is set only when reject won, 5 rounds 313ms
+ ✓ tests/api/requests-access.test.ts (4 tests) 313ms
+ ✓ tests/api/pending-requests.test.ts (1 test) 950ms
+   ✓ TEST-18 (AC-18): Custodian's pending list > TEST-18: lists every Borrower's PENDING requests oldest first, with borrower, line and createdAt 950ms
+ ✓ tests/api/persistence.test.ts (1 test) 142ms
+ ❯ tests/unit/transitions.test.ts (28 tests | 4 failed) 10ms
+   × TEST-51: assertTransition > TEST-51 (a): UNIT null → AVAILABLE is allowed 4ms
+     → expected [Function] to not throw an error but 'InvalidTransitionError: A unit cannot…' was thrown
+   × TEST-51: assertTransition > TEST-51 (a): UNIT MAINTENANCE → AVAILABLE is allowed 0ms
+     → expected [Function] to not throw an error but 'InvalidTransitionError: A unit cannot…' was thrown
+   × TEST-51: assertTransition > TEST-51 (a): UNIT AVAILABLE → RETIRED is allowed 0ms
+     → expected [Function] to not throw an error but 'InvalidTransitionError: A unit cannot…' was thrown
+   × TEST-51: assertTransition > TEST-51 (a): UNIT MAINTENANCE → RETIRED is allowed 0ms
+     → expected [Function] to not throw an error but 'InvalidTransitionError: A unit cannot…' was thrown
+ ✓ tests/api/checkout-multi-concurrency.test.ts (1 test) 1005ms
+   ✓ TEST-96 (AC-96): two checkouts that share units > TEST-96: one 201 and one 409 UNIT_NOT_AVAILABLE; the loser stays APPROVED with no loan; 5 rounds 1005ms
+ ✓ tests/api/requests-decide-access.test.ts (4 tests) 347ms
+stderr | tests/api/health.test.ts > GET /api/ready (SDS 6.7) > returns 503 NOT_READY when the database cannot be reached
+{"time":"2026-11-26T10:41:37.906Z","level":"error","requestId":"e55a4642-5779-48c8-b1de-77f2e245de54","path":"/api/ready","error":"PrismaClientInitializationError","message":"\nInvalid `prisma.$queryRaw()` invocation:\n\n\nCan't reach database server at `127.0.0.1:1`\n\nPlease make sure your database server is running at `127.0.0.1:1`."}
+
+ ✓ tests/api/health.test.ts (4 tests) 56ms
+ ✓ tests/api/returns-access.test.ts (1 test) 139ms
+ ✓ tests/api/requests-history.test.ts (1 test) 124ms
+ ✓ tests/api/requests-concurrency.test.ts (1 test) 1378ms
+   ✓ TEST-37 (AC-37): concurrent duplicate creates > TEST-37: two parallel creates store one request, 20 runs 1378ms
+ ✓ tests/unit/checkout-errors.test.ts (3 tests) 3ms
+ ✓ tests/unit/request-rules.test.ts (4 tests) 3ms
+ ✓ tests/unit/test-db-guard.test.ts (4 tests) 3ms
+ ✓ tests/unit/password.test.ts (2 tests) 1118ms
+   ✓ TEST-07 (AC-07): salted adaptive password hashes > TEST-07 (a): cost 12 hashes differ from the plain text and from each other 1116ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 35 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/api/catalog-manage-access.test.ts > TEST-120 (AC-120): Borrowers and calls without a session cannot manage the catalog > TEST-120 (a): a Borrower gets 403 FORBIDDEN on each endpoint, only the error, Unchanged
+AssertionError: POST /api/categories: expected 404 to be 403 // Object.is equality
+
+- Expected
++ Received
+
+- 403
++ 404
+
+ ❯ tests/api/catalog-manage-access.test.ts:43:32
+     41|     for (const [name, method, path, body] of calls) {
+     42|       const res = await sendJson(app, method, path, borrower, body);
+     43|       expect(res.status, name).toBe(403);
+       |                                ^
+     44|       expect(res.body.error.code, name).toBe("FORBIDDEN");
+     45|       expect(Object.keys(res.body), name).toEqual(["error"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/35]⎯
+
+ FAIL  tests/api/catalog-manage-access.test.ts > TEST-120 (AC-120): Borrowers and calls without a session cannot manage the catalog > TEST-120 (b): no cookie and a signed-out session get 401 UNAUTHENTICATED on each endpoint, only the error, Unchanged
+AssertionError: POST /api/categories: expected 404 to be 401 // Object.is equality
+
+- Expected
++ Received
+
+- 401
++ 404
+
+ ❯ tests/api/catalog-manage-access.test.ts:59:34
+     57|       for (const [name, method, path, body] of calls) {
+     58|         const res = await sendJson(app, method, path, cookie, body);
+     59|         expect(res.status, name).toBe(401);
+       |                                  ^
+     60|         expect(res.body.error.code, name).toBe("UNAUTHENTICATED");
+     61|         expect(Object.keys(res.body), name).toEqual(["error"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/35]⎯
+
+ FAIL  tests/api/catalog-manage.test.ts > TEST-110 (AC-110): create a category > TEST-110: the trimmed name, a null description and the defaults are stored; no history; listed with no item types
+AssertionError: expected 404 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:57:24
+     55|     const res = await postCategory(app, s.c, { name: "  Robotics ", de…
+     56| 
+     57|     expect(res.status).toBe(201);
+       |                        ^
+     58|     expect(res.body).toEqual({ id: expect.any(Number), name: "Robotics…
+     59|     const after = await snapshotCatalogState(prisma);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/35]⎯
+
+ FAIL  tests/api/catalog-manage.test.ts > TEST-111 (AC-111): edit a category > TEST-111: only the sent fields change; new defaults do not change existing item types
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:75:22
+     73| 
+     74|     const a = await patchCategory(app, s.c, k.id, { defaultMaxLoanDays…
+     75|     expect(a.status).toBe(200);
+       |                      ^
+     76|     expect(a.body).toEqual({ id: k.id, name: "Microcontroller boards",…
+     77|     expect((await prisma.itemType.findUniqueOrThrow({ where: { id: t.i…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/35]⎯
+
+ FAIL  tests/api/catalog-manage.test.ts > TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (a) a blank name on create is 400 naming the field; Unchanged
+ FAIL  tests/api/catalog-manage.test.ts > TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (b) a 101-character name on create is 400 naming the field; Unchanged
+ FAIL  tests/api/catalog-manage.test.ts > TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (c) defaultMaxLoanDays 0 on create is 400 naming the field; Unchanged
+ FAIL  tests/api/catalog-manage.test.ts > TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (c) defaultMaxLoanDays 366 on create is 400 naming the field; Unchanged
+ FAIL  tests/api/catalog-manage.test.ts > TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (d) defaultMaxQuantity 11 on create is 400 naming the field; Unchanged
+ FAIL  tests/api/catalog-manage.test.ts > TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (e) an unknown field id on create is 400 naming the field; Unchanged
+AssertionError: expected 404 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:108:24
+    106|     const res = await postCategory(app, s.c, body);
+    107| 
+    108|     expect(res.status).toBe(400);
+       |                        ^
+    109|     expect(res.body.error.code).toBe("VALIDATION_FAILED");
+    110|     expect(detailFields(res)).toContain(field);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/35]⎯
+
+ FAIL  tests/api/catalog-manage.test.ts > TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (f): an edit with no field is 400 naming body; Unchanged
+AssertionError: expected 404 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:120:24
+    118|     const res = await patchCategory(app, s.c, s.k.id, {});
+    119| 
+    120|     expect(res.status).toBe(400);
+       |                        ^
+    121|     expect(detailFields(res)).toEqual(["body"]);
+    122|     expect(await snapshotCatalogState(prisma)).toEqual(before);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/35]⎯
+
+ FAIL  tests/api/catalog-manage.test.ts > TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (g), (h): a name used in another letter case is 409 NAME_TAKEN with the F09-D2 message; Unchanged
+AssertionError: expected 404 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:130:22
+    128| 
+    129|     const g = await postCategory(app, s.c, { ...valid, name: "instrume…
+    130|     expect(g.status).toBe(409);
+       |                      ^
+    131|     expect(g.body.error).toMatchObject({ code: "NAME_TAKEN", message: …
+    132| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/35]⎯
+
+ FAIL  tests/api/catalog-manage.test.ts > TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (i), (j): an unknown category or item type ID is 404; Unchanged
+AssertionError: expected { code: 'NOT_FOUND', …(2) } to match object { code: 'NOT_FOUND', …(1) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  Object {
+    "code": "NOT_FOUND",
+-   "message": "Category 999999 does not exist.",
++   "message": "The requested resource was not found.",
+  }
+
+ ❯ tests/api/catalog-manage.test.ts:146:26
+    144|     const i = await patchCategory(app, s.c, 999999, { defaultMaxQuanti…
+    145|     expect(i.status).toBe(404);
+    146|     expect(i.body.error).toMatchObject({ code: "NOT_FOUND", message: "…
+       |                          ^
+    147| 
+    148|     const j = await patchItemType(app, s.c, 999999, { maxQuantityPerRe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/35]⎯
+
+ FAIL  tests/api/catalog-manage.test.ts > TEST-112 (AC-112): invalid category and item type bodies, names taken, unknown IDs > TEST-112 (k), (l): a record's own name, also in another letter case, does not collide with itself
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:159:22
+    157| 
+    158|     const k = await patchCategory(app, s.c, s.instruments.id, { name: …
+    159|     expect(k.status).toBe(200);
+       |                      ^
+    160|     expect(k.body.name).toBe("INSTRUMENTS");
+    161|     expect((await prisma.category.findUniqueOrThrow({ where: { id: s.i…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/35]⎯
+
+ FAIL  tests/api/catalog-manage.test.ts > TEST-113 (AC-113): create an item type > TEST-113: limits left out come from the category; sent values are stored; listed with 0 available; unknown category 404
+AssertionError: expected 404 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:175:22
+    173| 
+    174|     const a = await postItemType(app, s.c, { categoryId: k.id, name: "…
+    175|     expect(a.status).toBe(201);
+       |                      ^
+    176|     expect(Object.keys(a.body).sort()).toEqual(ITEM_TYPE_KEYS);
+    177|     expect(a.body).toEqual({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/35]⎯
+
+ FAIL  tests/api/catalog-manage.test.ts > TEST-114 (AC-114): edit an item type > TEST-114: new limits are stored and listed; open requests keep their lines; a move keeps the limits
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:225:22
+    223| 
+    224|     const a = await patchItemType(app, s.c, t.id, { maxQuantityPerRequ…
+    225|     expect(a.status).toBe(200);
+       |                      ^
+    226|     expect(a.body).toMatchObject({ id: t.id, maxQuantityPerRequest: 1,…
+    227| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/35]⎯
+
+ FAIL  tests/api/catalog.test.ts > TEST-08 (AC-08): GET /api/categories > TEST-08: both roles get categories and item types by name with AVAILABLE counts and no unit data
+AssertionError: expected [ 'description', 'id', …(2) ] to deeply equal [ 'defaultMaxLoanDays', …(5) ]
+
+- Expected
++ Received
+
+  Array [
+-   "defaultMaxLoanDays",
+-   "defaultMaxQuantity",
+    "description",
+    "id",
+    "itemTypes",
+    "name",
+  ]
+
+ ❯ tests/api/catalog.test.ts:54:42
+     52|     expect(items[0].itemTypes[0]).toMatchObject({ name: "Oscilloscope"…
+     53|     // F-09 (F09-D9) adds the category default limits for both roles.
+     54|     expect(Object.keys(items[0]).sort()).toEqual(["defaultMaxLoanDays"…
+       |                                          ^
+     55| 
+     56|     // F02-D7: no unit IDs or asset tags for either role.
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/35]⎯
+
+ FAIL  tests/api/units-manage-concurrency.test.ts > TEST-119 (AC-119): concurrent catalog management > TEST-119 (a): a retire and a checkout of the same AVAILABLE unit: exactly one wins, 5 rounds
+AssertionError: expected 404 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 404
+
+ ❯ tests/api/units-manage-concurrency.test.ts:48:31
+     46|         expect(unitEntries.map((e) => e.toStatus)).toEqual(["RETIRED"]…
+     47|       } else {
+     48|         expect(retire.status).toBe(409);
+       |                               ^
+     49|         expect(retire.body.error.code).toBe("INVALID_STATE");
+     50|         expect(checkout.status).toBe(201);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/35]⎯
+
+ FAIL  tests/api/units-manage-concurrency.test.ts > TEST-119 (AC-119): concurrent catalog management > TEST-119 (b): two adds of KH-SRV-0009 to two item types: one 201, one 409 ASSET_TAG_TAKEN, 5 rounds
+AssertionError: expected [ 404, 404 ] to deeply equal [ 201, 409 ]
+
+- Expected
++ Received
+
+  Array [
+-   201,
+-   409,
++   404,
++   404,
+  ]
+
+ ❯ tests/api/units-manage-concurrency.test.ts:68:35
+     66|       ]);
+     67| 
+     68|       expect(statusesOf(results)).toEqual([201, 409]);
+       |                                   ^
+     69|       expect(results.find((r) => r.status === 409)!.body.error.code).t…
+     70|       expect(await prisma.unit.count({ where: { assetTag: "KH-SRV-0009…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/35]⎯
+
+ FAIL  tests/api/units-manage-concurrency.test.ts > TEST-119 (AC-119): concurrent catalog management > TEST-119 (c) two creates named Robotics: one 201, one 409 NAME_TAKEN, 5 rounds
+ FAIL  tests/api/units-manage-concurrency.test.ts > TEST-119 (AC-119): concurrent catalog management > TEST-119 (d) Robotics and robotics: one 201, one 409 NAME_TAKEN, 5 rounds
+AssertionError: expected [ 404, 404 ] to deeply equal [ 201, 409 ]
+
+- Expected
++ Received
+
+  Array [
+-   201,
+-   409,
++   404,
++   404,
+  ]
+
+ ❯ tests/api/units-manage-concurrency.test.ts:85:35
+     83|       const results = await Promise.all([postCategory(app, s.c1, body(…
+     84| 
+     85|       expect(statusesOf(results)).toEqual([201, 409]);
+       |                                   ^
+     86|       expect(results.find((r) => r.status === 409)!.body.error.code).t…
+     87|       expect(await prisma.category.count()).toBe(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/35]⎯
+ Test Files  6 failed | 34 passed (40)
+
+ FAIL  tests/api/units-manage.test.ts > TEST-115 (AC-115): add a unit > TEST-115: stored trimmed and upper case as AVAILABLE; the count rises; one CREATED history entry by C
+AssertionError: expected 404 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 404
+      Tests  35 failed | 263 passed (298)
+
+ ❯ tests/api/units-manage.test.ts:66:24
+     64|     const res = await postUnit(app, s.c, t.id, { assetTag: " kh-ard-00…
+     65| 
+     66|     expect(res.status).toBe(201);
+       |                        ^
+     67|     expect(res.body).toEqual({
+     68|       id: expect.any(Number),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/35]⎯
+
+ FAIL  tests/api/units-manage.test.ts > TEST-116 (AC-116): a unit that cannot be added > TEST-116 (a) ARD-0001 is 400 naming the field; Unchanged
+ FAIL  tests/api/units-manage.test.ts > TEST-116 (AC-116): a unit that cannot be added > TEST-116 (b) KH-ARD-1 is 400 naming the field; Unchanged
+ FAIL  tests/api/units-manage.test.ts > TEST-116 (AC-116): a unit that cannot be added > TEST-116 (e) KH-X-0001 is 400 naming the field; Unchanged
+ FAIL  tests/api/units-manage.test.ts > TEST-116 (AC-116): a unit that cannot be added > TEST-116 (f) an extra status is 400 naming the field; Unchanged
+AssertionError: expected 404 to be 400 // Object.is equality
+
+- Expected
++ Received
+
+- 400
++ 404
+
+ ❯ tests/api/units-manage.test.ts:117:24
+    115|     const res = await postUnit(app, s.c, s.sItem.id, body);
+    116| 
+    117|     expect(res.status).toBe(400);
+       |                        ^
+    118|     expect(res.body.error.code).toBe("VALIDATION_FAILED");
+    119|     expect(detailFields(res)).toEqual([field]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/35]⎯
+
+ FAIL  tests/api/units-manage.test.ts > TEST-116 (AC-116): a unit that cannot be added > TEST-116 (c) KH-ARD-0001, used by a unit of another item type, is 409 ASSET_TAG_TAKEN; Unchanged
+ FAIL  tests/api/units-manage.test.ts > TEST-116 (AC-116): a unit that cannot be added > TEST-116 (d) kh-ard-0001, used by a unit of another item type, is 409 ASSET_TAG_TAKEN; Unchanged
+AssertionError: expected 404 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 404
+
+ ❯ tests/api/units-manage.test.ts:134:26
+    132|       const res = await postUnit(app, s.c, s.sItem.id, { assetTag });
+    133| 
+    134|       expect(res.status).toBe(409);
+       |                          ^
+    135|       expect(res.body.error).toMatchObject({ code: "ASSET_TAG_TAKEN", …
+    136|       expect(await snapshotCatalogState(prisma)).toEqual(before);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/35]⎯
+
+ FAIL  tests/api/units-manage.test.ts > TEST-116 (AC-116): a unit that cannot be added > TEST-116 (g): an unknown item type is 404; Unchanged
+AssertionError: expected { code: 'NOT_FOUND', …(2) } to match object { code: 'NOT_FOUND', …(1) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  Object {
+    "code": "NOT_FOUND",
+-   "message": "Item type 999999 does not exist.",
++   "message": "The requested resource was not found.",
+  }
+
+ ❯ tests/api/units-manage.test.ts:147:28
+    145| 
+    146|     expect(res.status).toBe(404);
+    147|     expect(res.body.error).toMatchObject({ code: "NOT_FOUND", message:…
+       |                            ^
+    148|     expect(await snapshotCatalogState(prisma)).toEqual(before);
+    149|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/35]⎯
+
+ FAIL  tests/api/units-manage.test.ts > TEST-117 (AC-117): mark a unit repaired > TEST-117: MAINTENANCE → AVAILABLE with one history entry; counted, listed and lendable; other states 409
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/units-manage.test.ts:158:22
+    156| 
+    157|     const a = await repairUnit(app, s.c, s.m.id);
+    158|     expect(a.status).toBe(200);
+       |                      ^
+    159|     expect(a.body).toEqual({ id: s.m.id, assetTag: "KH-ARD-0002", stat…
+    160|     const history = await unitHistory(s.m.id);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/35]⎯
+
+ FAIL  tests/api/units-manage.test.ts > TEST-118 (AC-118): retire a unit > TEST-118: AVAILABLE and MAINTENANCE → RETIRED with history; ON_LOAN and RETIRED 409; a retired unit cannot be checked out
+AssertionError: expected 404 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 404
+
+ ❯ tests/api/units-manage.test.ts:205:22
+    203| 
+    204|     const a = await retireUnit(app, s.c, s.a.id);
+    205|     expect(a.status).toBe(200);
+       |                      ^
+    206|     expect(a.body).toMatchObject({ id: s.a.id, status: "RETIRED", item…
+    207|     expect(await unitHistory(s.a.id)).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/35]⎯
+
+ FAIL  tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): UNIT null → AVAILABLE is allowed
+ FAIL  tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): UNIT MAINTENANCE → AVAILABLE is allowed
+ FAIL  tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): UNIT AVAILABLE → RETIRED is allowed
+ FAIL  tests/unit/transitions.test.ts > TEST-51: assertTransition > TEST-51 (a): UNIT MAINTENANCE → RETIRED is allowed
+AssertionError: expected [Function] to not throw an error but 'InvalidTransitionError: A unit cannot…' was thrown
+
+- Expected: 
+undefined
+
++ Received: 
+"InvalidTransitionError: A unit cannot change from (new) to AVAILABLE."
+
+ ❯ tests/unit/transitions.test.ts:28:58
+     26|     ["UNIT", "MAINTENANCE", "RETIRED"],
+     27|   ])("TEST-51 (a): %s %s → %s is allowed", (entity, from, to) => {
+     28|     expect(() => assertTransition(entity, from, to)).not.toThrow();
+       |                                                          ^
+     29|   });
+     30| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/35]⎯
+
+   Start at  10:41:06
+   Duration  36.37s (transform 476ms, setup 1.86s, collect 4.28s, tests 23.59s, environment 5ms, prepare 1.58s)
+
+
+##[error]AssertionError: POST /api/categories: expected 404 to be 403 // Object.is equality
+
+Expected
++ Received
+
+403
++ 404
+
+ ❯ tests/api/catalog-manage-access.test.ts:43:32
+
+
+
+##[error]AssertionError: POST /api/categories: expected 404 to be 401 // Object.is equality
+
+Expected
++ Received
+
+401
++ 404
+
+ ❯ tests/api/catalog-manage-access.test.ts:59:34
+
+
+
+##[error]AssertionError: expected 404 to be 201 // Object.is equality
+
+Expected
++ Received
+
+201
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:57:24
+
+
+
+##[error]AssertionError: expected 404 to be 200 // Object.is equality
+
+Expected
++ Received
+
+200
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:75:22
+
+
+
+##[error]AssertionError: expected 404 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:108:24
+
+
+
+##[error]AssertionError: expected 404 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:108:24
+
+
+
+##[error]AssertionError: expected 404 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:108:24
+
+
+
+##[error]AssertionError: expected 404 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:108:24
+
+
+(node:3276) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 unhandledRejection listeners added to [process]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+##[error]AssertionError: expected 404 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:108:24
+
+
+
+##[error]AssertionError: expected 404 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:108:24
+
+
+
+##[error]AssertionError: expected 404 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:120:24
+
+
+
+##[error]AssertionError: expected 404 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:130:22
+
+
+
+##[error]AssertionError: expected { code: 'NOT_FOUND', …(2) } to match object { code: 'NOT_FOUND', …(1) }
+(1 matching property omitted from actual)
+
+Expected
++ Received
+
+  Object {
+    "code": "NOT_FOUND",
+  "message": "Category 999999 does not exist.",
++   "message": "The requested resource was not found.",
+  }
+
+ ❯ tests/api/catalog-manage.test.ts:146:26
+
+
+
+##[error]AssertionError: expected 404 to be 200 // Object.is equality
+
+Expected
++ Received
+
+200
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:159:22
+
+
+
+##[error]AssertionError: expected 404 to be 201 // Object.is equality
+
+Expected
++ Received
+
+201
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:175:22
+
+
+
+##[error]AssertionError: expected 404 to be 200 // Object.is equality
+
+Expected
++ Received
+
+200
++ 404
+
+ ❯ tests/api/catalog-manage.test.ts:225:22
+
+
+
+##[error]AssertionError: expected [ 'description', 'id', …(2) ] to deeply equal [ 'defaultMaxLoanDays', …(5) ]
+
+Expected
++ Received
+
+  Array [
+  "defaultMaxLoanDays",
+  "defaultMaxQuantity",
+    "description",
+    "id",
+    "itemTypes",
+    "name",
+  ]
+
+ ❯ tests/api/catalog.test.ts:54:42
+
+
+
+##[error]AssertionError: expected 404 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 404
+
+ ❯ tests/api/units-manage-concurrency.test.ts:48:31
+
+
+
+##[error]AssertionError: expected [ 404, 404 ] to deeply equal [ 201, 409 ]
+
+Expected
++ Received
+
+  Array [
+  201,
+  409,
++   404,
++   404,
+  ]
+
+ ❯ tests/api/units-manage-concurrency.test.ts:68:35
+
+
+
+##[error]AssertionError: expected [ 404, 404 ] to deeply equal [ 201, 409 ]
+
+Expected
++ Received
+
+  Array [
+  201,
+  409,
++   404,
++   404,
+  ]
+
+ ❯ tests/api/units-manage-concurrency.test.ts:85:35
+
+
+
+##[error]AssertionError: expected [ 404, 404 ] to deeply equal [ 201, 409 ]
+
+Expected
++ Received
+
+  Array [
+  201,
+  409,
++   404,
++   404,
+  ]
+
+ ❯ tests/api/units-manage-concurrency.test.ts:85:35
+
+
+
+##[error]AssertionError: expected 404 to be 201 // Object.is equality
+
+Expected
++ Received
+
+201
++ 404
+
+ ❯ tests/api/units-manage.test.ts:66:24
+
+
+
+##[error]AssertionError: expected 404 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 404
+
+ ❯ tests/api/units-manage.test.ts:117:24
+
+
+
+##[error]AssertionError: expected 404 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 404
+
+ ❯ tests/api/units-manage.test.ts:117:24
+
+
+
+##[error]AssertionError: expected 404 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 404
+
+ ❯ tests/api/units-manage.test.ts:117:24
+
+
+
+##[error]AssertionError: expected 404 to be 400 // Object.is equality
+
+Expected
++ Received
+
+400
++ 404
+
+ ❯ tests/api/units-manage.test.ts:117:24
+
+
+
+##[error]AssertionError: expected 404 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 404
+
+ ❯ tests/api/units-manage.test.ts:134:26
+
+
+
+##[error]AssertionError: expected 404 to be 409 // Object.is equality
+
+Expected
++ Received
+
+409
++ 404
+
+ ❯ tests/api/units-manage.test.ts:134:26
+
+
+
+##[error]AssertionError: expected { code: 'NOT_FOUND', …(2) } to match object { code: 'NOT_FOUND', …(1) }
+(1 matching property omitted from actual)
+
+Expected
++ Received
+
+  Object {
+    "code": "NOT_FOUND",
+  "message": "Item type 999999 does not exist.",
++   "message": "The requested resource was not found.",
+  }
+
+ ❯ tests/api/units-manage.test.ts:147:28
+
+
+
+##[error]AssertionError: expected 404 to be 200 // Object.is equality
+
+Expected
++ Received
+
+200
++ 404
+
+ ❯ tests/api/units-manage.test.ts:158:22
+
+
+
+##[error]AssertionError: expected 404 to be 200 // Object.is equality
+
+Expected
++ Received
+
+200
++ 404
+
+ ❯ tests/api/units-manage.test.ts:205:22
+
+
+
+##[error]AssertionError: expected [Function] to not throw an error but 'InvalidTransitionError: A unit cannot…' was thrown
+
+Expected: 
+undefined
+
++ Received: 
+"InvalidTransitionError: A unit cannot change from (new) to AVAILABLE."
+
+ ❯ tests/unit/transitions.test.ts:28:58
+
+
+
+##[error]AssertionError: expected [Function] to not throw an error but 'InvalidTransitionError: A unit cannot…' was thrown
+
+Expected: 
+undefined
+
++ Received: 
+"InvalidTransitionError: A unit cannot change from MAINTENANCE to AVAILABLE."
+
+ ❯ tests/unit/transitions.test.ts:28:58
+
+
+
+##[error]AssertionError: expected [Function] to not throw an error but 'InvalidTransitionError: A unit cannot…' was thrown
+
+Expected: 
+undefined
+
++ Received: 
+"InvalidTransitionError: A unit cannot change from AVAILABLE to RETIRED."
+
+ ❯ tests/unit/transitions.test.ts:28:58
+
+
+
+##[error]AssertionError: expected [Function] to not throw an error but 'InvalidTransitionError: A unit cannot…' was thrown
+
+Expected: 
+undefined
+
++ Received: 
+"InvalidTransitionError: A unit cannot change from MAINTENANCE to RETIRED."
+
+ ❯ tests/unit/transitions.test.ts:28:58
+
+
+##[error]Process completed with exit code 1.

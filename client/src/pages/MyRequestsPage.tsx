@@ -35,7 +35,11 @@ export function MyRequestsPage() {
                     {line.itemType.name} × {line.quantity}
                   </div>
                 ))}
-                <small className="text-body-secondary">{formatDateTime(r.createdAt)}</small>
+                <small className="text-body-secondary">
+                  {formatDateTime(r.createdAt)}
+                  {/* F-04 (4.4): the loan length when the request has one. */}
+                  {r.loanDays != null && ` · ${r.loanDays} day${r.loanDays === 1 ? "" : "s"}`}
+                </small>
               </div>
               <StatusBadge status={r.status} />
             </Link>

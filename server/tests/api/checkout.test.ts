@@ -1,7 +1,10 @@
 // POST /api/requests/:id/checkout (contract F-03 3 and 5.3): TEST-19, TEST-20, TEST-21, TEST-26
 // TEST-42 to TEST-46, and TEST-54 and TEST-59 of change request #71. Every rejection asserts that nothing changed (contract F-03 3.6).
+// F-07 (F07-D8): checkout now needs an APPROVED request (FR-17 replaces FR-16), so these tests
+// create their requests APPROVED; their rule assertions are unchanged.
+import { RequestStatus } from "@prisma/client";
 import request from "supertest";
-import { readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createTestApp, prisma } from "../helpers/app.js";
 import { signIn } from "../helpers/auth.js";
@@ -38,7 +41,7 @@ describe("TEST-19 (AC-19): normal checkout", () => {
     const w = await createCheckoutWorld(prisma);
     const u = await createUnit(prisma, { itemTypeId: w.arduino.id, assetTag: "KH-ARD-0007" });
     const other = await createUnit(prisma, { itemTypeId: w.arduino.id, assetTag: "KH-ARD-0008" });
-    const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+    const r = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b1.id, itemTypeId: w.arduino.id });
     const lineId = r.lines[0].id;
     const cookie = await signIn(app, "custodian1");
 
@@ -78,7 +81,7 @@ describe("TEST-19 (AC-19): normal checkout", () => {
     vi.useFakeTimers({ toFake: ["Date"], now: new Date("2026-11-06T07:30:00.000Z") });
     const w = await createCheckoutWorld(prisma);
     const u = await createUnit(prisma, { itemTypeId: w.multimeter.id, assetTag: "KH-DMM-0001" });
-    const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.multimeter.id });
+    const r = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b1.id, itemTypeId: w.multimeter.id });
 
     const res = await postCheckout(app, await signIn(app, "custodian1"), r.id, checkoutBody(r.lines[0].id, u.id));
 
@@ -94,7 +97,7 @@ describe("TEST-54 (AC-54): checkout on a business day before 16:00 ICT (D-21)", 
     vi.useFakeTimers({ toFake: ["Date"], now: new Date("2026-11-25T03:00:00.000Z") });
     const w = await createCheckoutWorld(prisma);
     const u = await createUnit(prisma, { itemTypeId: w.arduino.id, assetTag: "KH-ARD-0007" });
-    const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+    const r = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b1.id, itemTypeId: w.arduino.id });
 
     const res = await postCheckout(app, await signIn(app, "custodian1"), r.id, checkoutBody(r.lines[0].id, u.id));
 
@@ -117,14 +120,14 @@ describe("TEST-20 (AC-20): unit not AVAILABLE, and no AVAILABLE unit at all (D-1
       itemTypeId: w.arduino.id,
       unitId: u1.id,
     });
-    const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+    const r = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b1.id, itemTypeId: w.arduino.id });
     const cookie = await signIn(app, "custodian1");
     return { w, u1, u2, loan, r, lineId: r.lines[0].id, cookie };
   }
 
   async function expectNothingChanged(s: Awaited<ReturnType<typeof setup>>, before: unknown) {
     expect(await snapshotCheckoutState(prisma)).toEqual(before);
-    expect(await statusOf.request(s.r.id)).toBe("PENDING");
+    expect(await statusOf.request(s.r.id)).toBe("APPROVED");
     expect(await statusOf.unit(s.u1.id)).toBe("ON_LOAN");
     expect(await statusOf.unit(s.u2.id)).toBe("MAINTENANCE");
     const u1Loans = await prisma.loan.findMany({ where: { unitId: s.u1.id } });
@@ -182,7 +185,7 @@ describe("TEST-21 (AC-21): unit of a different item type", () => {
     const e1 = await createUnit(prisma, { itemTypeId: w.esp32.id, assetTag: "KH-ESP-0001" });
     const e2 = await createUnit(prisma, { itemTypeId: w.esp32.id, assetTag: "KH-ESP-0002" });
     await createActiveLoan(prisma, { borrowerId: w.b2.id, custodianId: w.c2.id, itemTypeId: w.esp32.id, unitId: e2.id });
-    const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+    const r = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b1.id, itemTypeId: w.arduino.id });
     const unit = unitStatus === "AVAILABLE" ? e1 : e2;
     const cookie = await signIn(app, "custodian1");
     const before = await snapshotCheckoutState(prisma);
@@ -197,7 +200,7 @@ describe("TEST-21 (AC-21): unit of a different item type", () => {
       issue: "Unit belongs to item type ESP32 DevKitC",
     });
     expect(await snapshotCheckoutState(prisma)).toEqual(before);
-    expect(await statusOf.request(r.id)).toBe("PENDING");
+    expect(await statusOf.request(r.id)).toBe("APPROVED");
     expect(await statusOf.unit(e1.id)).toBe("AVAILABLE");
     expect(await statusOf.unit(e2.id)).toBe("ON_LOAN");
     expect(await prisma.loan.count({ where: { requestLine: { requestId: r.id } } })).toBe(0);
@@ -210,7 +213,7 @@ describe("TEST-26 (AC-26): the Borrower sees the checked-out request; the availa
     const units = [];
     for (const n of [1, 2, 3])
       units.push(await createUnit(prisma, { itemTypeId: w.arduino.id, assetTag: `KH-ARD-000${n}` }));
-    const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+    const r = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b1.id, itemTypeId: w.arduino.id });
     const b1Cookie = await signIn(app, "borrower1");
 
     const availableCount = async () => {
@@ -238,7 +241,8 @@ describe("TEST-26 (AC-26): the Borrower sees the checked-out request; the availa
     expect(loan.checkedOutAt).toEqual(expect.any(String));
     expect(loan.dueAt).toBe(own.body.dueAt);
     expect(loan).not.toHaveProperty("checkedOutBy");
-    expect(Object.keys(loan).sort()).toEqual(["checkedOutAt", "dueAt", "id", "status", "unit"]);
+    // F-08 5.3 adds returnedAt and returnCondition (null while ACTIVE); returnedBy is Custodian-only.
+    expect(Object.keys(loan).sort()).toEqual(["checkedOutAt", "dueAt", "id", "returnCondition", "returnedAt", "status", "unit"]);
 
     expect(await availableCount()).toBe(2);
 
@@ -255,7 +259,7 @@ describe("TEST-42 (AC-42): request does not exist", () => {
   it("TEST-42 (a): request 999999 is 404 NOT_FOUND and nothing changes", async () => {
     const w = await createCheckoutWorld(prisma);
     const u = await createUnit(prisma, { itemTypeId: w.arduino.id });
-    const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+    const r = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b1.id, itemTypeId: w.arduino.id });
     const cookie = await signIn(app, "custodian1");
     const before = await snapshotCheckoutState(prisma);
 
@@ -265,14 +269,14 @@ describe("TEST-42 (AC-42): request does not exist", () => {
     expect(res.body.error.code).toBe("NOT_FOUND");
     expect(res.body.error.message).toBe("Request #999999 does not exist.");
     expect(await snapshotCheckoutState(prisma)).toEqual(before);
-    expect(await statusOf.request(r.id)).toBe("PENDING");
+    expect(await statusOf.request(r.id)).toBe("APPROVED");
     expect(await statusOf.unit(u.id)).toBe("AVAILABLE");
   });
 
   it("TEST-42 (b): request 999999 with unit 999999 is 404 for the request, without unit details", async () => {
     const w = await createCheckoutWorld(prisma);
     const u = await createUnit(prisma, { itemTypeId: w.arduino.id });
-    const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+    const r = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b1.id, itemTypeId: w.arduino.id });
     const cookie = await signIn(app, "custodian1");
     const before = await snapshotCheckoutState(prisma);
 
@@ -283,17 +287,17 @@ describe("TEST-42 (AC-42): request does not exist", () => {
     expect(res.body.error.message).toBe("Request #999999 does not exist.");
     expect(detailFields(res)).not.toContain("units[0].unitId");
     expect(await snapshotCheckoutState(prisma)).toEqual(before);
-    expect(await statusOf.request(r.id)).toBe("PENDING");
+    expect(await statusOf.request(r.id)).toBe("APPROVED");
     expect(await statusOf.unit(u.id)).toBe("AVAILABLE");
   });
 });
 
-describe("TEST-43 (AC-43): request is not PENDING", () => {
+describe("TEST-43 (AC-43): request is not APPROVED (F07-D8: was PENDING in Sprint 1)", () => {
   it("TEST-43: checking out a CHECKED_OUT request again is 409 INVALID_STATE; it keeps its one loan", async () => {
     const w = await createCheckoutWorld(prisma);
     const u1 = await createUnit(prisma, { itemTypeId: w.arduino.id, assetTag: "KH-ARD-0001" });
     const u2 = await createUnit(prisma, { itemTypeId: w.arduino.id, assetTag: "KH-ARD-0002" });
-    const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+    const r = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b1.id, itemTypeId: w.arduino.id });
     const lineId = r.lines[0].id;
     const cookie = await signIn(app, "custodian1");
     const first = await postCheckout(app, cookie, r.id, checkoutBody(lineId, u1.id));
@@ -305,7 +309,7 @@ describe("TEST-43 (AC-43): request is not PENDING", () => {
     expect(res.status).toBe(409);
     expect(res.body.error.code).toBe("INVALID_STATE");
     expect(res.body.error.message).toBe(
-      `Request #${r.id} cannot be checked out because it is CHECKED_OUT, not PENDING.`,
+      `Request #${r.id} cannot be checked out because it is CHECKED_OUT, not APPROVED.`,
     );
     expect(await snapshotCheckoutState(prisma)).toEqual(before);
     expect(await statusOf.request(r.id)).toBe("CHECKED_OUT");
@@ -320,7 +324,7 @@ describe("TEST-44 (AC-44): body or path fails the schema", () => {
     const w = await createCheckoutWorld(prisma);
     const u = await createUnit(prisma, { itemTypeId: w.arduino.id });
     const u2 = await createUnit(prisma, { itemTypeId: w.arduino.id });
-    const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+    const r = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b1.id, itemTypeId: w.arduino.id });
     return { u, u2, r, lineId: r.lines[0].id, cookie: await signIn(app, "custodian1") };
   }
 
@@ -354,7 +358,7 @@ describe("TEST-44 (AC-44): body or path fails the schema", () => {
     expect(detailFields(res).length).toBeGreaterThan(0);
     if (field) expect(detailFields(res)).toContain(field);
     expect(await snapshotCheckoutState(prisma)).toEqual(before);
-    expect(await statusOf.request(s.r.id)).toBe("PENDING");
+    expect(await statusOf.request(s.r.id)).toBe("APPROVED");
     expect(await statusOf.unit(s.u.id)).toBe("AVAILABLE");
     expect(await statusOf.unit(s.u2.id)).toBe("AVAILABLE");
   });
@@ -372,7 +376,7 @@ describe("TEST-44 (AC-44): body or path fails the schema", () => {
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe("VALIDATION_FAILED");
     expect(await snapshotCheckoutState(prisma)).toEqual(before);
-    expect(await statusOf.request(s.r.id)).toBe("PENDING");
+    expect(await statusOf.request(s.r.id)).toBe("APPROVED");
   });
 
   it("TEST-44 (h): path id 'abc' is 400 VALIDATION_FAILED naming id and nothing changes", async () => {
@@ -385,7 +389,7 @@ describe("TEST-44 (AC-44): body or path fails the schema", () => {
     expect(res.body.error.code).toBe("VALIDATION_FAILED");
     expect(detailFields(res).some((f) => f === "id" || f.endsWith(".id"))).toBe(true);
     expect(await snapshotCheckoutState(prisma)).toEqual(before);
-    expect(await statusOf.request(s.r.id)).toBe("PENDING");
+    expect(await statusOf.request(s.r.id)).toBe("APPROVED");
   });
 });
 
@@ -393,8 +397,8 @@ describe("TEST-45 (AC-45): lineId is not a line of this request", () => {
   async function setup() {
     const w = await createCheckoutWorld(prisma);
     const u = await createUnit(prisma, { itemTypeId: w.arduino.id });
-    const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
-    const r2 = await createRequest(prisma, { borrowerId: w.b2.id, itemTypeId: w.arduino.id });
+    const r = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+    const r2 = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b2.id, itemTypeId: w.arduino.id });
     return { u, r, r2, cookie: await signIn(app, "custodian1") };
   }
 
@@ -413,8 +417,8 @@ describe("TEST-45 (AC-45): lineId is not a line of this request", () => {
     expect(res.body.error.message).toBe(`Line ${lineId} is not a line of request #${s.r.id}.`);
     expect(res.body.error.details[0]).toEqual({ field: "units[0].lineId", issue: `Not a line of request #${s.r.id}` });
     expect(await snapshotCheckoutState(prisma)).toEqual(before);
-    expect(await statusOf.request(s.r.id)).toBe("PENDING");
-    expect(await statusOf.request(s.r2.id)).toBe("PENDING");
+    expect(await statusOf.request(s.r.id)).toBe("APPROVED");
+    expect(await statusOf.request(s.r2.id)).toBe("APPROVED");
     expect(await statusOf.unit(s.u.id)).toBe("AVAILABLE");
     expect(await prisma.loan.count()).toBe(0);
   });
@@ -423,8 +427,8 @@ describe("TEST-45 (AC-45): lineId is not a line of this request", () => {
 describe("TEST-46 (AC-46): unit does not exist", () => {
   async function setup() {
     const w = await createCheckoutWorld(prisma);
-    const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
-    const r2 = await createRequest(prisma, { borrowerId: w.b2.id, itemTypeId: w.arduino.id });
+    const r = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+    const r2 = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b2.id, itemTypeId: w.arduino.id });
     return { r, r2, cookie: await signIn(app, "custodian1") };
   }
 
@@ -442,8 +446,8 @@ describe("TEST-46 (AC-46): unit does not exist", () => {
     expect(res.body.error.message).toBe("Unit 999999 does not exist.");
     expect(res.body.error.details[0]).toEqual({ field: "units[0].unitId", issue: "Unit does not exist" });
     expect(await snapshotCheckoutState(prisma)).toEqual(before);
-    expect(await statusOf.request(s.r.id)).toBe("PENDING");
-    expect(await statusOf.request(s.r2.id)).toBe("PENDING");
+    expect(await statusOf.request(s.r.id)).toBe("APPROVED");
+    expect(await statusOf.request(s.r2.id)).toBe("APPROVED");
   });
 });
 
@@ -460,15 +464,20 @@ describe("TEST-59 (AC-59): loans from before #71 keep their due date", () => {
     // Old rule (D-16): checkout time + 14 × 24 h, not at 17:00.
     await prisma.loan.update({ where: { id: l0.id }, data: { dueAt: new Date("2026-11-20T07:30:00.000Z") } });
     const u = await createUnit(prisma, { itemTypeId: w.arduino.id, assetTag: "KH-ARD-0002" });
-    const r = await createRequest(prisma, { borrowerId: w.b1.id, itemTypeId: w.arduino.id });
+    const r = await createRequest(prisma, { status: RequestStatus.APPROVED,  borrowerId: w.b1.id, itemTypeId: w.arduino.id });
 
     const res = await postCheckout(app, await signIn(app, "custodian1"), r.id, checkoutBody(r.lines[0].id, u.id));
 
     expect(res.status).toBe(201);
     const stored = await prisma.loan.findUniqueOrThrow({ where: { id: l0.id } });
     expect(stored.dueAt.toISOString()).toBe("2026-11-20T07:30:00.000Z");
-    // The migrations on staging 5508f49, before #71: the change adds none.
-    const migrations = readdirSync(new URL("../../prisma/migrations/", import.meta.url)).filter((f) => f !== "migration_lock.toml");
-    expect(migrations.sort()).toEqual(["20261106075705_sprint1_init", "20261125104833_sprint2_columns"]);
+    // The migrations on staging 5508f49, before #71: the change adds none. Later features may add
+    // their own (F-09 adds catalog_names_ci, F09-D11), so this checks that the two are still the
+    // first and that no later migration touches a loan's dueAt.
+    const dir = new URL("../../prisma/migrations/", import.meta.url);
+    const migrations = readdirSync(dir).filter((f) => f !== "migration_lock.toml").sort();
+    expect(migrations.slice(0, 2)).toEqual(["20261106075705_sprint1_init", "20261125104833_sprint2_columns"]);
+    for (const later of migrations.slice(2))
+      expect(readFileSync(new URL(`${later}/migration.sql`, dir), "utf8"), later).not.toMatch(/dueAt|due_at/i);
   });
 });
