@@ -1,0 +1,582 @@
+# TEST-71 (g) notice is cleared from history state (RED, review of #99)
+Command: cd client && npx vitest run
+Commit: a055ef7a8b71eb2f2afff32d13c6ab793d55416e test(#74): RED, TEST-71 (g) checks that the submitted notice is not kept in the history entry
+Date: 2026-11-26 19:36:46 ICT
+node -v: v22.19.0   npm -v: 11.11.0
+git status --short:
+?? docs/sprints/sprint-2/evidence/F-04/review-red-client.txt
+
+
+ RUN  v2.1.9 C:/Users/acer/Desktop/cpe334/CPE334_KitHub/client
+
+stderr | tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: shows Loading… until the slow response arrives
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Ready for checkout states > TEST-25 (a): shows Loading… until the first response
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: shows Loading…, then each request with its line, state and Bangkok time
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/ReturnDialog.test.tsx > TEST-109 (AC-109): return controls on the request detail > TEST-109: a Borrower sees no return control
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (a): lists the AVAILABLE units of the line's item type; confirm is disabled until one is chosen
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (a): a PENDING request shows Approve and Reject to a Custodian, with the loan length and history
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/catalog.test.tsx (7 tests) 326ms
+ ✓ tests/PendingRequestsPage.test.tsx (5 tests) 319ms
+ ✓ tests/my-requests.test.tsx (9 tests) 411ms
+ ✓ tests/ReturnDialog.test.tsx (4 tests) 536ms
+stderr | tests/App.test.tsx > F-01 UI > a first visit with no session opens the sign-in page with no message
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/LoansPage.test.tsx > TEST-101 (AC-101) (d): loans pages > TEST-101 (d): My loans shows Loading… first, then the rows with item type, asset tag, request and dates
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (a): shows Loading… while the list loads
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/ManageCatalogPage.test.tsx > TEST-121 (AC-121): Manage catalog page > TEST-121 (a): Loading…, then the empty text
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/NewRequestPage.test.tsx > TEST-71 (AC-71): new request form > TEST-71 (a): ?itemTypeId=3 starts with Arduino × 1, loan length 14, quantities 1 to 2
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/ManageUnitsPage.test.tsx > TEST-121 (AC-121): units of an item type > TEST-121 (e): Loading…, then the header and every unit with its state; actions only where allowed
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/request-decision.test.tsx (7 tests) 697ms
+stderr | tests/ItemTypePage.test.tsx > TEST-63 (AC-63): item type detail > TEST-63 (a), (b): Loading…, then the name, category, description, limits, count and the Request link
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/LoansPage.test.tsx (4 tests) 561ms
+   ✓ TEST-101 (AC-101) (d): loans pages > TEST-101 (d): My loans shows Loading… first, then the rows with item type, asset tag, request and dates 308ms
+ ✓ tests/ItemTypePage.test.tsx (5 tests) 560ms
+   ✓ TEST-63 (AC-63): item type detail > TEST-63 (a), (b): Loading…, then the name, category, description, limits, count and the Request link 323ms
+ ✓ tests/AllRequestsPage.test.tsx (6 tests) 750ms
+ ✓ tests/App.test.tsx (10 tests) 783ms
+ ✓ tests/CheckoutDialog.test.tsx (15 tests) 1284ms
+ ✓ tests/ManageCatalogPage.test.tsx (8 tests) 901ms
+ ✓ tests/ManageUnitsPage.test.tsx (7 tests) 1013ms
+   ✓ TEST-121 (AC-121): units of an item type > TEST-121 (e): Loading…, then the header and every unit with its state; actions only where allowed 430ms
+ ❯ tests/NewRequestPage.test.tsx (6 tests | 1 failed) 2244ms
+   ✓ TEST-71 (AC-71): new request form > TEST-71 (a): ?itemTypeId=3 starts with Arduino × 1, loan length 14, quantities 1 to 2 355ms
+   ✓ TEST-71 (AC-71): new request form > TEST-71 (b), (c), (d): a shorter maximum keeps the value with a field error; 3 days submits once and opens the request 346ms
+   × TEST-71 (AC-71): new request form > TEST-71 (g): from the catalog, Request on Arduino and Submit request: 2 clicks, one create; a reload does not show the notice again 1082ms
+     → expect(element).toHaveTextContent()
+
+Expected element to have text content:
+  null
+Received:
+  {"notice":"Request #12 submitted."}
+
+Ignored nodes: comments, script, style
+<html>
+  <head />
+  <body>
+    <div>
+      <nav
+        aria-label="Main"
+        class="kh-nav"
+      >
+        <div
+          class="container kh-nav-inner"
+        >
+          <a
+            class="kh-brand"
+            href="/catalog"
+          >
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              height="30"
+              viewBox="0 0 32 32"
+              width="30"
+            >
+              <g
+                fill="#b8bec8"
+              >
+                <g>
+                  <rect
+                    height="5"
+                    width="2.4"
+                    x="8"
+                    y="1"
+                  />
+                  <rect
+                    height="5"
+                    width="2.4"
+                    x="8"
+                    y="26"
+                  />
+                </g>
+                <g>
+                  <rect
+                    height="5"
+                    width="2.4"
+                    x="13"
+                    y="1"
+                  />
+                  <rect
+                    height="5"
+                    width="2.4"
+                    x="13"
+                    y="26"
+                  />
+                </g>
+                <g>
+                  <rect
+                    height="5"
+                    width="2.4"
+                    x="18"
+                    y="1"
+                  />
+                  <rect
+                    height="5"
+                    width="2.4"
+                    x="18"
+                    y="26"
+                  />
+                </g>
+                <g>
+                  <rect
+                    height="5"
+                    width="2.4"
+                    x="23"
+                    y="1"
+                  />
+                  <rect
+                    height="5"
+                    width="2.4"
+                    x="23"
+                    y="26"
+                  />
+                </g>
+              </g>
+              <rect
+                fill="#f2a7c3"
+                height="22"
+                width="26"
+                x="3"
+                y="5"
+              />
+              <circle
+                cx="7.5"
+                cy="9.5"
+                fill="#23262e"
+                r="1.6"
+              />
+              <path
+                d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+                fill="none"
+                stroke="#23262e"
+                stroke-linecap="square"
+                stroke-width="2.8"
+              />
+            </svg>
+            KitHub
+          </a>
+          <ul
+            class="kh-nav-links"
+          >
+            <li>
+              <a
+                class="kh-nav-link"
+                href="/catalog"
+              >
+                Catalog
+              </a>
+            </li>
+            <li>
+              <a
+                class="kh-nav-link"
+                href="/requests/new"
+              >
+                New request
+              </a>
+            </li>
+            <li>
+              <a
+                aria-current="page"
+                class="kh-nav-link active"
+                href="/requests"
+              >
+                My requests
+              </a>
+            </li>
+            <li>
+              <a
+                class="kh-nav-link"
+                href="/loans"
+              >
+                My loans
+              </a>
+            </li>
+          </ul>
+          <span
+            class="kh-nav-user"
+          >
+            <span>
+              Borrower One
+            </span>
+             
+            <span
+              class="badge kh-role"
+            >
+              Borrower
+            </span>
+          </span>
+          <button
+            class="btn btn-sm kh-signout"
+            type="button"
+          >
+            Sign out
+          </button>
+        </div>
+      </nav>
+      <div
+        aria-hidden="true"
+        class="kh-foam kh-foam-strip mb-2"
+      />
+      <main
+        class="container kh-main"
+      >
+        <h1
+          class="kh-page-title kh-page-title-row"
+        >
+          Request #
+          12
+           
+          <span
+            class="kh-status kh-status-pending"
+          >
+            <i
+              aria-hidden="true"
+              class="bi bi-hourglass-split"
+            />
+            Pending
+          </span>
+        </h1>
+        <div
+          class="alert alert-success"
+          role="status"
+        >
+          Request #12 submitted.
+        </div>
+        <p
+          class="kh-meta"
+        >
+          Created 
+          30 Nov 2026, 10:00
+        </p>
+        <p
+          class="kh-meta"
+        >
+          Loan length: 
+          14
+           day
+          s
+        </p>
+        <ul
+          class="kh-panel kh-rows"
+        >
+          <li
+            class="kh-row d-block"
+          >
+            <span
+              class="fw-semibold"
+            >
+              Arduino Uno R3
+               × 
+              1
+            </span>
+          </li>
+        </ul>
+      </main>
+      <output
+        data-testid="history-state"
+      >
+        {"notice":"Request #12 submitted."}
+      </output>
+    </div>
+  </body>
+</html>
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/NewRequestPage.test.tsx > TEST-71 (AC-71): new request form > TEST-71 (g): from the catalog, Request on Arduino and Submit request: 2 clicks, one create; a reload does not show the notice again
+Error: expect(element).toHaveTextContent()
+
+Expected element to have text content:
+  null
+Received:
+  {"notice":"Request #12 submitted."}
+
+Ignored nodes: comments, script, style
+<html>
+  <head />
+  <body>
+    <div>
+      <nav
+        aria-label="Main"
+        class="kh-nav"
+      >
+        <div
+          class="container kh-nav-inner"
+        >
+          <a
+            class="kh-brand"
+            href="/catalog"
+          >
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              height="30"
+              viewBox="0 0 32 32"
+              width="30"
+            >
+              <g
+                fill="#b8bec8"
+              >
+                <g>
+                  <rect
+                    height="5"
+                    width="2.4"
+                    x="8"
+                    y="1"
+                  />
+                  <rect
+                    height="5"
+                    width="2.4"
+                    x="8"
+                    y="26"
+                  />
+                </g>
+                <g>
+                  <rect
+                    height="5"
+                    width="2.4"
+                    x="13"
+                    y="1"
+                  />
+                  <rect
+                    height="5"
+                    width="2.4"
+                    x="13"
+                    y="26"
+                  />
+                </g>
+                <g>
+                  <rect
+                    height="5"
+                    width="2.4"
+                    x="18"
+                    y="1"
+                  />
+                  <rect
+                    height="5"
+                    width="2.4"
+                    x="18"
+                    y="26"
+                  />
+                </g>
+                <g>
+                  <rect
+                    height="5"
+                    width="2.4"
+                    x="23"
+                    y="1"
+                  />
+                  <rect
+                    height="5"
+                    width="2.4"
+                    x="23"
+                    y="26"
+                  />
+                </g>
+              </g>
+              <rect
+                fill="#f2a7c3"
+                height="22"
+                width="26"
+                x="3"
+                y="5"
+              />
+              <circle
+                cx="7.5"
+                cy="9.5"
+                fill="#23262e"
+                r="1.6"
+              />
+              <path
+                d="M12.5 10v12M12.5 16.5l7-6.5M15 14.5l5 7.5"
+                fill="none"
+                stroke="#23262e"
+                stroke-linecap="square"
+                stroke-width="2.8"
+              />
+            </svg>
+            KitHub
+          </a>
+          <ul
+            class="kh-nav-links"
+          >
+            <li>
+              <a
+                class="kh-nav-link"
+                href="/catalog"
+              >
+                Catalog
+              </a>
+            </li>
+            <li>
+              <a
+                class="kh-nav-link"
+                href="/requests/new"
+              >
+                New request
+              </a>
+            </li>
+            <li>
+              <a
+                aria-current="page"
+                class="kh-nav-link active"
+                href="/requests"
+              >
+                My requests
+              </a>
+            </li>
+            <li>
+              <a
+                class="kh-nav-link"
+                href="/loans"
+              >
+                My loans
+              </a>
+            </li>
+          </ul>
+          <span
+            class="kh-nav-user"
+          >
+            <span>
+              Borrower One
+            </span>
+             
+            <span
+              class="badge kh-role"
+            >
+              Borrower
+            </span>
+          </span>
+          <button
+            class="btn btn-sm kh-signout"
+            type="button"
+          >
+            Sign out
+          </button>
+        </div>
+      </nav>
+      <div
+        aria-hidden="true"
+        class="kh-foam kh-foam-strip mb-2"
+      />
+      <main
+        class="container kh-main"
+      >
+        <h1
+          class="kh-page-title kh-page-title-row"
+        >
+          Request #
+          12
+           
+          <span
+            class="kh-status kh-status-pending"
+          >
+            <i
+              aria-hidden="true"
+              class="bi bi-hourglass-split"
+            />
+            Pending
+          </span>
+        </h1>
+        <div
+          class="alert alert-success"
+          role="status"
+        >
+          Request #12 submitted.
+        </div>
+        <p
+          class="kh-meta"
+        >
+          Created 
+          30 Nov 2026, 10:00
+        </p>
+        <p
+          class="kh-meta"
+        >
+          Loan length: 
+          14
+           day
+          s
+        </p>
+        <ul
+          class="kh-panel kh-rows"
+        >
+          <li
+            class="kh-row d-block"
+          >
+            <span
+              class="fw-semibold"
+            >
+              Arduino Uno R3
+               × 
+              1
+            </span>
+          </li>
+        </ul>
+      </main>
+      <output
+        data-testid="history-state"
+      >
+        {"notice":"Request #12 submitted."}
+      </output>
+    </div>
+  </body>
+</html>
+ ❯ tests/NewRequestPage.test.tsx:202:69
+    200|     expect(posts()).toEqual([{ lines: [{ itemTypeId: 3, quantity: 1 }]…
+    201|     // The notice is shown once: the history entry no longer carries i…
+    202|     await waitFor(() => expect(screen.getByTestId("history-state")).to…
+       |                                                                     ^
+    203|     expect(screen.getByText("Request #12 submitted.")).toBeInTheDocume…
+    204|   });
+ ❯ runWithExpensiveErrorDiagnosticsDisabled node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+ Test Files  1 failed | 12 passed (13)
+      Tests  1 failed | 92 passed (93)
+   Start at  19:36:48
+   Duration  5.83s (transform 1.88s, setup 6.83s, collect 8.84s, tests 10.39s, environment 19.02s, prepare 3.53s)
+
+
+exit code: 1

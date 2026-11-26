@@ -14,9 +14,12 @@ The branch starts from F-09 (`feature/79-catalog-management`, PR #98): TEST-66 (
 | `green-ci-server.txt` | `7ba81fb` | Server typecheck and whole suite, CI run 45808520915 (conclusion success) | 344 passed, 0 failed, 0 skipped |
 | `green-ci-client.txt` | `7ba81fb` | Client tests and production build, same run | 93 passed |
 | `green-ci-e2e.txt` | `7ba81fb` | E2E typecheck and `npm run test:e2e`, same run | 5 passed |
+| `review-red-client.txt` | `a055ef7` (test only) | Whole client suite after the review of #99 added a check to TEST-71 (g), local | 1 failed / 92 passed: the history entry still holds `{"notice":"Request #12 submitted."}` |
+| `review-green-client.txt` | `a7c272e` | Client typecheck and whole suite after the fix, local | 93 passed, 0 failed, 0 skipped |
 
 Notes:
 
 - **TEST-71 timing fix:** `7ba81fb` changes TEST-71 (`NewRequestPage.test.tsx`) to wait for the form's first line before using it. The RED version waited only for the "New request" heading, which shows while the item types are still loading. RED failed for the right reason (the page did not exist); no assertion was removed.
 - **Unit tests through a typed view:** `server/tests/unit/request-rules.test.ts` calls `requestRuleViolation` through a typed view, so it typechecks before and after the new input shape and RED fails on assertions, not in `npm run typecheck` (which CI runs before the tests).
 - **Unrelated log line:** the log line "Sprint 2 demo requests: skipped" in `green-ci-server.txt` is the seed's message, not a skipped test.
+- **Review of #99 (nit fixed here):** the "Request #n submitted." notice came from the history entry's state, which a browser reload keeps, so a reload showed it again. `a055ef7` adds the check to TEST-71 (g); `a7c272e` makes the detail page clear the state after reading it.

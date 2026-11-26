@@ -1,0 +1,76 @@
+# Client typecheck and suite after the changed-fields fix (GREEN, review of #98)
+Command: cd client && sh -c npx tsc --noEmit && npx vitest run
+Commit: c00244649e55ee27bd3728b0aadd59c65dcb92ae fix(#79): category and item type edits send only the changed fields
+Date: 2026-11-26 19:39:14 ICT
+node -v: v22.19.0   npm -v: 11.11.0
+git status --short:
+?? docs/sprints/sprint-2/evidence/F-09/review-green-client.txt
+?? docs/sprints/sprint-2/evidence/F-09/review-red-client.txt
+
+
+ RUN  v2.1.9 C:/Users/acer/Desktop/cpe334/CPE334_KitHub/client
+
+stderr | tests/catalog.test.tsx > TEST-17 (AC-17): catalog loading, empty and error states > TEST-17: shows Loading… until the slow response arrives
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/PendingRequestsPage.test.tsx > TEST-25 (AC-25): Ready for checkout states > TEST-25 (a): shows Loading… until the first response
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/my-requests.test.tsx > TEST-17 (AC-17): My requests loading, empty and error states > TEST-17: shows Loading…, then each request with its line, state and Bangkok time
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/CheckoutDialog.test.tsx > TEST-49 (AC-49): checkout dialog > TEST-49 (a): lists the AVAILABLE units of the line's item type; confirm is disabled until one is chosen
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/ReturnDialog.test.tsx > TEST-109 (AC-109): return controls on the request detail > TEST-109: a Borrower sees no return control
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/request-decision.test.tsx > TEST-89 (AC-89): approve and reject on the request detail > TEST-89 (a): a PENDING request shows Approve and Reject to a Custodian, with the loan length and history
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/PendingRequestsPage.test.tsx (5 tests) 264ms
+ ✓ tests/catalog.test.tsx (7 tests) 330ms
+ ✓ tests/my-requests.test.tsx (9 tests) 373ms
+stderr | tests/App.test.tsx > F-01 UI > a first visit with no session opens the sign-in page with no message
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/ReturnDialog.test.tsx (4 tests) 495ms
+stderr | tests/LoansPage.test.tsx > TEST-101 (AC-101) (d): loans pages > TEST-101 (d): My loans shows Loading… first, then the rows with item type, asset tag, request and dates
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/ManageCatalogPage.test.tsx > TEST-121 (AC-121): Manage catalog page > TEST-121 (a): Loading…, then the empty text
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/AllRequestsPage.test.tsx > TEST-88 (AC-88): All requests page > TEST-88 (a): shows Loading… while the list loads
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | tests/ManageUnitsPage.test.tsx > TEST-121 (AC-121): units of an item type > TEST-121 (e): Loading…, then the header and every unit with its state; actions only where allowed
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ tests/request-decision.test.tsx (7 tests) 604ms
+ ✓ tests/LoansPage.test.tsx (4 tests) 484ms
+ ✓ tests/AllRequestsPage.test.tsx (6 tests) 638ms
+ ✓ tests/App.test.tsx (10 tests) 673ms
+ ✓ tests/CheckoutDialog.test.tsx (15 tests) 1115ms
+ ✓ tests/ManageUnitsPage.test.tsx (7 tests) 903ms
+   ✓ TEST-121 (AC-121): units of an item type > TEST-121 (e): Loading…, then the header and every unit with its state; actions only where allowed 401ms
+ ✓ tests/ManageCatalogPage.test.tsx (9 tests) 959ms
+
+ Test Files  11 passed (11)
+      Tests  83 passed (83)
+   Start at  19:39:20
+   Duration  3.93s (transform 1.31s, setup 5.06s, collect 5.46s, tests 6.84s, environment 13.48s, prepare 2.75s)
+
+
+exit code: 0
