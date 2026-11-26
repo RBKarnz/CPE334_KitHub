@@ -6,10 +6,10 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part C |
-| Version | 1.12 |
-| Date | 2026-11-26 |
+| Version | 1.13 |
+| Date | 2026-11-27 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
-| Baseline | [SRS v1.5](srs.md) |
+| Baseline | [SRS v1.6](srs.md) |
 | Related | [Three-sprint plan](sprints/plan.md), feature contracts in `docs/sprints/sprint-N/` |
 
 ### Revision history
@@ -29,6 +29,7 @@
 | 1.10 | 2026-11-25 | Teerakarn Noiruksa | #73: Sprint 2 columns of 4.2 and CHECKs of 4.3 are now in migration `20261125104833_sprint2_columns`; 4.8 and 9.1 describe `SEED_DEMO_REQUESTS` and the Sprint 2 demo requests. No behaviour change for Sprint 1 |
 | 1.11 | 2026-11-25 | Teerakarn Noiruksa | Review of PR #87: 6.2 adds the Sprint 2 create example with several lines and `loanDays` (F-04 5.2). Baseline SRS v1.5. No behaviour change |
 | 1.12 | 2026-11-26 | Methipat Mansap | F-09 (#79, F09-D11): 4.3 adds the unique indexes on `lower(name)` for `categories` and `item_types` (migration `20261126110000_catalog_names_ci`), so names are unique without regard to case. No other behaviour change |
+| 1.13 | 2026-11-27 | Methipat Mansap | Issue #106, baseline SRS v1.6: 4.5 describes the expiry time (D-22) and when expiry is applied (D-23, option A of section 13); 6.6 and 13 no longer leave the trigger open. No table, column, endpoint or migration change |
 
 ## 2. Introduction
 
@@ -412,6 +413,8 @@ These values are calculated by queries when they are needed and are never stored
 
 Due dates follow D-21 (since #71): counting starts on the checkout date if the checkout is on a business day (Monday to Friday) before 16:00 ICT, otherwise on the next business day; the loan length is added in calendar days, a Saturday or Sunday result moves to the following Monday, and the time is 17:00 ICT (`T10:00:00.000Z`). The rule works on ICT calendar dates, so it does not depend on the server time zone. Before #71 due dates added whole days as 24-hour periods at the checkout's clock time; stored values are not recalculated.
 
+Expiry of approved requests (Sprint 3, F-10): the pickup window ends 48 hours after `decidedAt`, counting only Monday to Friday ICT (D-22). Expiry is applied on use (D-23): before any read or action that depends on request states or availability, the service updates every `APPROVED` request whose window has ended to `EXPIRED` in the same transaction and writes one `STATUS_CHANGED` history entry each with the System actor. There is no scheduled job.
+
 ### 4.6 History (BR-16, NFR-09)
 
 - The service that changes a state writes the history entry in the same transaction, so the change and its entry are saved together or not at all.
@@ -719,7 +722,7 @@ The contracts give the bodies. "Signed in" means either role.
 | 3 | `GET /api/units/:id/history` | Custodian | FR-27 |
 | 3 | `GET /api/history` | Borrower (own), Custodian (`?borrowerId=` required) | FR-28 |
 | 3 | `GET /api/reports/inventory` | Custodian | FR-29 |
-| 3 | Expiry of approved requests | System actor | FR-15; trigger decided by Q-09 (section 13) |
+| 3 | Expiry of approved requests | System actor | FR-15; applied on use by the services that read requests or availability (D-23); no endpoint |
 
 ### 6.7 Health and readiness
 
@@ -1032,6 +1035,6 @@ Commands (exact scripts in #13): `npm test` in `server/` and in `client/`; `npm 
 | --- | --- | --- |
 | Q-01 session lifetime | None: `SESSION_TTL_HOURS` is configuration | Resolved by D-18: 8 hours, the default stays 8 |
 | D-15: no reservation before Sprint 3 | A Sprint 2 checkout of an approved request can be rejected if no unit is left (accepted) | Sprint 3 (section 4.7, Reservations) |
-| Q-07 and Q-09: how expiry is triggered | Two options. A: check and expire on every read or action that touches approved requests, needing no extra GCP component. B: a scheduled Cloud Run job or Cloud Scheduler call. Either records the System actor | Before the Sprint 3 contract for F-10 |
+| Q-07 and Q-09: how expiry is triggered | Settled on 27 Nov (#106): option A, expiry on every read or action that touches approved requests (D-23), with business-day counting (D-22). No extra GCP component. Option B (a scheduled job) is not used | Done (SRS v1.6) |
 | Q-08: which requests count toward the 5-unit limit | Changes only the BR-14 query in 4.5 | Resolved by D-20: only `ACTIVE` loans and open requests count, as 4.5 already assumed |
 | No limit on repeated sign-in attempts | Not required by the SRS | Candidate Sprint 3 hardening item; would need an SRS change first |

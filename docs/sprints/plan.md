@@ -6,8 +6,8 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part D |
-| Version | 1.6 |
-| Date | 2026-11-25 |
+| Version | 1.7 |
+| Date | 2026-11-27 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Baseline | [SRS v1.3](../srs.md), [System-Level SDS v1.4](../system-sds.md) |
 
@@ -22,6 +22,7 @@
 | 1.4 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | Issue #36: baseline SRS v1.3 and SDS v1.3. Q-08 is resolved as D-20, so the F-11 dependency (3.1) cites D-20, and the 25 Nov milestone (6.3), the Sprint 3 dependencies (6.4) and the open-questions risk (8) list only Q-07 and Q-09. No feature, requirement or sprint moves |
 | 1.5 | 2026-11-07 | Methipat Mansap | Issue #38 (SR-04 defect fix): baseline SDS v1.4. SR-04 (3.2) covers every width from 320 to 1440 px, with the narrow layout below 768 px instead of 576 px. No feature, requirement or sprint moves |
 | 1.6 | 2026-11-25 | Teerakarn Noiruksa | Change request #71 (Lab 7, review of PR #72): the Sprint 1 due-date row in section 4 follows SRS v1.4 D-21 (17:00 ICT on a business day, 16:00 cutoff). No feature, requirement or sprint moves |
+| 1.7 | 2026-11-27 | Methipat Mansap | Issue #106: Q-07 and Q-09 are settled as D-22 and D-23 (two days after the 25 Nov target in 6.3), so the F-10 contract is no longer blocked and no GCP component is added. Sprint 3 Issues: #107 F-10, #108 F-11, #109 F-12, #110 F-13, #111 F-14, #112 SR-03 |
 
 ## 2. Overview
 
@@ -235,8 +236,8 @@ F-11 goes first because it is a real business rule, depends only on Sprint 2 fea
 ### 6.4 Dependencies
 
 - Sprint 2 complete (`v0.2.0`).
-- Q-07 and Q-09 settled before the matching contracts.
-- The expiry trigger chosen in Q-09 may add a GCP component (SDS section 13, option B).
+- Q-07 and Q-09 settled before the matching contracts: done on 27 Nov as D-22 and D-23 (#106).
+- Expiry is evaluated on use (D-23), so no GCP component is added.
 
 ### 6.5 Completion outcome
 
@@ -294,7 +295,7 @@ Every NFR is established, and first verified, in a planned sprint:
 | --- | --- | --- |
 | Labs 5 to 7 share the Sprint 2 weeks | Less time for Sprint 2 features | Week 1 is reserved for Lab 5 and contracts; features are ordered by dependency so a late feature does not block the others |
 | Examinations from 1 to 11 Dec | Little time for Sprint 3 after 29 Nov | Sprint 3 contracts and F-11 are done by 29 Nov; the remaining Sprint 3 features are read-only views (F-12, F-13, F-14) except F-10 |
-| Open questions Q-07, Q-09 | Sprint 3 contracts cannot be final | Deadline of 25 Nov to settle them as SRS decisions |
+| Open questions Q-07, Q-09 | Sprint 3 contracts cannot be final | Settled on 27 Nov as D-22 and D-23 (#106), two days after the 25 Nov target |
 | A schema change breaks rollback | Lab 5 rollback restores an image that does not match the schema | Additive migrations only (SDS DD-14) |
 | Regression in Sprint 1 behavior | Deliverable 2 requires the Sprint 1 journey to keep working | The Sprint 1 API and E2E tests run on every PR through CI from Lab 5 |
 
