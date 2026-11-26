@@ -33,8 +33,8 @@ export function ManageCatalogPage() {
 
   return (
     <main className="container kh-main">
-      <PageHeader>Manage catalog</PageHeader>
-      <div className="d-flex justify-content-end mb-3">
+      <div className="kh-title-bar">
+        <PageHeader>Manage catalog</PageHeader>
         <button type="button" className="btn btn-primary" onClick={() => setDialog({ kind: "category" })}>
           <i className="bi bi-plus-lg me-1" aria-hidden="true" />
           New category
@@ -54,16 +54,16 @@ export function ManageCatalogPage() {
         empty="The catalog is empty. Add a category to start."
       >
         {categories.map((category) => (
-          <section key={category.id} className="kh-panel mb-3">
-            <div className="d-flex flex-wrap align-items-start justify-content-between gap-2">
+          <section key={category.id} className="kh-panel kh-category-panel">
+            <div className="kh-panel-head">
               <div>
-                <h2 className="h5 mb-1">{category.name}</h2>
-                {category.description && <p className="mb-1 text-body-secondary">{category.description}</p>}
-                <p className="mb-2 small">
+                <h2>{category.name}</h2>
+                {category.description && <p>{category.description}</p>}
+                <p className="small">
                   Defaults: {days(category.defaultMaxLoanDays)}, {category.defaultMaxQuantity} per request
                 </p>
               </div>
-              <div className="d-flex gap-2">
+              <div className="kh-actions">
                 <button
                   type="button"
                   className="btn btn-outline-secondary btn-sm"
@@ -78,15 +78,24 @@ export function ManageCatalogPage() {
                   aria-label={`New item type in ${category.name}`}
                   onClick={() => setDialog({ kind: "itemType", categoryId: category.id })}
                 >
+                  <i className="bi bi-plus-lg me-1" aria-hidden="true" />
                   New item type
                 </button>
               </div>
             </div>
             {category.itemTypes.length === 0 ? (
-              <p className="mb-0 small text-body-secondary">No item types yet.</p>
+              <p className="kh-panel-body text-body-secondary">No item types yet.</p>
             ) : (
               <div className="table-responsive">
-                <table className="table table-sm align-middle mb-0">
+                {/* Fixed column widths, so the columns line up from one category to the next (#103). */}
+                <table className="table align-middle kh-table kh-table-fixed kh-table-cards">
+                  <colgroup>
+                    <col />
+                    <col className="kh-col-value" />
+                    <col className="kh-col-value" />
+                    <col className="kh-col-value" />
+                    <col className="kh-col-actions" />
+                  </colgroup>
                   <thead>
                     <tr>
                       <th scope="col">Item type</th>
@@ -101,14 +110,16 @@ export function ManageCatalogPage() {
                   <tbody>
                     {category.itemTypes.map((t) => (
                       <tr key={t.id}>
-                        <td>
+                        <td className="fw-semibold">
                           {t.name}
-                          {t.isKit && <span className="badge text-bg-secondary ms-2">Kit</span>}
+                          {t.isKit && <span className="badge kh-kit ms-2">Kit</span>}
                         </td>
-                        <td>{days(t.maxLoanDays)}</td>
-                        <td>{t.maxQuantityPerRequest} per request</td>
-                        <td>{t.availableCount} available</td>
-                        <td className="text-end text-nowrap">
+                        <td data-label="Loan length" className="kh-nowrap">{days(t.maxLoanDays)}</td>
+                        <td data-label="Per request" className="kh-nowrap">{t.maxQuantityPerRequest} per request</td>
+                        <td data-label="Available" className={`kh-nowrap${t.availableCount === 0 ? " text-body-secondary" : ""}`}>
+                          {t.availableCount} available
+                        </td>
+                        <td className="text-end kh-nowrap kh-row-actions">
                           <button
                             type="button"
                             className="btn btn-outline-secondary btn-sm me-2"

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import type { Role } from "../api/auth";
 import { landingPath, useAuth } from "../auth/AuthProvider";
 import { Logo } from "./Logo";
@@ -30,6 +30,7 @@ const ROLE_LABEL: Record<Role, string> = { BORROWER: "Borrower", CUSTODIAN: "Cus
 export function NavBar() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [signingOut, setSigningOut] = useState(false);
   if (!user) return null;
 
@@ -55,7 +56,12 @@ export function NavBar() {
           <ul className="kh-nav-links">
             {LINKS[user.role].map((link) => (
               <li key={link.to}>
-                <NavLink className="kh-nav-link" to={link.to}>
+                <NavLink
+                  className="kh-nav-link"
+                  to={link.to}
+                  // "/requests" would also match "/requests/new", which has its own link (#103).
+                  end={link.to === "/requests" && pathname === "/requests/new"}
+                >
                   {link.label}
                 </NavLink>
               </li>

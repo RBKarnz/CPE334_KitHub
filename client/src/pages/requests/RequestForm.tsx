@@ -97,7 +97,7 @@ export function RequestForm({ categories, initialLines, initialLoanDays, submitL
 
   return (
     <form
-      className="kh-panel"
+      className="kh-panel kh-panel-body"
       noValidate
       onSubmit={(e) => {
         e.preventDefault();
@@ -111,83 +111,87 @@ export function RequestForm({ categories, initialLines, initialLoanDays, submitL
       )}
       {fieldErrors.lines && <div className="invalid-feedback d-block mb-2">{fieldErrors.lines}</div>}
 
-      {lines.map((line, i) => {
-        const n = i + 1;
-        const t = chosen[i];
-        const takenElsewhere = new Set(lines.filter((_, j) => j !== i).map((l) => l.itemTypeId));
-        const lineError = fieldErrors[`lines[${i}].itemTypeId`] ?? fieldErrors[`lines[${i}].quantity`];
-        return (
-          <div key={line.key} className="row g-2 align-items-end mb-3">
-            <div className="col-12 col-md-6">
-              <label className="form-label" htmlFor={`line-${line.key}-type`}>
-                Item type{lines.length > 1 ? ` (line ${n})` : ""}
-              </label>
-              <select
-                id={`line-${line.key}-type`}
-                aria-label={`Item type for line ${n}`}
-                className="form-select"
-                value={line.itemTypeId ?? ""}
-                disabled={submitting}
-                onChange={(e) => update(i, { itemTypeId: e.target.value === "" ? null : Number(e.target.value) })}
-              >
-                <option value="">Choose an item type</option>
-                {categories.map((c) => {
-                  const options = c.itemTypes.filter((it) => !takenElsewhere.has(it.id));
-                  if (options.length === 0) return null;
-                  return (
-                    <optgroup key={c.id} label={c.name}>
-                      {options.map((it) => (
-                        <option key={it.id} value={it.id}>
-                          {it.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  );
-                })}
-              </select>
-            </div>
-            <div className="col-6 col-md-2">
-              <label className="form-label" htmlFor={`line-${line.key}-qty`}>
-                Quantity
-              </label>
-              <select
-                id={`line-${line.key}-qty`}
-                aria-label={`Quantity for line ${n}`}
-                className="form-select"
-                value={line.quantity}
-                disabled={submitting || !t}
-                onChange={(e) => update(i, { quantity: Number(e.target.value) })}
-              >
-                {Array.from({ length: t?.maxQuantityPerRequest ?? 1 }, (_, q) => q + 1).map((q) => (
-                  <option key={q} value={q}>
-                    {q}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="col-6 col-md-2 small text-body-secondary pb-2">{t ? `${t.availableCount} available` : ""}</div>
-            <div className="col-12 col-md-2 text-md-end">
-              {lines.length > 1 && (
-                <button
-                  type="button"
-                  className="btn btn-outline-secondary btn-sm"
-                  aria-label={`Remove line ${n}`}
+      <div className="kh-lines">
+        {lines.map((line, i) => {
+          const n = i + 1;
+          const t = chosen[i];
+          const takenElsewhere = new Set(lines.filter((_, j) => j !== i).map((l) => l.itemTypeId));
+          const lineError = fieldErrors[`lines[${i}].itemTypeId`] ?? fieldErrors[`lines[${i}].quantity`];
+          // Column labels show once, above the first line; every control also has its own name (aria-label).
+          const labelClass = i === 0 ? "form-label" : "visually-hidden";
+          return (
+            <div key={line.key} className="kh-line row g-2 align-items-end">
+              <div className="col-12 col-md-6">
+                <label className={labelClass} htmlFor={`line-${line.key}-type`}>
+                  Item type
+                </label>
+                <select
+                  id={`line-${line.key}-type`}
+                  aria-label={`Item type for line ${n}`}
+                  className="form-select"
+                  value={line.itemTypeId ?? ""}
                   disabled={submitting}
-                  onClick={() => setLines((current) => current.filter((_, j) => j !== i))}
+                  onChange={(e) => update(i, { itemTypeId: e.target.value === "" ? null : Number(e.target.value) })}
                 >
-                  Remove
-                </button>
-              )}
+                  <option value="">Choose an item type</option>
+                  {categories.map((c) => {
+                    const options = c.itemTypes.filter((it) => !takenElsewhere.has(it.id));
+                    if (options.length === 0) return null;
+                    return (
+                      <optgroup key={c.id} label={c.name}>
+                        {options.map((it) => (
+                          <option key={it.id} value={it.id}>
+                            {it.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    );
+                  })}
+                </select>
+              </div>
+              <div className="col-5 col-md-2">
+                <label className={labelClass} htmlFor={`line-${line.key}-qty`}>
+                  Quantity
+                </label>
+                <select
+                  id={`line-${line.key}-qty`}
+                  aria-label={`Quantity for line ${n}`}
+                  className="form-select"
+                  value={line.quantity}
+                  disabled={submitting || !t}
+                  onChange={(e) => update(i, { quantity: Number(e.target.value) })}
+                >
+                  {Array.from({ length: t?.maxQuantityPerRequest ?? 1 }, (_, q) => q + 1).map((q) => (
+                    <option key={q} value={q}>
+                      {q}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-4 col-md-2 small text-body-secondary kh-line-note">{t ? `${t.availableCount} available` : ""}</div>
+              <div className="col-3 col-md-2 text-end">
+                {lines.length > 1 && (
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary btn-sm"
+                    aria-label={`Remove line ${n}`}
+                    disabled={submitting}
+                    onClick={() => setLines((current) => current.filter((_, j) => j !== i))}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              {lineError && <div className="col-12 invalid-feedback d-block">{lineError}</div>}
             </div>
-            {lineError && <div className="col-12 invalid-feedback d-block">{lineError}</div>}
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
 
       {lines.length < MAX_LINES && (
         <button
           type="button"
-          className="btn btn-outline-primary btn-sm mb-3"
+          className="btn btn-outline-primary btn-sm mt-2"
           disabled={submitting}
           onClick={() => setLines((current) => [...current, { itemTypeId: null, quantity: 1, key: nextKey++ }])}
         >
@@ -196,7 +200,7 @@ export function RequestForm({ categories, initialLines, initialLoanDays, submitL
         </button>
       )}
 
-      <div className="mb-3">
+      <div className="mt-4">
         <label className="form-label" htmlFor="loan-days">
           Loan length (days)
         </label>
@@ -222,10 +226,12 @@ export function RequestForm({ categories, initialLines, initialLoanDays, submitL
         </div>
       </div>
 
-      <button type="submit" className="btn btn-primary" disabled={!ready}>
-        {submitting && <span className="spinner-border spinner-border-sm me-1" aria-hidden="true" />}
-        {submitLabel}
-      </button>
+      <div className="kh-form-actions">
+        <button type="submit" className="btn btn-primary" disabled={!ready}>
+          {submitting && <span className="spinner-border spinner-border-sm me-1" aria-hidden="true" />}
+          {submitLabel}
+        </button>
+      </div>
     </form>
   );
 }

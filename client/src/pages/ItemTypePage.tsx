@@ -44,12 +44,13 @@ export function ItemTypePage() {
               {t.isKit && <span className="badge kh-kit ms-2">Kit</span>}
             </PageHeader>
             <p className="kh-meta">{t.category.name}</p>
-            <div className="kh-panel">
-              <p>{t.description || "No description."}</p>
-              <ul className="list-unstyled mb-3">
+            <div className="kh-panel kh-panel-body">
+              <p className={t.description ? undefined : "text-body-secondary"}>{t.description || "No description."}</p>
+              {/* The texts are contract F-04 4.2 (TEST-63); one fact per line, the limits set apart from the description. */}
+              <ul className="kh-facts">
                 <li>Maximum loan length: {days(t.maxLoanDays)}</li>
                 <li>Maximum per request: {t.maxQuantityPerRequest}</li>
-                <li className={none ? "text-body-secondary" : undefined}>{none ? "None available" : `${t.availableCount} available`}</li>
+                <li className={none ? "text-body-secondary" : "fw-semibold"}>{none ? "None available" : `${t.availableCount} available`}</li>
               </ul>
               {user?.role === "BORROWER" &&
                 (none ? (

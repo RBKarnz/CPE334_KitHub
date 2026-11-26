@@ -113,7 +113,7 @@ export function ManageUnitsPage() {
         {itemType && category && (
           <>
             <PageHeader>{itemType.name}</PageHeader>
-            <p className="mb-3">
+            <p className="kh-meta mb-3">
               {category.name} · {days(itemType.maxLoanDays)} · {itemType.maxQuantityPerRequest} per request ·{" "}
               {itemType.availableCount} available
             </p>
@@ -126,7 +126,7 @@ export function ManageUnitsPage() {
         )}
 
         <form
-          className="kh-panel mb-3"
+          className="kh-panel kh-panel-body mb-3"
           noValidate
           onSubmit={(e) => {
             e.preventDefault();
@@ -135,7 +135,7 @@ export function ManageUnitsPage() {
         >
           <Field label="Asset tag" error={tagError}>
             {(p) => (
-              <div className="d-flex gap-2">
+              <div className="d-flex gap-2" style={{ maxWidth: "28rem" }}>
                 <input
                   {...p}
                   className={`form-control${tagError ? " is-invalid" : ""}`}
@@ -160,7 +160,7 @@ export function ManageUnitsPage() {
           </div>
         ) : (
           <div className="kh-panel table-responsive">
-            <table className="table table-sm align-middle mb-0">
+            <table className="table align-middle kh-table">
               <thead>
                 <tr>
                   <th scope="col">Asset tag</th>
@@ -173,11 +173,11 @@ export function ManageUnitsPage() {
               <tbody>
                 {list.map((u) => (
                   <tr key={u.id}>
-                    <td>{u.assetTag}</td>
+                    <td className="kh-tag">{u.assetTag}</td>
                     <td>
                       <UnitStatusBadge status={u.status} />
                     </td>
-                    <td className="text-end text-nowrap">
+                    <td className="text-end kh-nowrap">
                       {u.status === "MAINTENANCE" && (
                         <button
                           type="button"
