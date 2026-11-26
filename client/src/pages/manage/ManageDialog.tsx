@@ -108,3 +108,11 @@ export function checkName(text: string): { value?: string; error?: string } {
 }
 
 export const days = (n: number) => `${n} day${n === 1 ? "" : "s"}`;
+
+/**
+ * The fields of an edit that differ from the record as the form opened it. An edit sends only
+ * these, so it never puts back a field another Custodian changed meanwhile (review of #98).
+ */
+export function changedFields<T extends object>(body: T, before: T): Partial<T> {
+  return Object.fromEntries(Object.entries(body).filter(([k, v]) => before[k as keyof T] !== v)) as Partial<T>;
+}
