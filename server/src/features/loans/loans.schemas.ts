@@ -1,4 +1,4 @@
-import { LoanStatus } from "@prisma/client";
+import { LoanStatus, ReturnCondition } from "@prisma/client";
 import { z } from "zod";
 
 // PostgreSQL int4: a larger ID cannot exist, and passing it to Prisma would fail with 500.
@@ -27,5 +27,22 @@ export const listLoansQuery = z.object({
 });
 
 export type ListLoansQuery = z.infer<typeof listLoansQuery>;
+
+// F-08 (contract F-08 3.4). The condition is optional and defaults to GOOD (F08-D3).
+const condition = z.enum(ReturnCondition, { error: "Must be one of GOOD, DAMAGED" }).optional();
+
+/** Return all: 1 to 100 strict entries, the largest checkout F-07 accepts. */
+export const returnAllBody = z.object({
+  loans: z
+    .array(z.strictObject({ loanId: id, condition }))
+    .min(1, { error: "Must contain at least 1 entry" })
+    .max(100, { error: "Must contain at most 100 entries" }),
+});
+
+/** Early return of one loan: `{}` or `{ condition }`. */
+export const returnLoanBody = z.object({ condition });
+
+export type ReturnAllBody = z.infer<typeof returnAllBody>;
+export type ReturnLoanBody = z.infer<typeof returnLoanBody>;
 
 export type CheckoutBody = z.infer<typeof checkoutBody>;

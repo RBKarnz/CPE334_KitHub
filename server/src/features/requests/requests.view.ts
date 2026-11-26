@@ -27,8 +27,12 @@ export const requestSelect = {
           status: true,
           checkedOutAt: true,
           dueAt: true,
+          // F-08 5.3: null while ACTIVE; returnedBy is in the Custodian view only.
+          returnedAt: true,
+          returnCondition: true,
           unit: { select: { id: true, assetTag: true } },
           checkedOutBy: userSummary,
+          returnedBy: userSummary,
         },
       },
     },
@@ -46,8 +50,8 @@ export function toRequestView(row: RequestRow, viewerRole: Role) {
     id: line.id,
     itemType: line.itemType,
     quantity: line.quantity,
-    loans: line.loans.map(({ checkedOutBy, ...loan }) =>
-      viewerRole === Role.CUSTODIAN ? { ...loan, checkedOutBy } : loan,
+    loans: line.loans.map(({ checkedOutBy, returnedBy, ...loan }) =>
+      viewerRole === Role.CUSTODIAN ? { ...loan, checkedOutBy, returnedBy } : loan,
     ),
   }));
   // Every loan of a request shares one dueAt (SDS 4.5); null until F-03 creates loans.

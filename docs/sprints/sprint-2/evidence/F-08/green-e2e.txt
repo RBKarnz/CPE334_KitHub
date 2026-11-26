@@ -1,0 +1,28 @@
+# GREEN, end-to-end (Playwright; CI runs it too)
+Command: npm run typecheck:e2e && npm run test:e2e
+Commit: a31432fce5a618f16339cdbb06a5fa9b9a4d09f6 feat(#78): return all and early return of one unit
+Date: 2026-11-26 02:10:43 ICT
+node -v: v24.14.0   npm -v: 10.8.2
+git status --short:
+ M server/prisma/migrations/migration_lock.toml
+?? docs/sprints/sprint-2/evidence/F-08/
+----
+
+> kithub-e2e@0.1.0 typecheck:e2e
+> tsc -p tsconfig.json
+
+typecheck exit code: 0
+
+> kithub-e2e@0.1.0 test:e2e
+> playwright test
+
+
+Running 4 tests using 1 worker
+
+  ok 1 [chromium] › e2e\forbidden.spec.ts:9:1 › TEST-32: a Borrower sees the Forbidden page at /pending and the API refuses checkout with 403 (1.2s)
+  ok 2 [chromium] › e2e\journey.spec.ts:11:1 › TEST-30: Borrower requests, Custodian checks out, Borrower sees Checked out (2.1s)
+  ok 3 [chromium] › e2e\narrow-screens.spec.ts:60:1 › TEST-53: Check out is reachable at 640 and 760 px and Sign out is visible at 600 px (1.7s)
+  ok 4 [chromium] › e2e\rejection.spec.ts:8:1 › TEST-31: a second request for an item type with an open request is refused with the BR-04 message (784ms)
+
+  4 passed (26.3s)
+exit code: 0

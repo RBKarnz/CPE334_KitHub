@@ -16,6 +16,10 @@ export interface LineLoan {
   checkedOutAt: string;
   dueAt: string;
   checkedOutBy?: UserSummary;
+  /** F-08 5.3: null while ACTIVE; returnedBy in the Custodian view only. */
+  returnedAt?: string | null;
+  returnCondition?: "GOOD" | "DAMAGED" | null;
+  returnedBy?: UserSummary | null;
 }
 
 /** One history entry of the Custodian detail (contract F-06 F06-D5). `actor` null is the System. */

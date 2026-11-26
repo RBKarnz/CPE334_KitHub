@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ApiError } from "../api/client";
+import { returnLoan, returnRequest, type ReturnConditionValue } from "../api/loans";
 import { approveRequest, fetchRequest, rejectRequest, type BorrowRequest, type HistoryItem } from "../api/requests";
 import { useLoad } from "../api/useLoad";
 import { useAuth } from "../auth/AuthProvider";
@@ -12,6 +13,16 @@ import { StatusBadge } from "../components/StatusBadge";
 import { formatDateTime } from "../format";
 import { NotFoundPage } from "./NotFoundPage";
 import { DecisionDialog } from "./requests/DecisionDialog";
+import { ReturnDialog, type ReturnItem } from "./requests/ReturnDialog";
+
+/** "Request #12 returned: 1 good, 1 damaged (KH-ARD-0002 sent to maintenance)." (contract F-08 4). */
+function returnSummary(requestId: number, items: ReturnItem[], conditions: { loanId: number; condition: ReturnConditionValue }[]) {
+  const damaged = conditions.filter((c) => c.condition === "DAMAGED");
+  const good = conditions.length - damaged.length;
+  if (damaged.length === 0) return `Request #${requestId} returned: ${good} good.`;
+  const tags = damaged.map((d) => items.find((i) => i.loanId === d.loanId)!.assetTag).join(", ");
+  return `Request #${requestId} returned: ${good} good, ${damaged.length} damaged (${tags} sent to maintenance).`;
+}
 
 /** "Approved by Custodian One, 21 Nov 2026, 09:00"; without the name for a Borrower (F06-D4). */
 function decisionText(r: BorrowRequest): string | null {
@@ -49,6 +60,42 @@ export function RequestDetailPage() {
   const [dialogError, setDialogError] = useState<string | null>(null);
   // Blocks a second call even before React re-renders the disabled button.
   const inFlight = useRef(false);
+  // F-08: "all" for Return all, or the one loan of Return this unit.
+  const [returning, setReturning] = useState<"all" | ReturnItem | null>(null);
+
+  const doReturn = async (items: ReturnItem[], conditions: { loanId: number; condition: ReturnConditionValue }[]) => {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setSubmitting(true);
+    setAlert(null);
+    setNotice(null);
+    setDialogError(null);
+    let close = true;
+    try {
+      if (returning === "all") {
+        await returnRequest(requestId, conditions);
+        setNotice(returnSummary(requestId, items, conditions));
+      } else {
+        const result = await returnLoan(conditions[0].loanId, conditions[0].condition);
+        const last = result.status === "RETURNED" ? ` Request #${requestId} returned.` : "";
+        setNotice(`${items[0].assetTag} returned.${last}`);
+      }
+    } catch (err) {
+      const apiError = err instanceof ApiError ? err : new ApiError(0, "INTERNAL_ERROR", "Something went wrong.");
+      if (apiError.code === "UNAUTHENTICATED") close = false;
+      else if (apiError.status === 400) {
+        close = false;
+        setDialogError(apiError.message);
+      } else setAlert(apiError.message);
+    } finally {
+      inFlight.current = false;
+      setSubmitting(false);
+      if (close) {
+        setReturning(null);
+        detail.reload();
+      }
+    }
+  };
 
   const decide = async (kind: "approve" | "reject", reason?: string) => {
     if (inFlight.current) return;
@@ -100,6 +147,12 @@ export function RequestDetailPage() {
     );
 
   const r = detail.data;
+  // The ACTIVE loans that Return all lists (contract F-08 4).
+  const activeItems: ReturnItem[] = (r?.lines ?? []).flatMap((l) =>
+    l.loans
+      .filter((loan) => loan.status === "ACTIVE")
+      .map((loan) => ({ loanId: loan.id, assetTag: loan.unit.assetTag, itemTypeName: l.itemType.name })),
+  );
   return (
     <main className="container kh-main">
       <AsyncState
@@ -129,6 +182,13 @@ export function RequestDetailPage() {
             {decisionText(r) && <p className="kh-meta">{decisionText(r)}</p>}
             {r.rejectionReason && <p>Reason: {r.rejectionReason}</p>}
             {r.dueAt && <p className="kh-due">Due {formatDateTime(r.dueAt)}</p>}
+            {user?.role === "CUSTODIAN" && r.status === "CHECKED_OUT" && (
+              <div className="d-flex gap-2 mb-3">
+                <button type="button" className="btn btn-primary" onClick={() => setReturning("all")}>
+                  Return all
+                </button>
+              </div>
+            )}
             {user?.role === "CUSTODIAN" && r.status === "PENDING" && (
               <div className="d-flex gap-2 mb-3">
                 <button type="button" className="btn btn-primary" onClick={() => setDialog("approve")}>
@@ -150,6 +210,23 @@ export function RequestDetailPage() {
                     <div key={loan.id} className="small text-body-secondary mt-1">
                       Unit <span className="kh-tag text-body">{loan.unit.assetTag}</span> ·{" "}
                       <span>Checked out {formatDateTime(loan.checkedOutAt)}</span>
+                      {loan.returnedAt && (
+                        <span>
+                          {" "}
+                          · Returned {formatDateTime(loan.returnedAt)} · {loan.returnCondition === "DAMAGED" ? "Damaged" : "Good"}
+                        </span>
+                      )}
+                      {user?.role === "CUSTODIAN" && r.status === "CHECKED_OUT" && loan.status === "ACTIVE" && (
+                        <button
+                          type="button"
+                          className="btn btn-link btn-sm py-0"
+                          onClick={() =>
+                            setReturning({ loanId: loan.id, assetTag: loan.unit.assetTag, itemTypeName: line.itemType.name })
+                          }
+                        >
+                          Return this unit<span className="visually-hidden"> {loan.unit.assetTag}</span>
+                        </button>
+                      )}
                     </div>
                   ))}
                 </li>
@@ -184,6 +261,35 @@ export function RequestDetailPage() {
                   </div>
                 </div>
               </section>
+            )}
+            {returning && (
+              <ReturnDialog
+                title={returning === "all" ? `Return Request #${r.id}` : `Return ${returning.assetTag}`}
+                confirmLabel={
+                  returning === "all"
+                    ? `Return ${activeItems.length} unit${activeItems.length === 1 ? "" : "s"}`
+                    : `Return ${returning.assetTag}`
+                }
+                items={
+                  returning === "all"
+                    ? activeItems
+                    : [returning]
+                }
+                submitting={submitting}
+                error={dialogError}
+                onCancel={() => {
+                  setReturning(null);
+                  setDialogError(null);
+                }}
+                onConfirm={(conditions) =>
+                  doReturn(
+                    returning === "all"
+                      ? activeItems
+                      : [returning],
+                    conditions,
+                  )
+                }
+              />
             )}
             {dialog && (
               <DecisionDialog

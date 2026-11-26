@@ -241,7 +241,8 @@ describe("TEST-26 (AC-26): the Borrower sees the checked-out request; the availa
     expect(loan.checkedOutAt).toEqual(expect.any(String));
     expect(loan.dueAt).toBe(own.body.dueAt);
     expect(loan).not.toHaveProperty("checkedOutBy");
-    expect(Object.keys(loan).sort()).toEqual(["checkedOutAt", "dueAt", "id", "status", "unit"]);
+    // F-08 5.3 adds returnedAt and returnCondition (null while ACTIVE); returnedBy is Custodian-only.
+    expect(Object.keys(loan).sort()).toEqual(["checkedOutAt", "dueAt", "id", "returnCondition", "returnedAt", "status", "unit"]);
 
     expect(await availableCount()).toBe(2);
 

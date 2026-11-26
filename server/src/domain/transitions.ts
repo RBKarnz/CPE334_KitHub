@@ -12,12 +12,16 @@ const TRANSITIONS: Record<TransitionEntity, readonly (readonly [string | null, s
     ["APPROVED", "CHECKED_OUT"], // SRS 8.2, Sprint 2: checkout by a Custodian (F-07; replaced PENDING → CHECKED_OUT, F07-D1)
     ["PENDING", "APPROVED"], // SRS 8.2, Sprint 2: approved by a Custodian (F-06)
     ["PENDING", "REJECTED"], // SRS 8.2, Sprint 2: rejected with a reason by a Custodian (F-06)
+    ["CHECKED_OUT", "RETURNED"], // SRS 8.2, Sprint 2: every unit is back (F-08)
   ],
   UNIT: [
     ["AVAILABLE", "ON_LOAN"], // SRS 8.1: checkout (F-03)
+    ["ON_LOAN", "AVAILABLE"], // SRS 8.1, Sprint 2: returned in good condition (F-08)
+    ["ON_LOAN", "MAINTENANCE"], // SRS 8.1, Sprint 2: returned damaged (F-08, BR-11)
   ],
   LOAN: [
     [null, "ACTIVE"], // SRS 8.3: checkout of its unit (F-03)
+    ["ACTIVE", "RETURNED"], // SRS 8.3, Sprint 2: return all or early return (F-08)
   ],
 };
 

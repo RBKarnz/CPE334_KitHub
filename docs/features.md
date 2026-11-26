@@ -399,14 +399,16 @@ F-07 runs (raw output in `docs/sprints/sprint-2/evidence/F-07/`): RED `29d8600` 
 
 | AC | Expected outcome | Requirements | Tests | Status |
 | --- | --- | --- | --- | --- |
-| AC-102 | Return all with every loan `GOOD`: every loan `RETURNED` with `returnedAt` and `returnedBy` the Custodian, every unit `AVAILABLE`, the request `RETURNED`, and the item types' available counts rise by the returned units | FR-20, BR-11 | TEST-102 | Planned |
-| AC-103 | A loan returned `DAMAGED` sends its unit to `MAINTENANCE`, and that unit is not counted as available and cannot be checked out | BR-11, FR-20, FR-21 | TEST-103 | Planned |
-| AC-104 | A condition left out is `GOOD` | FR-20 | TEST-104 | Planned |
-| AC-105 | An early return of one loan returns that loan and unit only; the request stays `CHECKED_OUT` while another loan is `ACTIVE`, and becomes `RETURNED` with the last one | FR-21 | TEST-105 | Planned |
-| AC-106 | Return all that leaves out an active loan, lists a loan twice or names a loan of another request, and any unknown field or condition, is rejected with `400` naming the problem, and nothing changes | FR-20 | TEST-106 | Planned |
-| AC-107 | Returning a request that is not `CHECKED_OUT`, an early return of a loan that is not `ACTIVE`, or a return-all that names a loan of this request which is no longer `ACTIVE`, gives `409 INVALID_STATE` naming the state; an unknown request or loan gives `404`; nothing changes | FR-20, FR-21 | TEST-107 | Planned |
-| AC-108 | Concurrent returns of the same loans return each loan once; exactly one call moves the request to `RETURNED`; every call writes history only for what it changed | NFR-05, BR-16, NFR-09 | TEST-108 | Planned |
-| AC-109 | A Borrower calling either return endpoint gets `403`, a call without a session `401`, nothing changes; the Return all and Return this unit controls appear only for Custodians on `CHECKED_OUT` requests and `ACTIVE` loans, and the dialogs default every condition to Good | NFR-01, NFR-02, BR-17, NFR-12 | TEST-109 | Planned |
+| AC-102 | Return all with every loan `GOOD`: every loan `RETURNED` with `returnedAt` and `returnedBy` the Custodian, every unit `AVAILABLE`, the request `RETURNED`, and the item types' available counts rise by the returned units | FR-20, BR-11 | TEST-102 | **Implemented**: failed on `73a54a3`, pass on `a31432f` |
+| AC-103 | A loan returned `DAMAGED` sends its unit to `MAINTENANCE`, and that unit is not counted as available and cannot be checked out | BR-11, FR-20, FR-21 | TEST-103 | **Implemented**: failed on `73a54a3`, pass on `a31432f` |
+| AC-104 | A condition left out is `GOOD` | FR-20 | TEST-104 | **Implemented**: failed on `73a54a3`, pass on `a31432f` |
+| AC-105 | An early return of one loan returns that loan and unit only; the request stays `CHECKED_OUT` while another loan is `ACTIVE`, and becomes `RETURNED` with the last one | FR-21 | TEST-105 | **Implemented**: failed on `73a54a3`, pass on `a31432f` |
+| AC-106 | Return all that leaves out an active loan, lists a loan twice or names a loan of another request, and any unknown field or condition, is rejected with `400` naming the problem, and nothing changes | FR-20 | TEST-106 | **Implemented**: failed on `73a54a3`, pass on `a31432f` |
+| AC-107 | Returning a request that is not `CHECKED_OUT`, an early return of a loan that is not `ACTIVE`, or a return-all that names a loan of this request which is no longer `ACTIVE`, gives `409 INVALID_STATE` naming the state; an unknown request or loan gives `404`; nothing changes | FR-20, FR-21 | TEST-107 | **Implemented**: failed on `73a54a3`, pass on `a31432f` |
+| AC-108 | Concurrent returns of the same loans return each loan once; exactly one call moves the request to `RETURNED`; every call writes history only for what it changed | NFR-05, BR-16, NFR-09 | TEST-108 | **Implemented**: failed on `73a54a3`, pass on `a31432f` |
+| AC-109 | A Borrower calling either return endpoint gets `403`, a call without a session `401`, nothing changes; the Return all and Return this unit controls appear only for Custodians on `CHECKED_OUT` requests and `ACTIVE` loans, and the dialogs default every condition to Good | NFR-01, NFR-02, BR-17, NFR-12 | TEST-109 | **Implemented**: failed on `73a54a3`, pass on `a31432f` |
+
+F-08 runs (raw output in `docs/sprints/sprint-2/evidence/F-08/`): RED `73a54a3` (tests only, on the F-07 branch): server 18 failed / 242 passed, client 3 failed / 63 passed; every failure an assertion. GREEN `a31432f`: server typecheck OK, 260 passed; client typecheck OK, 66 passed; E2E 4 passed; 0 skipped. Verified after the Sprint 2 release.
 
 ### 5.6 F-09 Catalog management (contract `docs/sprints/sprint-2/F-09-catalog-management.md` v1.0, #79, PR #86)
 
