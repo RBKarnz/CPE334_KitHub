@@ -1,4 +1,5 @@
-// Borrow requests: create, list and detail (contract F-02 3 and 4; multi-line create, contract F-04 3); approve and reject, and the
+// Borrow requests: create, list and detail (contract F-02 3 and 4; multi-line create, contract F-04 3;
+// edit and cancel, contract F-05 3); approve and reject, and the
 // Custodian detail with history (contract F-06 3 and 5).
 import {
   ActorType,
@@ -18,6 +19,9 @@ import { historySelect, requestSelect, toHistoryView, toRequestView, type Reques
 
 /** Open requests block a second request for the same item type (BR-04, SRS glossary). */
 const OPEN_STATUSES = [RequestStatus.PENDING, RequestStatus.APPROVED];
+
+/** A Borrower may cancel a PENDING or APPROVED request (FR-12, BR-10). */
+const CANCELLABLE: RequestStatus[] = [RequestStatus.PENDING, RequestStatus.APPROVED];
 
 const lineField = (i: number, field: "itemTypeId" | "quantity") => `lines[${i}].${field}`;
 const days = (n: number) => `${n} day${n === 1 ? "" : "s"}`;
@@ -174,6 +178,114 @@ export function requestsService(prisma: PrismaClient) {
         return created.id;
       });
 
+      const row = await prisma.borrowRequest.findUniqueOrThrow({ where: { id }, select: requestSelect });
+      return toRequestView(row, user.role);
+    },
+
+    /**
+     * PATCH /requests/:id (contract F-05 3.1, 5.1): the Borrower's own PENDING request gets the whole
+     * new content, checked as a new request (BR-10). Check order (3.5): lock the Borrower row, then
+     * the request row within the Borrower's scope (404), PENDING (409 INVALID_STATE), then the F-04
+     * checks where BR-04 ignores this request (F05-D3). A kept item type keeps its line (F05-D4); a
+     * no-change edit writes nothing (F05-D5).
+     */
+    async edit(user: AuthUser, id: number, body: CreateRequestBody) {
+      await prisma.$transaction(async (tx) => {
+        const now = new Date();
+        await tx.$queryRaw`SELECT id FROM users WHERE id = ${user.id} FOR UPDATE`;
+        const [row] = await tx.$queryRaw<{ status: string; loanDays: number | null }[]>`
+          SELECT status::text AS status, "loanDays" FROM borrow_requests
+          WHERE id = ${id} AND "borrowerId" = ${user.id} FOR UPDATE`;
+        if (!row) throw new NotFoundError(`Request ${id} does not exist.`);
+        if (row.status !== RequestStatus.PENDING)
+          throw new ConflictError("INVALID_STATE", `Request #${id} cannot be edited because it is ${row.status}, not PENDING.`);
+
+        await assertRequestRules(tx, user.id, body, id);
+
+        const stored = await tx.requestLine.findMany({
+          where: { requestId: id },
+          orderBy: { id: "asc" },
+          select: { id: true, itemTypeId: true, quantity: true },
+        });
+        // SDS 4.6: the entry keeps the lines ordered by itemTypeId.
+        const content = (loanDays: number | null, lines: { itemTypeId: number; quantity: number }[]) => ({
+          loanDays,
+          lines: [...lines].sort((a, b) => a.itemTypeId - b.itemTypeId).map(({ itemTypeId, quantity }) => ({ itemTypeId, quantity })),
+        });
+        const before = content(row.loanDays, stored);
+        const after = content(body.loanDays, body.lines);
+        if (JSON.stringify(before) === JSON.stringify(after)) return;
+
+        const wanted = new Map(body.lines.map((l) => [l.itemTypeId, l.quantity]));
+        const kept = new Set<number>();
+        for (const line of stored) {
+          const quantity = wanted.get(line.itemTypeId);
+          if (quantity === undefined) await tx.requestLine.delete({ where: { id: line.id } });
+          else {
+            kept.add(line.itemTypeId);
+            if (quantity !== line.quantity) await tx.requestLine.update({ where: { id: line.id }, data: { quantity } });
+          }
+        }
+        // New item types get new lines after the kept ones, in body order (F05-D4).
+        for (const line of body.lines.filter((l) => !kept.has(l.itemTypeId)))
+          await tx.requestLine.create({ data: { requestId: id, itemTypeId: line.itemTypeId, quantity: line.quantity } });
+
+        await tx.borrowRequest.update({ where: { id }, data: { loanDays: body.loanDays } });
+        await tx.historyEntry.create({
+          data: {
+            occurredAt: now,
+            actorType: ActorType.USER,
+            actorUserId: user.id,
+            entityType: HistoryEntity.REQUEST,
+            requestId: id,
+            action: "EDITED",
+            fromStatus: null,
+            toStatus: null,
+            details: { before, after },
+          },
+        });
+      });
+      const row = await prisma.borrowRequest.findUniqueOrThrow({ where: { id }, select: requestSelect });
+      return toRequestView(row, user.role);
+    },
+
+    /**
+     * POST /requests/:id/cancel (contract F-05 3.1, 5.2): the Borrower's own PENDING or APPROVED
+     * request becomes CANCELLED with one history entry. The row is locked first, so the state read is
+     * the one the conditional update sees (3.7); no unit changes (D-15).
+     */
+    async cancel(user: AuthUser, id: number) {
+      await prisma.$transaction(async (tx) => {
+        const now = new Date();
+        const [row] = await tx.$queryRaw<{ status: RequestStatus }[]>`
+          SELECT status::text AS status FROM borrow_requests WHERE id = ${id} AND "borrowerId" = ${user.id} FOR UPDATE`;
+        if (!row) throw new NotFoundError(`Request ${id} does not exist.`);
+        if (!CANCELLABLE.includes(row.status))
+          throw new ConflictError("INVALID_STATE", `Request #${id} cannot be cancelled because it is ${row.status}.`);
+        assertTransition("REQUEST", row.status, RequestStatus.CANCELLED);
+
+        const moved = await tx.borrowRequest.updateMany({
+          where: { id, status: { in: CANCELLABLE } },
+          data: { status: RequestStatus.CANCELLED },
+        });
+        if (moved.count === 0) {
+          // Not reached while the row lock is held; kept as the SDS 4.7 guard.
+          const current = await tx.borrowRequest.findUniqueOrThrow({ where: { id }, select: { status: true } });
+          throw new ConflictError("INVALID_STATE", `Request #${id} cannot be cancelled because it is ${current.status}.`);
+        }
+        await tx.historyEntry.create({
+          data: {
+            occurredAt: now,
+            actorType: ActorType.USER,
+            actorUserId: user.id,
+            entityType: HistoryEntity.REQUEST,
+            requestId: id,
+            action: "STATUS_CHANGED",
+            fromStatus: row.status,
+            toStatus: RequestStatus.CANCELLED,
+          },
+        });
+      });
       const row = await prisma.borrowRequest.findUniqueOrThrow({ where: { id }, select: requestSelect });
       return toRequestView(row, user.role);
     },

@@ -62,6 +62,9 @@ export const rejectBody = z.object({
     .max(500, { error: "Must be at most 500 characters" }),
 });
 
+/** Cancel takes an empty body (contract F-05 3.4); validate() makes it strict. */
+export const cancelBody = z.object({});
+
 export type RejectBody = z.infer<typeof rejectBody>;
 export type CreateRequestBody = z.infer<typeof createRequestBody>;
 export type ListRequestsQuery = z.infer<typeof listRequestsQuery>;

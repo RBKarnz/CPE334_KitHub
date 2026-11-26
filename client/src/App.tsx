@@ -13,6 +13,7 @@ import { MyRequestsPage } from "./pages/MyRequestsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { PendingRequestsPage } from "./pages/pending/PendingRequestsPage";
 import { AllRequestsPage } from "./pages/requests/AllRequestsPage";
+import { EditRequestPage } from "./pages/requests/EditRequestPage";
 import { NewRequestPage } from "./pages/requests/NewRequestPage";
 import { RequestDetailPage } from "./pages/RequestDetailPage";
 
@@ -55,6 +56,15 @@ function AppRoutes() {
           element={
             <RequireRole role="BORROWER">
               <NewRequestPage />
+            </RequireRole>
+          }
+        />
+        {/* Edit an own PENDING request, Borrower only (contract F-05 4.3). */}
+        <Route
+          path="/requests/:id/edit"
+          element={
+            <RequireRole role="BORROWER">
+              <EditRequestPage />
             </RequireRole>
           }
         />
