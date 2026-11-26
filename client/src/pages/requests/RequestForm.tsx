@@ -22,12 +22,14 @@ export interface RequestFormProps {
   onSubmit: (body: RequestInput) => Promise<void>;
   /** Called after a 409, so the page can load the item types again (counts may have changed). */
   onConflict?: () => void;
+  /** Edit (contract F-05 4.3): the button stays disabled until the form differs from the start. */
+  requireChange?: boolean;
 }
 
 const days = (n: number) => `${n} day${n === 1 ? "" : "s"}`;
 let nextKey = 0;
 
-export function RequestForm({ categories, initialLines, initialLoanDays, submitLabel, onSubmit, onConflict }: RequestFormProps) {
+export function RequestForm({ categories, initialLines, initialLoanDays, submitLabel, onSubmit, onConflict, requireChange = false }: RequestFormProps) {
   const itemTypes = useMemo(() => new Map(categories.flatMap((c) => c.itemTypes.map((t) => [t.id, t] as const))), [categories]);
   const [lines, setLines] = useState(() => initialLines.map((l) => ({ ...l, key: nextKey++ })));
   const [loanDays, setLoanDays] = useState(initialLoanDays === null ? "" : String(initialLoanDays));
@@ -53,7 +55,12 @@ export function RequestForm({ categories, initialLines, initialLoanDays, submitL
         : limit && days_ > limit.maxLoanDays
           ? `At most ${days(limit.maxLoanDays)}`
           : undefined;
-  const ready = lines.every((l) => l.itemTypeId !== null) && daysWhole && !daysError && !submitting;
+  // Lines compared by item type in any order, and the loan length (F05-D5).
+  const contentKey = (ls: FormLine[], d: string) =>
+    JSON.stringify([[...ls].map((l) => [l.itemTypeId, l.quantity]).sort((a, b) => Number(a[0]) - Number(b[0])), d.trim()]);
+  const [startKey] = useState(() => contentKey(initialLines, initialLoanDays === null ? "" : String(initialLoanDays)));
+  const changed = contentKey(lines, loanDays) !== startKey;
+  const ready = lines.every((l) => l.itemTypeId !== null) && daysWhole && !daysError && !submitting && (!requireChange || changed);
 
   const update = (index: number, change: Partial<FormLine>) =>
     setLines((current) =>

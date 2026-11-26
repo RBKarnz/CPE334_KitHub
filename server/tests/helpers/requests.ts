@@ -4,7 +4,7 @@ import request from "supertest";
 import type { Express } from "express";
 
 /**
- * What "Unchanged" means for request tests (contract F-02 8.1, extended by F-06 8.1): the row
+ * What "Unchanged" means for request tests (contract F-02 8.1, extended by F-06 8.1 and F-05 8.1): the row
  * counts, every request's state and decision columns, every unit's status and the loans count.
  * A rejected create, decision, edit or cancel leaves all of it equal.
  */
@@ -19,6 +19,12 @@ export async function snapshotRequestState(prisma: PrismaClient) {
       select: { id: true, status: true, loanDays: true, decidedById: true, decidedAt: true, rejectionReason: true, updatedAt: true },
     }),
     units: await prisma.unit.findMany({ orderBy: { id: "asc" }, select: { id: true, status: true } }),
+    // F-05 8.1: the lines themselves (IDs, item types, quantities), so an edit that is refused
+    // is seen to leave every line as it was.
+    lineRows: await prisma.requestLine.findMany({
+      orderBy: { id: "asc" },
+      select: { id: true, requestId: true, itemTypeId: true, quantity: true },
+    }),
   };
 }
 
@@ -61,3 +67,15 @@ export const linesBody = (loanDays: number, ...lines: [itemTypeId: number, quant
 /** The detail fields of a `details` array, for "names the field" checks. */
 export const detailFields = (res: request.Response): string[] =>
   (res.body.error?.details ?? []).map((d: { field: string }) => d.field);
+
+/** PATCH /api/requests/:id with Content-Type: application/json (contract F-05 5.1). */
+export function patchRequest(app: Express, cookie: string | undefined, requestId: number | string, body: unknown) {
+  const req = request(app).patch(`/api/requests/${requestId}`).set("Content-Type", "application/json");
+  return (cookie ? req.set("Cookie", cookie) : req).send(body as object);
+}
+
+/** POST /api/requests/:id/cancel with Content-Type: application/json (contract F-05 5.2). */
+export function postCancel(app: Express, cookie: string | undefined, requestId: number | string, body: unknown = {}) {
+  const req = request(app).post(`/api/requests/${requestId}/cancel`).set("Content-Type", "application/json");
+  return (cookie ? req.set("Cookie", cookie) : req).send(body as object);
+}

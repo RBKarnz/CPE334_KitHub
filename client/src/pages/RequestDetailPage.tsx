@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ApiError } from "../api/client";
 import { returnLoan, returnRequest, type ReturnConditionValue } from "../api/loans";
-import { approveRequest, fetchRequest, rejectRequest, type BorrowRequest, type HistoryItem } from "../api/requests";
+import { approveRequest, cancelRequest, fetchRequest, rejectRequest, type BorrowRequest, type HistoryItem } from "../api/requests";
 import { useLoad } from "../api/useLoad";
 import { useAuth } from "../auth/AuthProvider";
 import { AsyncState } from "../components/AsyncState";
@@ -12,6 +12,7 @@ import { PageHeader } from "../components/PageHeader";
 import { StatusBadge } from "../components/StatusBadge";
 import { formatDateTime } from "../format";
 import { NotFoundPage } from "./NotFoundPage";
+import { CancelRequestDialog } from "./requests/CancelRequestDialog";
 import { DecisionDialog } from "./requests/DecisionDialog";
 import { ReturnDialog, type ReturnItem } from "./requests/ReturnDialog";
 
@@ -68,6 +69,30 @@ export function RequestDetailPage() {
   const [dialogError, setDialogError] = useState<string | null>(null);
   // Blocks a second call even before React re-renders the disabled button.
   const inFlight = useRef(false);
+  // F-05: the cancel confirmation (4.4).
+  const [cancelling, setCancelling] = useState(false);
+
+  /** Cancel (contract F-05 4.4): success, 409 and 404 close the dialog and load the request again. */
+  const doCancel = async () => {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setSubmitting(true);
+    setAlert(null);
+    setNotice(null);
+    try {
+      await cancelRequest(requestId);
+      setNotice(`Request #${requestId} cancelled.`);
+    } catch (err) {
+      const apiError = err instanceof ApiError ? err : new ApiError(0, "INTERNAL_ERROR", "Something went wrong.");
+      // A 401 is handled by AuthProvider (session ended, SDS 5.3).
+      if (apiError.code !== "UNAUTHENTICATED") setAlert(apiError.message);
+    } finally {
+      inFlight.current = false;
+      setSubmitting(false);
+      setCancelling(false);
+      detail.reload();
+    }
+  };
   // F-08: "all" for Return all, or the one loan of Return this unit.
   const [returning, setReturning] = useState<"all" | ReturnItem | null>(null);
 
@@ -196,6 +221,27 @@ export function RequestDetailPage() {
                   Return all
                 </button>
               </div>
+            )}
+            {/* F-05 (4.2): the owning Borrower edits a PENDING request and cancels a PENDING or APPROVED one. */}
+            {user?.role === "BORROWER" && (r.status === "PENDING" || r.status === "APPROVED") && (
+              <div className="d-flex gap-2 mb-3">
+                {r.status === "PENDING" && (
+                  <Link className="btn btn-primary" to={`/requests/${r.id}/edit`}>
+                    Edit request
+                  </Link>
+                )}
+                <button type="button" className="btn btn-outline-danger" onClick={() => setCancelling(true)}>
+                  Cancel request
+                </button>
+              </div>
+            )}
+            {cancelling && (
+              <CancelRequestDialog
+                request={r}
+                submitting={submitting}
+                onKeep={() => setCancelling(false)}
+                onConfirm={() => void doCancel()}
+              />
             )}
             {user?.role === "CUSTODIAN" && r.status === "PENDING" && (
               <div className="d-flex gap-2 mb-3">

@@ -59,6 +59,13 @@ export interface RequestInput {
 
 export const createRequest = (body: RequestInput) => apiFetch<BorrowRequest>("/requests", { method: "POST", body });
 
+/** Borrower: replace the lines and loan length of an own PENDING request (contract F-05 5.1). */
+export const updateRequest = (id: number, body: RequestInput) =>
+  apiFetch<BorrowRequest>(`/requests/${id}`, { method: "PATCH", body });
+
+/** Borrower: cancel an own PENDING or APPROVED request (contract F-05 5.2). */
+export const cancelRequest = (id: number) => apiFetch<BorrowRequest>(`/requests/${id}/cancel`, { method: "POST", body: {} });
+
 export const fetchMyRequests = () => apiFetch<{ items: BorrowRequest[] }>("/requests").then((r) => r.items);
 
 export const fetchRequest = (id: number) => apiFetch<BorrowRequest>(`/requests/${id}`);

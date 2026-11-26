@@ -13,6 +13,8 @@ const TRANSITIONS: Record<TransitionEntity, readonly (readonly [string | null, s
     ["PENDING", "APPROVED"], // SRS 8.2, Sprint 2: approved by a Custodian (F-06)
     ["PENDING", "REJECTED"], // SRS 8.2, Sprint 2: rejected with a reason by a Custodian (F-06)
     ["CHECKED_OUT", "RETURNED"], // SRS 8.2, Sprint 2: every unit is back (F-08)
+    ["PENDING", "CANCELLED"], // SRS 8.2, Sprint 2: cancelled by its Borrower (F-05, FR-12)
+    ["APPROVED", "CANCELLED"], // SRS 8.2, Sprint 2: cancelled by its Borrower (F-05, FR-12)
   ],
   UNIT: [
     ["AVAILABLE", "ON_LOAN"], // SRS 8.1: checkout (F-03)

@@ -5,7 +5,7 @@ import { createTestApp, prisma } from "../helpers/app.js";
 import { signIn, signOut } from "../helpers/auth.js";
 import { resetDb } from "../helpers/db.js";
 import { createBorrower, createCustodian, createItemTypeWithUnits, createRequest } from "../helpers/factories.js";
-import { oneLine, postRequest, snapshotRequestState } from "../helpers/requests.js";
+import { oneLine, patchRequest, postCancel, postRequest, snapshotRequestState } from "../helpers/requests.js";
 
 const app = createTestApp();
 let arduino: { id: number };
@@ -95,6 +95,43 @@ describe("TEST-70 (AC-70): F-04 create and item type read", () => {
     const read = request(app).get(`/api/item-types/${arduino.id}`);
 
     for (const res of [await postRequest(app, cookie, body()), await (cookie ? read.set("Cookie", cookie) : read)]) {
+      expect(res.status).toBe(401);
+      expect(res.body.error.code).toBe("UNAUTHENTICATED");
+      expect(Object.keys(res.body)).toEqual(["error"]);
+    }
+    expect(await snapshotRequestState(prisma)).toEqual(before);
+  });
+});
+
+// TEST-77 (AC-77, contract F-05 3.3): edit and cancel are Borrower only and need a session. Each body
+// has only the error; nothing changes.
+describe("TEST-77 (AC-77): F-05 edit and cancel", () => {
+  const calls = (cookie: string | undefined, requestId: number) => [
+    () => patchRequest(app, cookie, requestId, { lines: [{ itemTypeId: arduino.id, quantity: 1 }], loanDays: 7 }),
+    () => postCancel(app, cookie, requestId),
+  ];
+
+  it("TEST-77 (a): a Custodian gets 403 FORBIDDEN on both, only the error, nothing changes", async () => {
+    const custodian = await signIn(app, "custodian1");
+    const before = await snapshotRequestState(prisma);
+    for (const call of calls(custodian, r3.id)) {
+      const res = await call();
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe("FORBIDDEN");
+      expect(Object.keys(res.body)).toEqual(["error"]);
+    }
+    expect(await snapshotRequestState(prisma)).toEqual(before);
+  });
+
+  it.each([["(b) no cookie"], ["(b) a signed-out session"]])("TEST-77 %s: 401 UNAUTHENTICATED on both", async (which) => {
+    let cookie: string | undefined;
+    if (which.includes("signed-out")) {
+      cookie = await signIn(app, "borrower2");
+      expect((await signOut(app, cookie)).status).toBe(204);
+    }
+    const before = await snapshotRequestState(prisma);
+    for (const call of calls(cookie, r3.id)) {
+      const res = await call();
       expect(res.status).toBe(401);
       expect(res.body.error.code).toBe("UNAUTHENTICATED");
       expect(Object.keys(res.body)).toEqual(["error"]);

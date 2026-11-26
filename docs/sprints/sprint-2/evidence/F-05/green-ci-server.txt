@@ -1,0 +1,158 @@
+# GREEN, server, in CI
+Source: GitHub Actions run 45810422706 (workflow_dispatch, CI & Docker Build, conclusion success), job test-and-docker, step matching "Install & Test Backend"
+Command (in the workflow): cd server \&\& npm run typecheck \&\& npm test
+Commit: 7bc8b5ef6da73c8d2e0e408c26f703d8487b9833 fix(#75): cancel locks the Borrower row before the request row
+Log: gh run view 45810422706 --repo RBKarnz/CPE334_KitHub --log, this step only, prefix and colour codes removed
+
+﻿2026-11-26T11:25:35.0612570Z ##[group]Run npm ci
+npm ci
+npm run typecheck
+npx prisma migrate deploy
+SEED_CUSTODIAN_PASSWORD="$(openssl rand -base64 24)"
+SEED_BORROWER_PASSWORD="$(openssl rand -base64 24)"
+echo "::add-mask::$SEED_CUSTODIAN_PASSWORD"
+echo "::add-mask::$SEED_BORROWER_PASSWORD"
+export SEED_CUSTODIAN_PASSWORD SEED_BORROWER_PASSWORD
+npm run prisma:seed
+npm test
+shell: /usr/bin/bash -e {0}
+env:
+  DATABASE_URL: ***localhost:5432/kithub?schema=public
+  TEST_DATABASE_URL: ***localhost:5432/kithub_test?schema=public
+  pythonLocation: /opt/hostedtoolcache/Python/3.14.10/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.14.10/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.10/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.10/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.10/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.14.10/x64/lib
+  SEED_DEMO_DATA: true
+##[endgroup]
+
+added 166 packages, and audited 167 packages in 5s
+
+36 packages are looking for funding
+  run `npm fund` for details
+
+6 vulnerabilities (3 moderate, 1 high, 2 critical)
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+npm warn install-scripts 5 packages have install scripts not yet covered by allowScripts:
+npm warn install-scripts   @prisma/client@5.22.0 (postinstall: node scripts/postinstall.js)
+npm warn install-scripts   @prisma/engines@5.22.0 (postinstall: node scripts/postinstall.js)
+npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+npm warn install-scripts   prisma@5.22.0 (preinstall: node scripts/preinstall-entry.js)
+npm warn install-scripts   esbuild@0.21.5 (postinstall: node install.js)
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+
+> kithub-server@0.1.0 typecheck
+> tsc --noEmit
+
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "kithub", schema "public" at "localhost:5432"
+
+3 migrations found in prisma/migrations
+
+Applying migration `20261106075705_sprint1_init`
+Applying migration `20261125104833_sprint2_columns`
+Applying migration `20261126110000_catalog_names_ci`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261106075705_sprint1_init/
+    └─ migration.sql
+  └─ 20261125104833_sprint2_columns/
+    └─ migration.sql
+  └─ 20261126110000_catalog_names_ci/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+
+> kithub-server@0.1.0 prisma:seed
+> tsx prisma/seed.ts
+
+Seed complete. Created 6 categories, 9 item types, 38 units and 4 accounts; existing records were left unchanged. Demo Borrower accounts: included. Sprint 2 demo requests: skipped (SEED_DEMO_REQUESTS is not true).
+
+> kithub-server@0.1.0 test
+> vitest run
+
+
+ RUN  v2.1.9 /home/runner/work/CPE334_KitHub/CPE334_KitHub/server
+
+ ✓ tests/api/checkout.test.ts (26 tests) 2359ms
+ ✓ tests/api/requests-multi.test.ts (32 tests) 2467ms
+ ✓ tests/api/requests-decide.test.ts (19 tests) 1449ms
+ ✓ tests/api/checkout-multi.test.ts (22 tests) 1822ms
+ ✓ tests/api/returns.test.ts (8 tests) 946ms
+ ✓ tests/api/catalog-manage.test.ts (14 tests) 1096ms
+ ✓ tests/api/units-manage.test.ts (10 tests) 882ms
+ ✓ tests/api/requests-edit.test.ts (12 tests) 1096ms
+ ✓ tests/api/requests-create.test.ts (19 tests) 1459ms
+ ✓ tests/api/seed.test.ts (8 tests) 1166ms
+ ✓ tests/api/auth.test.ts (14 tests) 791ms
+ ✓ tests/api/requests-access.test.ts (10 tests) 755ms
+ ✓ tests/api/schema.test.ts (6 tests) 139ms
+ ✓ tests/api/checkout-concurrency.test.ts (3 tests) 1061ms
+   ✓ TEST-22 (AC-22): two checkouts of the same unit > TEST-22 (a): two simultaneous checkouts of one unit for two requests create one loan, 5 rounds 583ms
+   ✓ TEST-47 (AC-47): two checkouts of the same request > TEST-47: two simultaneous checkouts of one request with two units create one loan, 5 rounds 411ms
+ ✓ tests/api/requests-edit-concurrency.test.ts (5 tests) 2029ms
+   ✓ TEST-78 (AC-78): concurrent edit, cancel and decision > TEST-78 (a): two cancels: one 200, one 409; one cancel entry, 5 rounds 482ms
+   ✓ TEST-78 (AC-78): concurrent edit, cancel and decision > TEST-78 (b): an edit and a cancel: CANCELLED; either both succeed with loanDays 7, or the edit gets 409, 5 rounds 423ms
+   ✓ TEST-78 (AC-78): concurrent edit, cancel and decision > TEST-78 (c): an edit and an approval: APPROVED; either both succeed (loanDays 7) or the edit gets 409, 5 rounds 403ms
+   ✓ TEST-78 (AC-78): concurrent edit, cancel and decision > TEST-78 (d): a cancel and a rejection: exactly one succeeds; one state entry, 5 rounds 360ms
+   ✓ TEST-78 (AC-78): concurrent edit, cancel and decision > TEST-78 (e): a cancel and an approval: the request ends CANCELLED, 5 rounds 360ms
+ ✓ tests/unit/error-handler.test.ts (7 tests) 59ms
+ ✓ tests/api/checkout-history.test.ts (5 tests) 500ms
+ ✓ tests/api/requests-cancel.test.ts (7 tests) 654ms
+ ✓ tests/api/loans.test.ts (4 tests) 407ms
+ ✓ tests/unit/config.test.ts (10 tests) 12ms
+ ✓ tests/api/due-date-preview.test.ts (5 tests) 487ms
+ ✓ tests/api/units-manage-concurrency.test.ts (4 tests) 1442ms
+   ✓ TEST-119 (AC-119): concurrent catalog management > TEST-119 (a): a retire and a checkout of the same AVAILABLE unit: exactly one wins, 5 rounds 491ms
+   ✓ TEST-119 (AC-119): concurrent catalog management > TEST-119 (b): two adds of KH-SRV-0009 to two item types: one 201, one 409 ASSET_TAG_TAKEN, 5 rounds 355ms
+   ✓ TEST-119 (AC-119): concurrent catalog management > TEST-119 (c) two creates named Robotics: one 201, one 409 NAME_TAKEN, 5 rounds 301ms
+ ✓ tests/api/requests-read.test.ts (6 tests) 565ms
+ ✓ tests/unit/request-rules.test.ts (8 tests) 5ms
+ ✓ tests/api/checkout-access.test.ts (8 tests) 665ms
+ ✓ tests/api/returns-concurrency.test.ts (3 tests) 1468ms
+   ✓ TEST-108 (AC-108): concurrent returns > TEST-108 (a): two return-all calls give one 200 and one 409; each loan returned once, 5 rounds 548ms
+   ✓ TEST-108 (AC-108): concurrent returns > TEST-108 (b): early returns of L1 and L2 at once both succeed; exactly one ends the request, 5 rounds 481ms
+   ✓ TEST-108 (AC-108): concurrent returns > TEST-108 (c): a return-all and an early return of L1 at once: one 200, one 409 (never 400), 5 rounds 437ms
+ ✓ tests/api/errors.test.ts (9 tests) 80ms
+ ✓ tests/api/units.test.ts (6 tests) 462ms
+ ✓ tests/unit/due-date.test.ts (18 tests) 7ms
+ ✓ tests/api/item-types.test.ts (5 tests) 434ms
+ ✓ tests/api/catalog.test.ts (2 tests) 235ms
+ ✓ tests/api/catalog-manage-access.test.ts (2 tests) 270ms
+ ✓ tests/api/requests-decide-concurrency.test.ts (2 tests) 823ms
+   ✓ TEST-86 (AC-86): simultaneous decisions > TEST-86 (a): approve and approve give one 200 and one 409, 5 rounds 458ms
+   ✓ TEST-86 (AC-86): simultaneous decisions > TEST-86 (b): approve and reject give one 200 and one 409; the reason is set only when reject won, 5 rounds 364ms
+ ✓ tests/api/requests-concurrency.test.ts (2 tests) 1884ms
+   ✓ TEST-37 (AC-37): concurrent duplicate creates > TEST-37: two parallel creates store one request, 20 runs 1498ms
+   ✓ TEST-69 (d) (AC-69): concurrent multi-line creates that share an item type > TEST-69 (d): Arduino + HC-SR04 and HC-SR04 + ESP32 at once: one 201, one 409; one request and one entry, 5 rounds 384ms
+ ✓ tests/unit/transitions.test.ts (32 tests) 9ms
+ ✓ tests/api/pending-requests.test.ts (1 test) 155ms
+ ✓ tests/api/persistence.test.ts (1 test) 169ms
+ ✓ tests/api/checkout-multi-concurrency.test.ts (1 test) 560ms
+   ✓ TEST-96 (AC-96): two checkouts that share units > TEST-96: one 201 and one 409 UNIT_NOT_AVAILABLE; the loser stays APPROVED with no loan; 5 rounds 559ms
+ ✓ tests/api/requests-decide-access.test.ts (4 tests) 340ms
+stderr | tests/api/health.test.ts > GET /api/ready (SDS 6.7) > returns 503 NOT_READY when the database cannot be reached
+{"time":"2026-11-26T11:26:34.657Z","level":"error","requestId":"ccf081a3-56eb-49b2-927b-ffe96ee48b02","path":"/api/ready","error":"PrismaClientInitializationError","message":"\nInvalid `prisma.$queryRaw()` invocation:\n\n\nCan't reach database server at `127.0.0.1:1`\n\nPlease make sure your database server is running at `127.0.0.1:1`."}
+
+ ✓ tests/api/health.test.ts (4 tests) 88ms
+ ✓ tests/api/returns-access.test.ts (1 test) 176ms
+ ✓ tests/api/requests-history.test.ts (1 test) 154ms
+ ✓ tests/unit/checkout-errors.test.ts (3 tests) 4ms
+ ✓ tests/unit/test-db-guard.test.ts (4 tests) 4ms
+ ✓ tests/unit/password.test.ts (2 tests) 1281ms
+   ✓ TEST-07 (AC-07): salted adaptive password hashes > TEST-07 (a): cost 12 hashes differ from the plain text and from each other 1278ms
+
+ Test Files  45 passed (45)
+      Tests  375 passed (375)
+   Start at  11:25:46
+   Duration  51.04s (transform 609ms, setup 2.72s, collect 6.44s, tests 32.91s, environment 8ms, prepare 2.32s)
+
