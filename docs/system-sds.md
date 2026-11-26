@@ -30,7 +30,7 @@
 | 1.11 | 2026-11-25 | Teerakarn Noiruksa | Review of PR #87: 6.2 adds the Sprint 2 create example with several lines and `loanDays` (F-04 5.2). Baseline SRS v1.5. No behaviour change |
 | 1.12 | 2026-11-26 | Methipat Mansap | F-09 (#79, F09-D11): 4.3 adds the unique indexes on `lower(name)` for `categories` and `item_types` (migration `20261126110000_catalog_names_ci`), so names are unique without regard to case. No other behaviour change |
 | 1.13 | 2026-11-27 | Methipat Mansap | Issue #106, baseline SRS v1.6: 4.5 describes the expiry time (D-22) and when expiry is applied (D-23, option A of section 13); 6.6 and 13 no longer leave the trigger open. Review of PR #113: 4.5 says the window end is computed from `decidedAt` and recorded as the history entry's `occurredAt`, the boundary `now >= windowEnd`, and the conditional update that expires a request once. No table, column, endpoint or migration change |
-| 1.14 | 2026-11-27 | Methipat Mansap | F-12 contract (#109, F12-D5): 6.2 lists `?search=`, `?categoryId=` and `?available=` for `GET /api/item-types` and no `?page=`; paging is not needed at the product's size and NFR-11 is measured by SR-03. No other change |
+| 1.14 | 2026-11-27 | Methipat Mansap | F-12 contract (#109, F12-D5): 6.1 lists `?search=`, `?categoryId=` and `?available=` for `GET /api/item-types` and no `?page=`; paging is not needed at the product's size and NFR-11 is measured by SR-03. No other change |
 
 ## 2. Introduction
 

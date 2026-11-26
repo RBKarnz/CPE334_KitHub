@@ -6,7 +6,7 @@
 | --- | --- |
 | Feature | F-12 Search and filter the catalog |
 | Sprint | 3 (due 2026-12-13) |
-| Version | 1.0 |
+| Version | 1.1 |
 | Status | Proposed (PR for #109); implementation starts only after this contract is reviewed and merged |
 | Date | 2026-11-27 |
 | Authors | Methipat Mansap (67070501071); reviewer Teerakarn Noiruksa (67070501062) |
@@ -20,6 +20,7 @@
 | Version | Date | Author | Change |
 | --- | --- | --- | --- |
 | 1.0 | 2026-11-27 | Methipat Mansap | First contract: AC-142 to AC-149, TEST-142 to TEST-149, decisions F12-D1 to F12-D7 |
+| 1.1 | 2026-11-27 | Methipat Mansap | Review of PR #115: TEST-145 (a) has a non-empty answer that each dropped filter widens; SDS section is 6.1, not 6.2; invalid filter values in the URL (F12-D8, 4.2, TEST-149 (d), (e)); narrow layout cites SDS 5.3 / SR-04 (below 768 px) and NFR-12 only the list states; AC-142 and F12-D1 name only `%` and `_`, the characters that are tested |
 
 Changes after approval get a new version row with the reason. AC and TEST IDs are never reused for a different meaning.
 
@@ -30,7 +31,8 @@ Changes after approval get a new version row with the reason. AC and TEST IDs ar
 | Type | IDs | What F-12 does with it |
 | --- | --- | --- |
 | Functional | FR-06 | A signed-in user searches item types by name and filters them by category and by availability |
-| Non-functional | NFR-01, NFR-08, NFR-12 | No session `401`; the standard error shape; usable on narrow screens |
+| Non-functional | NFR-01, NFR-08, NFR-12 | No session `401`; the standard error shape; loading, empty and error states (NFR-12 "List states") |
+| System responsibility | SR-04, SDS 5.3 "Visual style" | The narrow layout below 768 px, checked from 320 to 1440 px |
 | Non-functional (measured later) | NFR-11 | The search endpoint is one of the lists measured by SR-03 (#112); F-12 adds no performance claim of its own |
 | SDS | 5.1 Catalog ("Search and filter (FR-06) are added to the Catalog screen in Sprint 3"), 6.6 `GET /api/item-types?search=&categoryId=&available=`, 7.1 | Used as written, with one deviation: no `?page=` (F12-D5) |
 
@@ -69,7 +71,7 @@ None. Read only.
 
 | Rule | UI | Route | Service | Database |
 | --- | --- | --- | --- | --- |
-| Search by name (FR-06) | Search box | Query schema: `search` 1 to 100 characters after trimming | Case-insensitive substring match on `item_types.name`; `%`, `_` and `\` in the input are matched literally (F12-D1) | `ILIKE` with an escaped pattern |
+| Search by name (FR-06) | Search box | Query schema: `search` 1 to 100 characters after trimming | Case-insensitive substring match on `item_types.name`; `%` and `_` in the input are matched literally (F12-D1) | `ILIKE` with an escaped pattern |
 | Filter by category | Category select | `categoryId` integer ≥ 1 | Unknown category → `404` (F12-D2) | FK `item_types.categoryId` |
 | Filter by availability | "Available only" | `available` only `true` | Keeps item types whose available count is ≥ 1, using the same grouped count as `GET /api/categories` (F12-D3) | Grouped count of units |
 | Combination | All three can be set | - | Filters are combined with AND | - |
@@ -91,12 +93,13 @@ None. Read only.
 
 | ID | Decision | Rationale |
 | --- | --- | --- |
-| F12-D1 | Name search is a case-insensitive substring match; the characters `%`, `_` and `\` are escaped, so "2N2222 ×4" or "50%" match literally | Matches how users type part of a name; escaping prevents a wildcard from matching everything |
+| F12-D1 | Name search is a case-insensitive substring match; the wildcard characters `%` and `_` are escaped, so "50%" and "Pin_header" match literally | Matches how users type part of a name; escaping prevents a wildcard from matching everything |
 | F12-D2 | An unknown `categoryId` gives `404 NOT_FOUND` "Category 99 does not exist." | Same as the other ID inputs (F-09); an empty list would hide a wrong link |
 | F12-D3 | `available=true` keeps item types with an available count ≥ 1, computed by the same function as the catalog. When F-10 adds reservations, that function subtracts them and F-12 follows | One definition of "available" (BR-01, DD-08) |
 | F12-D4 | Results are ordered by category name, then item type name, then `id` | The catalog's order (F-02 4.1), so a filtered list looks like a shorter catalog |
-| F12-D5 | No paging, although SDS 6.2 mentions `?page=` | The seeded catalog has 9 item types; even 500 units are few item types. SR-03 measures NFR-11 on this endpoint and reopens the question if it fails. SDS 6.2 is revised in the same PR (v1.14) |
+| F12-D5 | No paging, although SDS 6.1 mentions `?page=` | The seeded catalog has 9 item types; even 500 units are few item types. SR-03 measures NFR-11 on this endpoint and reopens the question if it fails. SDS 6.1 is revised in the same PR (v1.14) |
 | F12-D6 | The UI keeps the filters in the URL and debounces the search box by 300 ms | A reload or a shared link shows the same result; fewer calls while typing |
+| F12-D8 | Filter values read from the URL are checked by the page first: a value the API would reject (`category=abc`, `category=0`, `available=yes`, a blank `q`) is ignored and its control shows its default ("All categories", unticked, empty); a well-formed category that does not exist (`category=999`) is sent, and the API's `404` is shown as the error with **Clear filters** | A shared or old link never leaves the page stuck; a deleted category is reported, not hidden |
 | F12-D7 | Each item in the response has the F04-D6 shape (`id`, `name`, `description`, `isKit`, `maxLoanDays`, `maxQuantityPerRequest`, `availableCount`, `category { id, name }`), the same for both roles | Reuses the type and view of the item type page; no unit data |
 
 ## 4. UI specification
@@ -117,10 +120,10 @@ None. Read only.
 | Search box | Label "Search item types"; placeholder "Name, for example Arduino"; trimmed before sending; nothing sent while blank |
 | Category select | Label "Category"; "All categories" and every category by name |
 | Available only | Check box "Available only" |
-| URL | `q`, `category`, `available=1`; read on load, so a reload keeps the filters |
+| URL | `q`, `category`, `available=1`; read on load, so a reload keeps the filters; invalid values as F12-D8 |
 | Results | Grouped by category name, in the API order; each row as the Sprint 1 catalog row (name link, Kit badge, "3 available" or "None available", Request for a Borrower) |
 | States | While loading "Loading…"; on error the message and "Try again"; empty "No item types match these filters." and **Clear filters**, which resets the three controls and the URL |
-| Narrow screens | The three controls stack at 600 px (NFR-12) |
+| Narrow screens | Below 768 px the three controls stack (SDS 5.3 "Visual style", SR-04) |
 
 ## 5. API specification
 
@@ -149,14 +152,14 @@ No schema change and no migration. Reads `item_types`, `categories` and `units` 
 
 | AC | Expected outcome | Requirements |
 | --- | --- | --- |
-| AC-142 | `search` returns exactly the item types whose name contains the trimmed text ignoring case; `%`, `_` and `\` are matched literally | FR-06, F12-D1 |
+| AC-142 | `search` returns exactly the item types whose name contains the trimmed text ignoring case; `%` and `_` are matched literally | FR-06, F12-D1 |
 | AC-143 | `categoryId` returns only that category's item types; an unknown category gives `404 NOT_FOUND` | FR-06, F12-D2 |
 | AC-144 | `available=true` returns only item types with at least one available unit, with the same `availableCount` as `GET /api/categories`; an item type whose units are all `ON_LOAN`, `MAINTENANCE` or `RETIRED` is left out | FR-06, BR-01, F12-D3 |
 | AC-145 | Filters combine with AND; no match gives `200` with an empty `items`; with no filter every item type is returned; the order is category name, item type name, `id` | FR-06, F12-D4 |
 | AC-146 | A blank or over-100-character `search`, a non-numeric or zero `categoryId`, `available` other than `true`, or an unknown query field gives `400 VALIDATION_FAILED` naming the field; no session gives `401`; both roles get the same `200` result | FR-06, NFR-01, NFR-08 |
 | AC-147 | Each returned item has exactly the F04-D6 fields, with no unit IDs or asset tags | FR-06, F12-D7 |
 | AC-148 | On the Catalog page, typing a name, choosing a category or ticking "Available only" shows only the matching item types grouped by category, keeps the filters in the URL across a reload, and a Borrower can still request a filtered item type | FR-06, F12-D6 |
-| AC-149 | The page shows "Loading…", the error with "Try again", and "No item types match these filters." with **Clear filters**, which resets every control and the URL; the three controls have labels and stack at 600 px | FR-06, NFR-12 |
+| AC-149 | The page shows "Loading…", the error with "Try again", and "No item types match these filters." with **Clear filters**, which resets every control and the URL; the three controls have labels and stack below 768 px; invalid filter values in the URL are handled as F12-D8 | FR-06, NFR-12, SR-04 |
 
 ## 8. Software Test Specification (STS)
 
@@ -172,11 +175,11 @@ No schema change and no migration. Reads `item_types`, `categories` and `units` 
 | TEST-142 **TDD** | AC-142 | API | Data of 8.1, signed in as Borrower | (a) `?search=arduino`; (b) `?search=%20SR04%20`; (c) `?search=50%25`; (d) `?search=_`; (e) `?search=xyz` | (a) [Arduino Uno R3]; (b) [HC-SR04 ultrasonic sensor]; (c) [Cable 50% off] only; (d) [Pin_header] only; (e) `[]` | `server/tests/api/item-types-search.test.ts` |
 | TEST-143 **TDD** | AC-143 | API | As TEST-142 | (a) `?categoryId=<Microcontroller boards>`; (b) `?categoryId=999999` | (a) Arduino and ESP32 in name order; (b) `404 NOT_FOUND` "Category 999999 does not exist." | `server/tests/api/item-types-search.test.ts` |
 | TEST-144 **TDD** | AC-144 | API | Arduino: 2 `AVAILABLE`, 1 `ON_LOAN`; ESP32: 1 `ON_LOAN`, 1 `MAINTENANCE`, 1 `RETIRED` | (a) `?available=true`; (b) `GET /api/categories` | (a) contains Arduino with `availableCount` 2 and not ESP32; (b) the same counts for every item type | `server/tests/api/item-types-search.test.ts` |
-| TEST-145 **TDD** | AC-145 | API | As TEST-144 | (a) `?search=e&categoryId=<Microcontroller boards>&available=true`; (b) no query; (c) `?search=kit&categoryId=<Sensors and modules>` | (a) only items matching all three; (b) every item type in F12-D4 order; (c) `200 { items: [] }` | `server/tests/api/item-types-search.test.ts` |
+| TEST-145 **TDD** | AC-145 | API | TEST-144 data plus: "Microcontroller boards" gains "Arduino Mega" (1 `ON_LOAN`, 0 available) and "Raspberry Pi Pico" (1 `AVAILABLE`); "Sensors and modules" gains "Arduino sensor shield" (1 `AVAILABLE`) | (a) `?search=arduino&categoryId=<Microcontroller boards>&available=true`; (a1) the same without `search`; (a2) without `categoryId`; (a3) without `available`; (b) no query; (c) `?search=kit&categoryId=<Sensors and modules>` | (a) exactly [Arduino Uno R3]; (a1) [Arduino Uno R3, Raspberry Pi Pico]; (a2) [Arduino Uno R3, Arduino sensor shield]; (a3) [Arduino Mega, Arduino Uno R3]; (b) every item type in F12-D4 order; (c) `200 { items: [] }` | `server/tests/api/item-types-search.test.ts` |
 | TEST-146 **TDD** | AC-146 | API | As TEST-142 | (a) `?search=%20%20`; (b) `search` of 101 characters; (c) `?categoryId=abc`; (d) `?categoryId=0`; (e) `?available=false`; (f) `?sort=name`; (g) no session; (h) the same query as Borrower and as Custodian | (a) to (f) `400 VALIDATION_FAILED` naming `search`, `search`, `categoryId`, `categoryId`, `available`, `sort`; (g) `401`; (h) equal bodies | `server/tests/api/item-types-search.test.ts` |
 | TEST-147 **TDD** | AC-147 | API | As TEST-142 | No query | Every item's keys are exactly the F04-D6 set | `server/tests/api/item-types-search.test.ts` |
 | TEST-148 **TDD** | AC-148 | UI | App rendered at `/catalog` with `fetch` stubbed | (a) type "ard", wait 300 ms; (b) choose a category; (c) tick "Available only"; (d) render at `/catalog?q=ard&available=1`; (e) as Borrower press Request on the filtered Arduino | (a) one call with `search=ard`, only Arduino shown; (b), (c) the query gains `categoryId`, `available=true`; (d) controls prefilled and one call with both filters; (e) the new request form opens with Arduino (F-04) | `client/tests/catalog-search.test.tsx` |
-| TEST-149 **TDD** | AC-149 | UI | As TEST-148 | (a) the stub delays; (b) the stub fails, then "Try again"; (c) the stub returns `[]`, then **Clear filters** | (a) "Loading…"; (b) the message, then a second call; (c) "No item types match these filters.", then every control reset, URL without query and the unfiltered catalog loaded | `client/tests/catalog-search.test.tsx` |
+| TEST-149 **TDD** | AC-149 | UI | As TEST-148 | (a) the stub delays; (b) the stub fails, then "Try again"; (c) the stub returns `[]`, then **Clear filters**; (d) render at `/catalog?category=abc&available=yes`; (e) render at `/catalog?category=999` with the stub answering `404` | (a) "Loading…"; (b) the message, then a second call; (c) "No item types match these filters.", then every control reset, URL without query and the unfiltered catalog loaded; (d) controls at "All categories" and unticked, and one call with no filter; (e) "Category 999 does not exist." with **Clear filters** | `client/tests/catalog-search.test.tsx` |
 
 ### 8.3 Coverage checks
 
@@ -201,4 +204,4 @@ No schema change and no migration. Reads `item_types`, `categories` and `units` 
 | AC-146 | FR-06, NFR-01, NFR-08 | TEST-146 | `server/tests/api/item-types-search.test.ts` |
 | AC-147 | FR-06 | TEST-147 | `server/tests/api/item-types-search.test.ts` |
 | AC-148 | FR-06 | TEST-148 | `client/tests/catalog-search.test.tsx` |
-| AC-149 | FR-06, NFR-12 | TEST-149 | `client/tests/catalog-search.test.tsx` |
+| AC-149 | FR-06, NFR-12, SR-04 | TEST-149 | `client/tests/catalog-search.test.tsx` |
