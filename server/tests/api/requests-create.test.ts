@@ -44,7 +44,8 @@ describe("TEST-09 (AC-09): a Borrower requests one available unit", () => {
       status: "PENDING",
       createdAt: expect.any(String),
       // F-06 (F06-D4): decision fields, null until decided; a Borrower never sees decidedBy.
-      loanDays: null,
+      // F-04 (F04-D9): oneLine now sends loanDays 1, which the request stores (F04-D7).
+      loanDays: 1,
       decidedAt: null,
       rejectionReason: null,
       dueAt: null,
@@ -117,19 +118,23 @@ describe("TEST-12 (AC-12): the owner cannot be chosen by the client", () => {
   });
 });
 
+// TEST-34 revised by F-04 (F04-D9, contract F-04 8.4): two lines, a quantity above 1 and loanDays
+// are valid from Sprint 2 (TEST-64, TEST-66); each case changes one field of a valid body.
 describe("TEST-34 (AC-34): body schema", () => {
+  const valid = () => ({ lines: [{ itemTypeId: arduino.id, quantity: 1 }], loanDays: 7 });
   it.each([
-    ["no lines", {}, "lines"],
-    ["empty lines", { lines: [] }, "lines"],
-    ["two lines", { lines: [{ itemTypeId: 1, quantity: 1 }, { itemTypeId: 2, quantity: 1 }] }, "lines"],
-    ["quantity 2", { lines: [{ itemTypeId: 1, quantity: 2 }] }, "lines[0].quantity"],
-    ["string itemTypeId", { lines: [{ itemTypeId: "A", quantity: 1 }] }, "lines[0].itemTypeId"],
-    ["itemTypeId 0", { lines: [{ itemTypeId: 0, quantity: 1 }] }, "lines[0].itemTypeId"],
-    ["extra loanDays", { lines: [{ itemTypeId: 1, quantity: 1 }], loanDays: 7 }, "loanDays"],
-    ["unknown field in a line", { lines: [{ itemTypeId: 1, quantity: 1, unitId: 4 }] }, "lines[0].unitId"],
-  ])("TEST-34: %s gives 400 naming the field", async (_case, body, field) => {
-    const res = await expectRejected(postRequest(app, await signIn(app, "borrower1"), body), 400, "VALIDATION_FAILED");
-    expect(detailFields(res)).toContain(field);
+    ["no lines", () => ({ loanDays: 7 }), "lines"],
+    ["empty lines", () => ({ ...valid(), lines: [] }), "lines"],
+    ["the same item type twice", () => ({ ...valid(), lines: [{ itemTypeId: arduino.id, quantity: 1 }, { itemTypeId: arduino.id, quantity: 1 }] }), "lines[1].itemTypeId"],
+    ["quantity 0", () => ({ ...valid(), lines: [{ itemTypeId: arduino.id, quantity: 0 }] }), "lines[0].quantity"],
+    ["string itemTypeId", () => ({ ...valid(), lines: [{ itemTypeId: "A", quantity: 1 }] }), "lines[0].itemTypeId"],
+    ["itemTypeId 0", () => ({ ...valid(), lines: [{ itemTypeId: 0, quantity: 1 }] }), "lines[0].itemTypeId"],
+    ["no loanDays", () => ({ lines: valid().lines }), "loanDays"],
+    ["extra borrowerId", () => ({ ...valid(), borrowerId: 1 }), "borrowerId"],
+    ["unknown field in a line", () => ({ ...valid(), lines: [{ itemTypeId: arduino.id, quantity: 1, unitId: 4 }] }), "lines[0].unitId"],
+  ])("TEST-34: %s gives 400 with exactly one detail naming the field", async (_case, body, field) => {
+    const res = await expectRejected(postRequest(app, await signIn(app, "borrower1"), body()), 400, "VALIDATION_FAILED");
+    expect(detailFields(res)).toEqual([field]);
   });
 });
 

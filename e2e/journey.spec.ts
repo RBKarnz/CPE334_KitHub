@@ -3,6 +3,8 @@
 // F-02 and F-03 and match the manual test guide (MT-02, MT-06, MT-11 to MT-13).
 // F-07 (F07-D8): the Custodian now approves the request on its detail page (F-06) before checking
 // it out on Ready for checkout; the checkout dialog picks units with checkboxes.
+// F-04 (F04-D5, F04-D9): Request in the catalog opens the new request form with the item type and
+// its maximum loan length; Submit request sends it and opens the request (2 clicks).
 import { evidence, expect, expectSignedInAs, formatDateTime, signIn, signOut, test } from "./support/fixtures.js";
 import { createJourneyWorld } from "./support/world.js";
 
@@ -20,13 +22,17 @@ test("TEST-30: Borrower requests, Custodian checks out, Borrower sees Checked ou
   await expect(arduinoRow).toContainText("5 available");
   await evidence(page, testInfo, "TEST-30 1 catalog as Borrower One");
   await arduinoRow.getByRole("button", { name: "Request Arduino Uno R3" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "New request" })).toBeVisible();
+  await page.getByRole("button", { name: "Submit request" }).click();
 
   const submitted = page.getByRole("status").filter({ hasText: "submitted" });
-  await expect(submitted).toHaveText(/^Request #\d+ submitted\. See My requests$/);
+  await expect(submitted).toHaveText(/^Request #\d+ submitted\.$/);
   const requestId = Number((await submitted.textContent())!.match(/Request #(\d+)/)![1]);
-  await expect(arduinoRow).toContainText("5 available"); // a request does not reserve a unit in Sprint 1
+  await expect(page).toHaveURL(new RegExp(`/requests/${requestId}$`));
+  await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Catalog", exact: true }).click();
+  await expect(arduinoRow).toContainText("5 available"); // a request does not reserve a unit (D-15)
 
-  await submitted.getByRole("link", { name: "See My requests" }).click();
+  await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "My requests" }).click();
   await expect(page).toHaveURL(/\/requests$/);
   const myRequest = page.getByRole("link", { name: new RegExp(`^Request #${requestId}\\b`) });
   await expect(myRequest).toContainText("Arduino Uno R3 × 1");

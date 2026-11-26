@@ -4,7 +4,7 @@ import { createTestApp, prisma } from "../helpers/app.js";
 import { signIn } from "../helpers/auth.js";
 import { resetDb } from "../helpers/db.js";
 import { createBorrower, createItemTypeWithUnits } from "../helpers/factories.js";
-import { oneLine, postRequest } from "../helpers/requests.js";
+import { linesBody, oneLine, postRequest } from "../helpers/requests.js";
 
 const RUNS = 20;
 
@@ -26,6 +26,32 @@ describe("TEST-37 (AC-37): concurrent duplicate creates", () => {
       expect(results.map((r) => r.status).sort()).toEqual([201, 409]);
       expect(results.find((r) => r.status === 409)!.body.error.code).toBe("DUPLICATE_OPEN_REQUEST");
       expect(await prisma.borrowRequest.count({ where: { borrowerId: b1.id } })).toBe(1);
+      expect(await prisma.historyEntry.count()).toBe(1);
+    }
+  }, 60_000);
+});
+
+// TEST-69 (d) (AC-69, contract F-04 3.7): two multi-line creates by one Borrower that share an item
+// type run one after the other under the Borrower row lock; the second sees the first.
+describe("TEST-69 (d) (AC-69): concurrent multi-line creates that share an item type", () => {
+  it("TEST-69 (d): Arduino + HC-SR04 and HC-SR04 + ESP32 at once: one 201, one 409; one request and one entry, 5 rounds", async () => {
+    const app = createTestApp();
+    for (let round = 0; round < 5; round++) {
+      await resetDb(prisma);
+      const b3 = await createBorrower(prisma, { username: "borrower3" });
+      const arduino = await createItemTypeWithUnits(prisma, { name: "Arduino Uno R3" }, { AVAILABLE: 2 });
+      const sensor = await createItemTypeWithUnits(prisma, { name: "HC-SR04 ultrasonic sensor", maxQuantityPerRequest: 4 }, { AVAILABLE: 5 });
+      const esp32 = await createItemTypeWithUnits(prisma, { name: "ESP32 DevKitC" }, { AVAILABLE: 2 });
+      const cookie = await signIn(app, "borrower3");
+
+      const results = await Promise.all([
+        postRequest(app, cookie, linesBody(7, [arduino.id, 1], [sensor.id, 1])),
+        postRequest(app, cookie, linesBody(7, [sensor.id, 1], [esp32.id, 1])),
+      ]);
+
+      expect(results.map((r) => r.status).sort()).toEqual([201, 409]);
+      expect(results.find((r) => r.status === 409)!.body.error.code).toBe("DUPLICATE_OPEN_REQUEST");
+      expect(await prisma.borrowRequest.count({ where: { borrowerId: b3.id } })).toBe(1);
       expect(await prisma.historyEntry.count()).toBe(1);
     }
   }, 60_000);
