@@ -4,7 +4,7 @@
 | --- | --- |
 | Version | 1.12 |
 | Date | 2026-11-27 |
-| Source requirements | `docs/srs.md` v1.5 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
+| Source requirements | `docs/srs.md` v1.6 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
 | Traceability | `docs/traceability.md` |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 
@@ -431,7 +431,7 @@ F-08 runs (raw output in `docs/sprints/sprint-2/evidence/F-08/`): RED `73a54a3` 
 
 Copied from the Sprint 3 engineering contracts when each is merged into `staging`, before any of its code. AC-n is verified by TEST-n (section 1). Blocks claimed in the Sprint 3 Issues: F-10 122 to 131 (#107), F-11 132 to 141 (#108), F-12 142 to 149 (#109), F-13 150 to 157 (#110), F-14 158 to 163 (#111), SR-03 164 to 171 (#112). Every status is **Planned** until the feature's implementation PR records its RED and GREEN runs and the tested commit here. A contract revised after this copy wins; its revision row names the change.
 
-### 6.2 F-11 Overdue status and borrowing limits (contract `docs/sprints/sprint-3/F-11-overdue-limits.md` v1.0, #108)
+### 6.2 F-11 Overdue status and borrowing limits (contract `docs/sprints/sprint-3/F-11-overdue-limits.md` v1.1, #108)
 
 | AC | Expected outcome | Requirements | Tests | Status |
 | --- | --- | --- | --- | --- |
@@ -446,18 +446,18 @@ Copied from the Sprint 3 engineering contracts when each is merged into `staging
 | AC-140 | The UI marks overdue requests "Overdue" on My requests, request detail and All requests, and the Custodian Overdue page lists them with the units not returned, the due date and the days overdue, with loading, empty and error states; a Borrower opening `/overdue` sees the Forbidden page and has no Overdue link | FR-22, NFR-12 | TEST-140 | Planned |
 | AC-141 | In the request form, `OVERDUE_BLOCK` and `BORROW_LIMIT` are shown as an alert with the API message and the entered lines and loan length are kept | BR-14, BR-15 | TEST-141 | Planned |
 
-### 6.3 F-12 Search and filter the catalog (contract `docs/sprints/sprint-3/F-12-search-filter.md` v1.0, #109)
+### 6.3 F-12 Search and filter the catalog (contract `docs/sprints/sprint-3/F-12-search-filter.md` v1.1, #109)
 
 | AC | Expected outcome | Requirements | Tests | Status |
 | --- | --- | --- | --- | --- |
-| AC-142 | `search` returns exactly the item types whose name contains the trimmed text ignoring case; `%`, `_` and `\` are matched literally | FR-06, F12-D1 | TEST-142 | Planned |
+| AC-142 | `search` returns exactly the item types whose name contains the trimmed text ignoring case; `%` and `_` are matched literally | FR-06, F12-D1 | TEST-142 | Planned |
 | AC-143 | `categoryId` returns only that category's item types; an unknown category gives `404 NOT_FOUND` | FR-06, F12-D2 | TEST-143 | Planned |
 | AC-144 | `available=true` returns only item types with at least one available unit, with the same `availableCount` as `GET /api/categories`; an item type whose units are all `ON_LOAN`, `MAINTENANCE` or `RETIRED` is left out | FR-06, BR-01, F12-D3 | TEST-144 | Planned |
 | AC-145 | Filters combine with AND; no match gives `200` with an empty `items`; with no filter every item type is returned; the order is category name, item type name, `id` | FR-06, F12-D4 | TEST-145 | Planned |
 | AC-146 | A blank or over-100-character `search`, a non-numeric or zero `categoryId`, `available` other than `true`, or an unknown query field gives `400 VALIDATION_FAILED` naming the field; no session gives `401`; both roles get the same `200` result | FR-06, NFR-01, NFR-08 | TEST-146 | Planned |
 | AC-147 | Each returned item has exactly the F04-D6 fields, with no unit IDs or asset tags | FR-06, F12-D7 | TEST-147 | Planned |
 | AC-148 | On the Catalog page, typing a name, choosing a category or ticking "Available only" shows only the matching item types grouped by category, keeps the filters in the URL across a reload, and a Borrower can still request a filtered item type | FR-06, F12-D6 | TEST-148 | Planned |
-| AC-149 | The page shows "Loading…", the error with "Try again", and "No item types match these filters." with **Clear filters**, which resets every control and the URL; the three controls have labels and stack at 600 px | FR-06, NFR-12 | TEST-149 | Planned |
+| AC-149 | The page shows "Loading…", the error with "Try again", and "No item types match these filters." with **Clear filters**, which resets every control and the URL; the three controls have labels and stack below 768 px; invalid filter values in the URL are handled as F12-D8 | FR-06, NFR-12, SR-04 | TEST-149 | Planned |
 
 ### 6.5 F-14 Inventory summary report (contract `docs/sprints/sprint-3/F-14-inventory-report.md` v1.0, #111)
 

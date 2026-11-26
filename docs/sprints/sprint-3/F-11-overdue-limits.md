@@ -6,7 +6,7 @@
 | --- | --- |
 | Feature | F-11 Overdue status and borrowing limits |
 | Sprint | 3 (due 2026-12-13); implemented first, for the Deliverable 2 candidate (`plan.md` 6.3) |
-| Version | 1.0 |
+| Version | 1.1 |
 | Status | Proposed (PR for #108); implementation starts only after this contract is reviewed and merged |
 | Date | 2026-11-27 |
 | Authors | Methipat Mansap (67070501071); reviewer Teerakarn Noiruksa (67070501062) |
@@ -20,6 +20,7 @@
 | Version | Date | Author | Change |
 | --- | --- | --- | --- |
 | 1.0 | 2026-11-27 | Methipat Mansap | First contract: AC-132 to AC-141, TEST-132 to TEST-141, decisions F11-D1 to F11-D8 |
+| 1.1 | 2026-11-27 | Methipat Mansap | Review of PR #114: "days overdue" defined for the due day itself (F11-D9, 4.4, TEST-140 (c)); 3.4 adds an `APPROVED` request and a `CHECKED_OUT` request after an early return, used by TEST-136; F11-D5 says the numbers carry no noun, so the text is the same for 1; 2.3 explains how D-23 expiry and F-10 affect the count. No AC changed |
 
 Changes after approval get a new version row with the reason. AC and TEST IDs are never reused for a different meaning.
 
@@ -50,7 +51,7 @@ Changes after approval get a new version row with the reason. AC and TEST IDs ar
 
 | Item | Where |
 | --- | --- |
-| Reservations and expiry (`EXPIRED`, BR-13) | F-10 (#107). F-11 counts `PENDING` and `APPROVED` requests as D-20 says, whatever F-10 later does with them |
+| Reservations and expiry (`EXPIRED`, BR-13) | F-10 (#107). F-11 counts `PENDING` and `APPROVED` requests as D-20 says. Once F-10 is in, create and edit first expire ended `APPROVED` requests in the same transaction (D-23), so an expired request stops counting before BR-14 runs. F-11 ships before F-10, so its first release counts every `APPROVED` request |
 | Overdue counts in the inventory report | F-14 (#111) reads the same definition (F11-D1) |
 | Fines, reminders, e-mail | Not in the SRS |
 | A stored "overdue" state | Never: overdue is derived (SRS 8.2, DD-08) |
@@ -94,6 +95,8 @@ None. F-11 adds no state and no transition. `overdue` is computed on read (DD-08
 | 4 (a `CANCELLED` request of 3 and a `REJECTED` one of 2 are ignored) | 1 | 5 | Allowed |
 | Edit of request R (2 units) when held is 5 including R | R becomes 3 units | 3 + 3 = 6 | `409 BORROW_LIMIT` |
 | Edit of request R (2 units) when held is 5 including R | R becomes 2 units of another item type | 3 + 2 = 5 | Allowed |
+| 4 (an `APPROVED` request of 2 units + a `PENDING` request of 2) | 2 | 6 | `409 BORROW_LIMIT`: an `APPROVED` request counts by its line quantities (D-20) |
+| 2 (a `CHECKED_OUT` request of 3 units with 1 returned early (F-08): its 2 `ACTIVE` loans count, not its line quantity 3) | 3 | 5 | Allowed |
 
 ### 3.5 Check order (extends F04-D3)
 
@@ -117,10 +120,11 @@ Create and edit already lock the Borrower's `users` row first (DD-05), so two pa
 | F11-D2 | At `dueAt` exactly, a loan is not yet overdue (`<`, not `≤`) | A loan due at 17:00 can still be returned at 17:00; D-21 makes every `dueAt` a business-day 17:00 |
 | F11-D3 | BR-15 is checked before every other request rule | The Borrower must return units first; reporting a quantity or availability problem would send them to fix the wrong thing |
 | F11-D4 | `OVERDUE_BLOCK` message: "You cannot make a new request while Request #12 is overdue. Return every unit of it first." with `details: [ { field: "body", issue: "Request #12 is overdue" } ]`, one entry per overdue request, oldest `dueAt` first; the message names the oldest. The same text is used for an edit | Names the request to return, which the Borrower can open |
-| F11-D5 | `BORROW_LIMIT` message: "You can hold at most 5 units. You hold 4 and asked for 2." (singular "unit" for 1) with `details: [ { field: "lines", issue: "4 held + 2 asked > 5" } ]` | States the numbers the Borrower needs to change the request |
+| F11-D5 | `BORROW_LIMIT` message: "You can hold at most 5 units. You hold 4 and asked for 2." (singular "unit" for 1) with `details: [ { field: "lines", issue: "4 held + 2 asked > 5" } ]`. The two numbers stand alone, with no noun after them, so the text is the same for 1 ("You hold 1 and asked for 5.") | States the numbers the Borrower needs to change the request |
 | F11-D6 | The limit (5) is a constant in the domain module, not a setting | BR-14 fixes the number; a setting would be configuration nobody needs |
 | F11-D7 | `overdue` in `GET /api/requests` accepts only `true`; it cannot be combined with `status` (`400 VALIDATION_FAILED` naming `overdue` for any other value or the combination) | An overdue request is always `CHECKED_OUT`, so a combination would be either redundant or empty |
 | F11-D8 | The overdue list's order: earliest active `dueAt` first, then `id` | The Custodian sees the longest-overdue request first |
+| F11-D9 | Days overdue = whole ICT calendar days from the due date to today. On the due day itself (overdue from 17:00:00.001) the page shows "Overdue since 17:00 today"; from the next day "1 day overdue", then "2 days overdue" … | Every `dueAt` is 17:00 on its due day (D-21), so a 0-day count would read as "not overdue" |
 
 ## 4. UI specification
 
@@ -149,7 +153,7 @@ The same marker as 4.2 in the All requests table and on the detail page.
 | Element | Behaviour |
 | --- | --- |
 | Data | `GET /api/requests?overdue=true` |
-| Table | Request (link), Borrower (display name and username), units not yet returned (asset tag and item type per `ACTIVE` loan), due date, days overdue ("1 day overdue", "3 days overdue", whole ICT calendar days since the due date) |
+| Table | Request (link), Borrower (display name and username), units not yet returned (asset tag and item type per `ACTIVE` loan), due date, days overdue (F11-D9: "Overdue since 17:00 today", "1 day overdue", "3 days overdue") |
 | Order | As the API returns it (F11-D8) |
 | States | Loading, error with "Try again", empty: "No request is overdue." |
 | Access | `RequireRole CUSTODIAN`; a Borrower gets the Forbidden page; nav link "Overdue" for Custodians |
@@ -230,11 +234,11 @@ No change. `loans (status, dueAt)` and `borrow_requests (borrowerId, status)` in
 | TEST-133 **TDD** | AC-133 | API | Borrowers B1 (overdue R1 due 1 Dec, overdue R2 due 3 Dec, not overdue R3) and B2 (overdue R4 due 2 Dec) | (a) Custodian `?overdue=true`; (b) B1 `?overdue=true`; (c) `?overdue=false`; (d) `?overdue=yes`; (e) `?overdue=true&status=CHECKED_OUT`; (f) no session | (a) IDs `[R1, R4, R2]`, each `overdue: true`; (b) `[R1, R2]`; (c), (d), (e) `400 VALIDATION_FAILED` naming `overdue`; (f) `401` | `server/tests/api/overdue.test.ts` |
 | TEST-134 **TDD** | AC-134 | API | B1 with request R1 checked out (2 units), now past its due date; Arduino available | (a) B1 creates a request for an HC-SR04; (b) return one unit early, create again; (c) return the other unit, create again; (d) B2 whose loan is due in 1 day creates; (e) B2 at its `dueAt` exactly creates | (a) `409 OVERDUE_BLOCK`, message names R1, `details` one entry; Unchanged. (b) still `409`. (c) `201`. (d) `201`. (e) `201` | `server/tests/api/borrow-limits.test.ts` |
 | TEST-135 **TDD** | AC-135 | API | B1 with overdue R1 and own `PENDING` request P | `PATCH /api/requests/P` with a changed quantity | `409 OVERDUE_BLOCK` naming R1; P unchanged | `server/tests/api/borrow-limits.test.ts` |
-| TEST-136 **TDD** | AC-136 | Unit + API | Unit: `borrowLimitViolation`. API: B1 holds the cases of 3.4 (loans and open requests built with the helpers; `CANCELLED` and `REJECTED` requests through the real endpoints; a kit item type with `isKit`) | Unit: (a) held 0, asked 5; (b) held 3, asked 2; (c) held 3, asked 3; (d) held 5, asked 1. API: (e) to (h) the 3.4 rows 1 to 4; (i) a kit line of quantity 1 when holding 4 | Unit: (a), (b) no violation; (c), (d) violation with `{ held, asked }`. API: (e), (f), (h), (i) `201`; (g) `409 BORROW_LIMIT` with the F11-D5 message "You can hold at most 5 units. You hold 3 and asked for 3." and Unchanged | `server/tests/unit/request-rules.test.ts`, `server/tests/api/borrow-limits.test.ts` |
+| TEST-136 **TDD** | AC-136 | Unit + API | Unit: `borrowLimitViolation`. API: B1 holds the cases of 3.4 (loans and open requests built with the helpers; `CANCELLED` and `REJECTED` requests through the real endpoints; a kit item type with `isKit`) | Unit: (a) held 0, asked 5; (b) held 3, asked 2; (c) held 3, asked 3; (d) held 5, asked 1. API: (e) to (h) the 3.4 rows 1 to 4; (i) a kit line of quantity 1 when holding 4; (j) the 3.4 `APPROVED` row; (k) the 3.4 early-return row | Unit: (a), (b) no violation; (c), (d) violation with `{ held, asked }`. API: (e), (f), (h), (i), (k) `201`; (g) `409 BORROW_LIMIT` with the F11-D5 message "You can hold at most 5 units. You hold 3 and asked for 3." and Unchanged; (j) `409 BORROW_LIMIT` "You hold 4 and asked for 2." | `server/tests/unit/request-rules.test.ts`, `server/tests/api/borrow-limits.test.ts` |
 | TEST-137 **TDD** | AC-137 | API | B1 holds 5 units including `PENDING` request R (2 units of Arduino) | (a) PATCH R to 3 units; (b) PATCH R to 2 units of HC-SR04 | (a) `409 BORROW_LIMIT`, "You hold 3 and asked for 3."; R unchanged. (b) `200` | `server/tests/api/borrow-limits.test.ts` |
 | TEST-138 **TDD** | AC-138 | API | B1 overdue and holding 5; B2 holding 5 with an open Arduino request; B3 holding 4, HC-SR04 with 1 available | (a) B1 creates with an unknown item type; (b) B1 creates 1 Arduino; (c) B2 creates 1 Arduino; (d) B3 creates 2 HC-SR04 | (a) `404`; (b) `409 OVERDUE_BLOCK`; (c) `409 DUPLICATE_OPEN_REQUEST`; (d) `409 BORROW_LIMIT` | `server/tests/api/borrow-limits.test.ts` |
 | TEST-139 **TDD** | AC-139 | Integration | B1 holds 3 units; enough units of two item types | `Promise.all` of two creates of 2 units each (different item types); 5 rounds with fresh data | Each round: one `201` and one `409 BORROW_LIMIT`; B1 holds exactly 5 | `server/tests/api/borrow-limits-concurrency.test.ts` |
-| TEST-140 **TDD** | AC-140 | UI | App rendered with `fetch` stubbed: requests with `overdue` true and false; overdue list with two requests and two active loans | (a) Borrower My requests and detail; (b) Custodian All requests; (c) Custodian `/overdue` loaded, empty and error; (d) Borrower opens `/overdue` | (a), (b) "Overdue" shown only for the overdue request; detail due line ends "· Overdue". (c) rows with request link, Borrower, asset tags, due date and "3 days overdue"; "No request is overdue."; error with "Try again" that reloads. (d) Forbidden page; no "Overdue" link in the Borrower nav | `client/tests/overdue.test.tsx` |
+| TEST-140 **TDD** | AC-140 | UI | App rendered with `fetch` stubbed: requests with `overdue` true and false; overdue list with two requests and two active loans | (a) Borrower My requests and detail; (b) Custodian All requests; (c) Custodian `/overdue` loaded (one request due 3 days ago, one due today at 17:00 read at 18:00 ICT), empty and error; (d) Borrower opens `/overdue` | (a), (b) "Overdue" shown only for the overdue request; detail due line ends "· Overdue". (c) rows with request link, Borrower, asset tags, due date and "3 days overdue"; a request due today read at 18:00 ICT shows "Overdue since 17:00 today"; "No request is overdue."; error with "Try again" that reloads. (d) Forbidden page; no "Overdue" link in the Borrower nav | `client/tests/overdue.test.tsx` |
 | TEST-141 **TDD** | AC-141 | UI | New request form with two lines and loan length 3 | Submit; the stub answers `409 OVERDUE_BLOCK`, then `409 BORROW_LIMIT` | The API message shown as the alert each time; both lines and "3" kept | `client/tests/NewRequestPage.test.tsx` |
 
 ### 8.3 Coverage checks

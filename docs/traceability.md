@@ -4,8 +4,8 @@
 | --- | --- |
 | Version | 1.14 |
 | Date | 2026-11-27 |
-| Source requirements | `docs/srs.md` v1.5 |
-| Features and AC/TEST definitions | `docs/features.md` v1.11 |
+| Source requirements | `docs/srs.md` v1.6 |
+| Features and AC/TEST definitions | `docs/features.md` v1.12 |
 | Feature and SR IDs | Same as `docs/sprints/plan.md` section 3 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 
@@ -141,3 +141,5 @@ None. Notes on three rows:
 | 2026-11-27 | F-11 contract v1.0 (#108): AC-132 to AC-141 and TEST-132 to TEST-141 copied to `features.md` 6.2; FR-22, BR-14 and BR-15 move from Planned to Specified. Sprint 3 AC/TEST blocks claimed: F-10 122 to 131, F-11 132 to 141, F-12 142 to 149, F-13 150 to 157, F-14 158 to 163, SR-03 164 to 171 | Sprint 3 contract before code (D2 3.3) | #108 |
 | 2026-11-27 | F-12 contract v1.0 (#109): AC-142 to AC-149 and TEST-142 to TEST-149 copied to `features.md` 6.3; FR-06 moves from Planned to Specified. SDS v1.14 drops `?page=` (F12-D5) | Sprint 3 contract before code (D2 3.3) | #109 |
 | 2026-11-27 | F-14 contract v1.0 (#111): AC-158 to AC-163 and TEST-158 to TEST-163 copied to `features.md` 6.5; FR-29 moves from Planned to Specified | Sprint 3 contract before code (D2 3.3) | #111 |
+| 2026-11-27 | Review of PR #114: F-11 contract v1.1 (days overdue on the due day, two more D-20 cases in 3.4 and TEST-136, no AC change). Headers of `features.md` and this file name SRS v1.6 and `features.md` v1.12 | Review | #108 |
+| 2026-11-27 | Review of PR #115: F-12 contract v1.1 (TEST-145 with a non-empty combined filter, invalid URL filters F12-D8, narrow layout under SDS 5.3 / SR-04, AC-142 and AC-149 wording); SDS v1.14 row names section 6.1 | Review | #109 |
