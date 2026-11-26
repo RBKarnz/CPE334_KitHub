@@ -231,6 +231,24 @@ describe("TEST-101 (AC-101) (a) to (c): several lines and quantities", () => {
   });
 });
 
+describe("TEST-101 (AC-101) (e): the dialog is locked while the checkout runs (review of PR #93)", () => {
+  it("TEST-101 (e): while checkout is pending, Cancel and Close are disabled and Escape leaves the dialog open", async () => {
+    vi.spyOn(unitsApi, "fetchUnits").mockResolvedValue(units);
+    const slow = deferred<BorrowRequest>();
+    vi.spyOn(checkoutApi, "checkoutRequest").mockReturnValue(slow.promise);
+    const handlers = renderDialog();
+
+    fireEvent.click(await screen.findByRole("checkbox", { name: "KH-ARD-0007" }));
+    fireEvent.click(screen.getByRole("button", { name: ONE }));
+
+    expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Close" })).toBeDisabled();
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+    expect(handlers.onClose).not.toHaveBeenCalled();
+    await act(async () => slow.resolve(checkedOut12));
+  });
+});
+
 describe("Checkout dialog: other responses and keyboard (contract F-03 4.3)", () => {
   it("409 INVALID_STATE shows the message and asks the page to reload the list", async () => {
     vi.spyOn(unitsApi, "fetchUnits").mockResolvedValue(units);
