@@ -60,7 +60,7 @@ export function EditRequestPage() {
           <>
             <PageHeader>Edit Request #{r.id}</PageHeader>
             {r.status !== "PENDING" ? (
-              <div className="kh-panel">
+              <div className="kh-panel kh-panel-body">
                 <p>
                   Request #{r.id} can no longer be edited because it is {r.status}.
                 </p>

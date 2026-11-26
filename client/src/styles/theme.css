@@ -14,6 +14,9 @@
   --kh-accent: #c2255c; /* buttons and selected things; white text on it is 5.66:1 */
   --kh-accent-hover: #a01d4b;
   --kh-link: #a8204f;
+  --kh-danger: #9b1c2c; /* a step that cannot be undone: cancel, reject, retire */
+  --kh-danger-hover: #7c1623;
+  --kh-danger-active: #64111c;
   --kh-cut: 14px; /* clipped corner of panels */
 
   --bs-body-font-family: "Chakra Petch", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -74,6 +77,7 @@ h5,
   outline-offset: -5px;
 }
 /* Outlined buttons keep square corners: a clipped corner would cut their border. */
+.btn-outline-primary,
 .btn-outline-secondary,
 .btn-outline-danger,
 .kh-signout {
@@ -91,6 +95,20 @@ h5,
   --bs-btn-disabled-color: #5a606b;
   --bs-btn-disabled-opacity: 1;
 }
+/* Secondary actions that add or open something (Add line, New item type, Units): accent outline. */
+.btn-outline-primary {
+  --bs-btn-color: var(--kh-link);
+  --bs-btn-border-color: var(--kh-accent);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--kh-accent);
+  --bs-btn-hover-border-color: var(--kh-accent);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--kh-accent-hover);
+  --bs-btn-active-border-color: var(--kh-accent-hover);
+  --bs-btn-disabled-color: #5a606b;
+  --bs-btn-disabled-border-color: #b6bcc6;
+  --bs-btn-disabled-opacity: 1;
+}
 .btn-outline-secondary {
   --bs-btn-color: var(--kh-ink);
   --bs-btn-border-color: #9aa1ad;
@@ -101,10 +119,34 @@ h5,
   --bs-btn-active-border-color: var(--kh-ink);
 }
 .btn-outline-danger {
-  --bs-btn-color: #9b1c2c;
-  --bs-btn-border-color: #9b1c2c;
-  --bs-btn-hover-bg: #9b1c2c;
-  --bs-btn-hover-border-color: #9b1c2c;
+  --bs-btn-color: var(--kh-danger);
+  --bs-btn-border-color: var(--kh-danger);
+  --bs-btn-hover-bg: var(--kh-danger);
+  --bs-btn-hover-border-color: var(--kh-danger);
+}
+/* The confirming button of a step that cannot be undone (cancel, reject, retire). */
+.btn-danger {
+  --bs-btn-bg: var(--kh-danger);
+  --bs-btn-border-color: var(--kh-danger);
+  --bs-btn-hover-bg: var(--kh-danger-hover);
+  --bs-btn-hover-border-color: var(--kh-danger-hover);
+  --bs-btn-active-bg: var(--kh-danger-active);
+  --bs-btn-active-border-color: var(--kh-danger-active);
+  --bs-btn-disabled-bg: #d9dce1;
+  --bs-btn-disabled-border-color: #d9dce1;
+  --bs-btn-disabled-color: #5a606b;
+  --bs-btn-disabled-opacity: 1;
+}
+/* A text action inside a row (Return this unit). */
+.btn-link {
+  --bs-btn-color: var(--kh-link);
+  --bs-btn-hover-color: #7f173b;
+  clip-path: none;
+}
+.btn-primary:disabled,
+.btn-danger:disabled,
+.btn-outline-primary:disabled {
+  cursor: not-allowed;
 }
 
 /* ---------- forms ---------- */
@@ -112,12 +154,14 @@ h5,
 .kh-legend {
   font-weight: 600;
 }
-.form-control {
+.form-control,
+.form-select {
   border-radius: 0;
   border-color: #b6bcc6;
   background-color: #fff;
 }
-.form-control:focus {
+.form-control:focus,
+.form-select:focus {
   border-color: var(--kh-accent);
   box-shadow: 0 0 0 0.25rem rgba(194, 37, 92, 0.25);
 }
@@ -192,6 +236,7 @@ h5,
 }
 .kh-nav-link {
   display: block;
+  white-space: nowrap;
   color: #c9cdd4;
   font-weight: 500;
   padding: 0.4rem 0.8rem;
@@ -265,6 +310,57 @@ h5,
   background: var(--kh-surface);
   clip-path: polygon(0 0, calc(100% - var(--kh-cut)) 0, 100% var(--kh-cut), 100% 100%, 0 100%);
 }
+/* A panel that holds a form or text directly; rows, tables and states bring their own padding.
+   The side padding matches .kh-row and .kh-table cells, so text lines up with the rows below. */
+.kh-panel-body {
+  padding: 1.25rem 1.1rem;
+}
+.kh-panel-body > :last-child {
+  margin-bottom: 0;
+}
+/* A heading block at the top of a panel, above its rows or table (Manage catalog categories). */
+.kh-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid var(--kh-line);
+}
+.kh-panel-head h2 {
+  font-size: 1.15rem;
+  margin: 0 0 0.15rem;
+}
+.kh-panel-head p {
+  margin: 0;
+  color: var(--kh-muted);
+}
+.kh-category-panel {
+  margin-bottom: 1.5rem;
+}
+/* page title with the page's main action on the right (Manage catalog) */
+.kh-title-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 1rem;
+}
+.kh-title-bar .btn {
+  margin: 1.75rem 0 1.25rem;
+}
+/* a short input with its button on one line (Add unit) */
+.kh-input-row {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 28rem;
+}
+.kh-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
 .kh-rows {
   list-style: none;
   margin: 0;
@@ -314,6 +410,40 @@ a.kh-row:focus-visible {
 .kh-tag {
   font-weight: 600;
   letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* limits of an item type, below its description */
+.kh-facts {
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0.75rem 0 0;
+  border-top: 1px solid var(--kh-row-line);
+}
+.kh-facts li {
+  padding: 0.15rem 0;
+}
+
+/* request form: one row per line, separated like .kh-row */
+.kh-line {
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--kh-row-line);
+}
+.kh-line-note {
+  padding-bottom: 0.45rem; /* lines up with the text inside the selects */
+}
+.kh-line:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+.kh-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 1.25rem;
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--kh-line);
 }
 
 /* request lists and detail */
@@ -390,6 +520,22 @@ a.kh-row:focus-visible {
 .kh-table td {
   padding: 0.8rem 1.1rem;
   border-bottom-color: var(--kh-row-line);
+}
+/* Tables that repeat per group (Manage catalog) share column widths so the columns line up.
+   Below 992 px the table sizes its own columns again: fixed widths would squeeze the names. */
+@media (min-width: 992px) {
+  .kh-table-fixed {
+    table-layout: fixed;
+  }
+  .kh-table-fixed .kh-col-value {
+    width: 9rem;
+  }
+  .kh-table-fixed .kh-col-actions {
+    width: 10.5rem;
+  }
+}
+.kh-nowrap {
+  white-space: nowrap;
 }
 .kh-table tbody tr:last-child td {
   border-bottom: 0;
@@ -538,10 +684,9 @@ fieldset:disabled .kh-chip {
   opacity: 0.6;
 }
 
-/* ---------- phone and small tablet width (below 768 px) ----------
-   Bootstrap caps .container at 540 px from 576 to 767 px, which is too narrow for the one-row nav bar
-   and the 6-column Pending requests table (issue #38), so the narrow layout applies up to 768 px. */
-@media (max-width: 767.98px) {
+/* ---------- navigation bar below 992 px: links move to a second row ----------
+   Five Custodian links, the user and Sign out do not fit one row below 992 px (#103). */
+@media (max-width: 991.98px) {
   .kh-nav-inner {
     grid-template-columns: auto 1fr auto;
     grid-template-areas:
@@ -552,7 +697,14 @@ fieldset:disabled .kh-chip {
   }
   .kh-nav-links {
     margin: 0;
+    flex-wrap: wrap;
   }
+}
+
+/* ---------- phone and small tablet width (below 768 px) ----------
+   Bootstrap caps .container at 540 px from 576 to 767 px, which is too narrow for the one-row nav bar
+   and the 6-column Pending requests table (issue #38), so the narrow layout applies up to 768 px. */
+@media (max-width: 767.98px) {
   .kh-nav-user {
     flex-direction: column;
     align-items: flex-end;
@@ -595,6 +747,11 @@ fieldset:disabled .kh-chip {
   .kh-card {
     padding: 1.5rem 1.25rem;
   }
+  .kh-panel-body,
+  .kh-panel-head {
+    padding-left: 0.9rem;
+    padding-right: 0.9rem;
+  }
 
   /* pending requests: each row becomes a card; the column name comes from data-label */
   .kh-table-cards thead {
@@ -632,6 +789,19 @@ fieldset:disabled .kh-chip {
   .kh-table-cards td:last-child .btn {
     width: 100%;
     margin-top: 0.5rem;
+  }
+  .kh-table-cards td.kh-row-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  .kh-table-cards td.kh-row-actions .btn {
+    width: auto;
+    flex: 1;
+    margin: 0 !important;
+  }
+  .kh-title-bar .btn {
+    margin: 0 0 1rem;
   }
 }
 
