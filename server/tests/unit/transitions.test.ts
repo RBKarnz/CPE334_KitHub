@@ -24,6 +24,9 @@ describe("TEST-51: assertTransition", () => {
     ["UNIT", "MAINTENANCE", "AVAILABLE"],
     ["UNIT", "AVAILABLE", "RETIRED"],
     ["UNIT", "MAINTENANCE", "RETIRED"],
+    // F-05 (contract F-05 3.2): a Borrower cancels a PENDING or APPROVED request.
+    ["REQUEST", "PENDING", "CANCELLED"],
+    ["REQUEST", "APPROVED", "CANCELLED"],
   ])("TEST-51 (a): %s %s → %s is allowed", (entity, from, to) => {
     expect(() => assertTransition(entity, from, to)).not.toThrow();
   });
@@ -48,6 +51,9 @@ describe("TEST-51: assertTransition", () => {
     ["UNIT", "ON_LOAN", "RETIRED"],
     ["UNIT", "RETIRED", "AVAILABLE"],
     ["UNIT", "AVAILABLE", "AVAILABLE"],
+    // F-05: only PENDING and APPROVED can be cancelled.
+    ["REQUEST", "CHECKED_OUT", "CANCELLED"],
+    ["REQUEST", "CANCELLED", "CANCELLED"],
   ])("TEST-51 (b): %s %s → %s is rejected as 409 INVALID_STATE", (entity, from, to) => {
     let thrown: unknown;
     try {
