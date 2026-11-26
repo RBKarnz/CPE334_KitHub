@@ -4,7 +4,7 @@
 // create their requests APPROVED; their rule assertions are unchanged.
 import { RequestStatus } from "@prisma/client";
 import request from "supertest";
-import { readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createTestApp, prisma } from "../helpers/app.js";
 import { signIn } from "../helpers/auth.js";
@@ -471,8 +471,13 @@ describe("TEST-59 (AC-59): loans from before #71 keep their due date", () => {
     expect(res.status).toBe(201);
     const stored = await prisma.loan.findUniqueOrThrow({ where: { id: l0.id } });
     expect(stored.dueAt.toISOString()).toBe("2026-11-20T07:30:00.000Z");
-    // The migrations on staging 5508f49, before #71: the change adds none.
-    const migrations = readdirSync(new URL("../../prisma/migrations/", import.meta.url)).filter((f) => f !== "migration_lock.toml");
-    expect(migrations.sort()).toEqual(["20261106075705_sprint1_init", "20261125104833_sprint2_columns"]);
+    // The migrations on staging 5508f49, before #71: the change adds none. Later features may add
+    // their own (F-09 adds catalog_names_ci, F09-D11), so this checks that the two are still the
+    // first and that no later migration touches a loan's dueAt.
+    const dir = new URL("../../prisma/migrations/", import.meta.url);
+    const migrations = readdirSync(dir).filter((f) => f !== "migration_lock.toml").sort();
+    expect(migrations.slice(0, 2)).toEqual(["20261106075705_sprint1_init", "20261125104833_sprint2_columns"]);
+    for (const later of migrations.slice(2))
+      expect(readFileSync(new URL(`${later}/migration.sql`, dir), "utf8"), later).not.toMatch(/dueAt|due_at/i);
   });
 });

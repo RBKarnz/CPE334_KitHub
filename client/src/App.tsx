@@ -6,6 +6,8 @@ import { NavBar } from "./components/NavBar";
 import { CatalogPage } from "./pages/CatalogPage";
 import { LoansPage } from "./pages/loans/LoansPage";
 import { LoginPage } from "./pages/LoginPage";
+import { ManageCatalogPage } from "./pages/manage/ManageCatalogPage";
+import { ManageUnitsPage } from "./pages/manage/ManageUnitsPage";
 import { MyRequestsPage } from "./pages/MyRequestsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { PendingRequestsPage } from "./pages/pending/PendingRequestsPage";
@@ -53,6 +55,23 @@ function AppRoutes() {
           element={
             <RequireRole role="CUSTODIAN">
               <PendingRequestsPage />
+            </RequireRole>
+          }
+        />
+        {/* Catalog management, Custodian only (contract F-09 4.2, 4.4). */}
+        <Route
+          path="/manage"
+          element={
+            <RequireRole role="CUSTODIAN">
+              <ManageCatalogPage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/manage/item-types/:id"
+          element={
+            <RequireRole role="CUSTODIAN">
+              <ManageUnitsPage />
             </RequireRole>
           }
         />

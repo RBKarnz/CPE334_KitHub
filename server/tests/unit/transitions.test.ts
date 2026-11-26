@@ -19,6 +19,11 @@ describe("TEST-51: assertTransition", () => {
     ["UNIT", "ON_LOAN", "AVAILABLE"],
     ["UNIT", "ON_LOAN", "MAINTENANCE"],
     ["REQUEST", "CHECKED_OUT", "RETURNED"],
+    // F-09 (contract F-09 3.2): add, repair and retire a unit.
+    ["UNIT", null, "AVAILABLE"],
+    ["UNIT", "MAINTENANCE", "AVAILABLE"],
+    ["UNIT", "AVAILABLE", "RETIRED"],
+    ["UNIT", "MAINTENANCE", "RETIRED"],
   ])("TEST-51 (a): %s %s → %s is allowed", (entity, from, to) => {
     expect(() => assertTransition(entity, from, to)).not.toThrow();
   });
@@ -39,6 +44,10 @@ describe("TEST-51: assertTransition", () => {
     // F-08: only an ACTIVE loan and a CHECKED_OUT request can be returned.
     ["LOAN", "RETURNED", "RETURNED"],
     ["REQUEST", "APPROVED", "RETURNED"],
+    // F-09: a unit on loan cannot be retired (BR-12), RETIRED is final, repair needs MAINTENANCE.
+    ["UNIT", "ON_LOAN", "RETIRED"],
+    ["UNIT", "RETIRED", "AVAILABLE"],
+    ["UNIT", "AVAILABLE", "AVAILABLE"],
   ])("TEST-51 (b): %s %s → %s is rejected as 409 INVALID_STATE", (entity, from, to) => {
     let thrown: unknown;
     try {

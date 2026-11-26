@@ -76,7 +76,7 @@ test("TEST-30: Borrower requests, Custodian checks out, Borrower sees Checked ou
   await evidence(page, testInfo, "TEST-30 5 checkout success");
 
   // The catalog count drops by one (AC-26), and a Custodian has no Request button.
-  await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Catalog" }).click();
+  await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Catalog", exact: true }).click();
   await expect(page).toHaveURL(/\/catalog$/);
   await expect(arduinoRow).toContainText("4 available");
   await expect(page.getByRole("button", { name: /^Request / })).toHaveCount(0);

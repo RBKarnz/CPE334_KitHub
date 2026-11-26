@@ -6,8 +6,8 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part C |
-| Version | 1.11 |
-| Date | 2026-11-25 |
+| Version | 1.12 |
+| Date | 2026-11-26 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Baseline | [SRS v1.5](srs.md) |
 | Related | [Three-sprint plan](sprints/plan.md), feature contracts in `docs/sprints/sprint-N/` |
@@ -28,6 +28,7 @@
 | 1.9 | 2026-11-25 | Teerakarn Noiruksa | Change request #71 (Lab 7), baseline SRS v1.4: the due-date rule in 4.5 and the `loans.dueAt` note in 4.2 follow D-21 (17:00 ICT on a business day, 16:00 cutoff); new read-only endpoint `GET /api/item-types/:id/due-date-preview` for Custodians (5.1 Pending requests row, 6.6 endpoint list, 7.1 permission matrix). No table, column or migration change |
 | 1.10 | 2026-11-25 | Teerakarn Noiruksa | #73: Sprint 2 columns of 4.2 and CHECKs of 4.3 are now in migration `20261125104833_sprint2_columns`; 4.8 and 9.1 describe `SEED_DEMO_REQUESTS` and the Sprint 2 demo requests. No behaviour change for Sprint 1 |
 | 1.11 | 2026-11-25 | Teerakarn Noiruksa | Review of PR #87: 6.2 adds the Sprint 2 create example with several lines and `loanDays` (F-04 5.2). Baseline SRS v1.5. No behaviour change |
+| 1.12 | 2026-11-26 | Methipat Mansap | F-09 (#79, F09-D11): 4.3 adds the unique indexes on `lower(name)` for `categories` and `item_types` (migration `20261126110000_catalog_names_ci`), so names are unique without regard to case. No other behaviour change |
 
 ## 2. Introduction
 
@@ -371,6 +372,7 @@ Prisma's schema language cannot express partial indexes, CHECK constraints or tr
 | --- | --- | --- | --- |
 | `units.assetTag` unique | A-07 | Prisma `@unique` | 1 |
 | `users.username`, `categories.name`, `item_types.name` unique | Lookup by name; no duplicates in the catalog | Prisma `@unique` | 1 |
+| `categories` and `item_types` names unique without regard to case | F09-D2: "Robotics" and "robotics" are one name, also when created at the same moment | Raw SQL: `CREATE UNIQUE INDEX categories_lower_name_key ON categories (lower(name))` and `item_types_lower_name_key` on `item_types`, migration `20261126110000_catalog_names_ci`; the F-09 services map a `P2002` on them to `409 NAME_TAKEN` | 2 |
 | `request_lines (requestId, itemTypeId)` unique | One line per item type in a request | Prisma `@@unique` | 1 |
 | Quantities, limits and loan lengths ≥ 1 | BR-07, BR-08, D-08 | Raw SQL CHECK | 1, 2 |
 | One `ACTIVE` loan per unit | BR-03, NFR-05 | Raw SQL: `CREATE UNIQUE INDEX loans_one_active_per_unit ON loans ("unitId") WHERE status = 'ACTIVE'` | 1 |

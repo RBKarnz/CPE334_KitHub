@@ -173,7 +173,7 @@ test("MT-20 to MT-30: Sprint 2 walkthrough on the demo seed", async ({ page, db 
     await expect(notice(page)).toHaveText("Request #1 returned: 2 good, 1 damaged (KH-ARD-0002 sent to maintenance).");
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Returned");
     await evidence(page, testInfo, "MT-28 return all");
-    await nav(page).getByRole("link", { name: "Catalog" }).click();
+    await nav(page).getByRole("link", { name: "Catalog", exact: true }).click();
     await expect(page.getByRole("listitem").filter({ hasText: "Arduino Uno R3" })).toContainText("4 available");
     await expect(page.getByRole("listitem").filter({ hasText: "HC-SR04 ultrasonic sensor" })).toContainText("6 available");
   });

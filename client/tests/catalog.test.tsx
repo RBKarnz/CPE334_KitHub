@@ -14,6 +14,9 @@ const catalog: CatalogCategory[] = [
     id: 1,
     name: "Instruments",
     description: null,
+    // F-09 (F09-D9): GET /api/categories also returns the category default limits.
+    defaultMaxLoanDays: 3,
+    defaultMaxQuantity: 1,
     itemTypes: [
       { id: 10, name: "Oscilloscope", description: "", isKit: false, maxLoanDays: 3, maxQuantityPerRequest: 1, availableCount: 0 },
     ],
@@ -22,6 +25,8 @@ const catalog: CatalogCategory[] = [
     id: 2,
     name: "Microcontroller boards",
     description: null,
+    defaultMaxLoanDays: 14,
+    defaultMaxQuantity: 2,
     itemTypes: [
       { id: 3, name: "Arduino Uno R3", description: "", isKit: false, maxLoanDays: 14, maxQuantityPerRequest: 2, availableCount: 2 },
     ],
