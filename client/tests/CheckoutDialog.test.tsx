@@ -4,7 +4,7 @@
 // F-07 (F07-D8): the dialog now checks out an APPROVED request and picks units with checkboxes, one
 // unit per quantity on each line; the confirm label counts the units ("Check out 1 unit for
 // Request #12", was "Check out KH-ARD-0007 for Request #12"). The rules each case checks are unchanged.
-import { act, fireEvent, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as checkoutApi from "../src/api/checkout";
 import { ApiError } from "../src/api/client";
@@ -43,7 +43,12 @@ beforeEach(() => {
   fetchApprovedRequests.mockReset();
 });
 
-afterEach(() => vi.restoreAllMocks());
+// Unmount first, then restore: a page still mounted must never call a mock that was just reset
+// (the setup file's cleanup runs after this hook).
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 function renderDialog(request: BorrowRequest = approved12) {
   const handlers = { onClose: vi.fn(), onCheckedOut: vi.fn(), onStale: vi.fn() };
