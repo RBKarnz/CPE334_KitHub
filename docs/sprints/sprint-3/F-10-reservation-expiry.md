@@ -6,11 +6,11 @@
 | --- | --- |
 | Feature | F-10 Reservation and expiry of approved requests |
 | Sprint | 3 (due 2026-12-13); implementation planned 30 Nov to 6 Dec (`plan.md` 6.3) |
-| Version | 1.0 |
+| Version | 1.1 |
 | Status | Proposed (PR for #107); implementation starts only after this contract is reviewed and merged |
 | Date | 2026-11-27 |
 | Authors | Teerakarn Noiruksa (67070501062); reviewer Methipat Mansap (67070501071) |
-| Baseline | SRS v1.6 (D-22, D-23), System-Level SDS v1.14 (4.5, 4.7), F-04 v1.0, F-05 v1.0, F-06 v1.1, F-07 v1.0, F-11 v1.2, F-12 v1.1, F-14 v1.1 |
+| Baseline | SRS v1.7 (D-22, D-23), System-Level SDS v1.15 (4.5, 4.7; both changed in this PR), F-04 v1.0, F-05 v1.0, F-06 v1.1, F-07 v1.0, F-11 v1.2, F-12 v1.1, F-14 v1.1 |
 | Issues | #107 this feature; #106 (Q-07, Q-09 settled as D-22, D-23); #76 F-06 (approval starts the window), #77 F-07 (checkout ends it) |
 | Definition of Done | [Product Definition of Done](../sprint-1/definition-of-done.md) and section 9 of this contract |
 | AC/TEST block | 122 to 131 (claimed in #107) |
@@ -20,6 +20,7 @@
 | Version | Date | Author | Change |
 | --- | --- | --- | --- |
 | 1.0 | 2026-11-27 | Teerakarn Noiruksa | First contract: AC-122 to AC-131, TEST-122 to TEST-131, decisions F10-D1 to F10-D9 |
+| 1.1 | 2026-11-27 | Teerakarn Noiruksa | Review of PR #119: expiry locks the ended requests with `SELECT … ORDER BY id FOR UPDATE` before the update, because an `UPDATE … ANY($ids)` locks in plan order, not array order (3.5, 3.8); the available count is one SQL statement, so a checkout committing in between cannot be missed (3.6, 3.8, F10-D10); 3.3 lists `GET /api/history` (F13-D5); baseline SRS v1.7, SDS v1.15. No AC changed |
 
 Changes after approval get a new version row with the reason. AC and TEST IDs are never reused for a different meaning.
 
@@ -35,7 +36,7 @@ Changes after approval get a new version row with the reason. AC and TEST IDs ar
 | Business rules (kept) | BR-04, BR-09, BR-10, BR-14 | An `EXPIRED` request is not open, so it no longer blocks BR-04 and no longer counts for BR-14 (D-20) |
 | Non-functional | NFR-05, NFR-09 | Two approvals cannot reserve the same last unit; a request is expired once, with one entry |
 | SRS decisions | D-15, D-20, D-22, D-23 | D-15 moves reservations to Sprint 3; D-22 sets the window; D-23 applies expiry on use |
-| SDS | 4.5 "Available units" and "Expiry of approved requests", 4.7 "Reservations", 6.5 `REQUEST_EXPIRED`, 6.6 "Expiry of approved requests", DD-04, DD-08, DD-13 | Used as written, except the item type lock on request creation (F10-D6, SDS v1.15) |
+| SDS | 4.5 "Available units" and "Expiry of approved requests", 4.7 "Reservations", 6.5 `REQUEST_EXPIRED`, 6.6 "Expiry of approved requests", DD-04, DD-08, DD-13 | Used as written in SDS v1.15, which this PR brings in line with 3.5, F10-D6 and F10-D10 |
 
 ### 2.2 Depends on
 
@@ -87,6 +88,7 @@ Changes after approval get a new version row with the reason. AC and TEST IDs ar
 | `POST /api/requests/:id/approve`, `/reject` | Approval reserves; both need `PENDING` | First statement of the transaction |
 | `POST /api/requests/:id/cancel` | Needs `PENDING` or `APPROVED` | After the Borrower row lock |
 | `POST /api/requests/:id/checkout` | Needs `APPROVED` (BR-13) | First statement of the transaction |
+| `GET /api/history` (F-13) | Shows request states and their history | In one transaction with the read (F13-D5) |
 | Not applied: `GET /api/loans`, returns, unit and catalog management, `GET /api/reports/inventory`, auth | They read or change loans, units or the catalog only, never an `APPROVED` request | - |
 
 A rejected action rolls back its transaction, and the expiry in it too. That is harmless: the next call expires the same requests again with the same `occurredAt` (the window end), so the stored result is the same (F10-D7).
@@ -111,13 +113,19 @@ The function works on ICT calendar dates (UTC+7, no daylight saving), so it does
 ### 3.5 Expiry statement (SDS 4.5)
 
 ```sql
+SELECT id FROM borrow_requests
+WHERE id = ANY($ids) AND status = 'APPROVED'
+ORDER BY id
+FOR UPDATE;
+
 UPDATE borrow_requests
 SET status = 'EXPIRED', "updatedAt" = $now
 WHERE id = ANY($ids) AND status = 'APPROVED'
-RETURNING id
+RETURNING id;
 ```
 
-- `$ids` are the ended requests, sorted ascending, so two transactions that expire overlapping sets lock the rows in the same order.
+- `$ids` are the ended requests found by the read of 3.1 step 3. The `SELECT … ORDER BY id FOR UPDATE` locks them in ascending ID first, so two transactions that expire overlapping sets take the locks in the same order. The `UPDATE` alone would lock rows in the order its plan visits them (a sequential scan visits heap order, which is not ID order once rows have been updated), so the order would not be guaranteed.
+- A row that another transaction expired meanwhile is returned by neither statement (READ COMMITTED re-checks `status = 'APPROVED'` after the lock), so it gets no second entry.
 - `"updatedAt"` is set in the statement because Prisma's `@updatedAt` is filled only for calls through the client, not for raw SQL, and there is no trigger.
 - For each returned ID, one history entry: `entityType = REQUEST`, `action = STATUS_CHANGED`, `fromStatus = APPROVED`, `toStatus = EXPIRED`, `actorType = SYSTEM`, `actorUserId = null`, `requestId`, `occurredAt` = that request's window end (set explicitly, not the database default), `details = null`.
 - When `$ids` is empty, no statement runs.
@@ -128,7 +136,7 @@ RETURNING id
 | --- | --- | --- | --- | --- | --- |
 | D-22 window | "Pick up by …" (4.2) | - | Adds `pickupBy` to the view | `pickupWindowEnd(decidedAt)`, `isPickupWindowEnded(decidedAt, now)` | - |
 | FR-15, BR-13 expiry | "Expired" badge (exists) and "Not picked up by …" | - | `expireEndedRequests(tx, now)` in every call of 3.3 | The same two functions | Conditional update (3.5); index `(status, createdAt)` serves the read of `APPROVED` requests |
-| BR-01 reserved units | The counts the API returns | - | One query: `AVAILABLE` units per item type minus `APPROVED` line quantities, used by the catalog, create, edit and approve | `availableAfterReservations(available, reserved)` = `max(0, available − reserved)` | - |
+| BR-01 reserved units | The counts the API returns | - | One SQL statement (one snapshot, F10-D10): `AVAILABLE` units per item type minus `APPROVED` line quantities, used by the catalog, create, edit and approve | `availableAfterReservations(available, reserved)` = `max(0, available − reserved)` | - |
 | BR-13 checkout of an expired request | The API message in the checkout dialog | - | In checkout, after expiry: status `EXPIRED` → `409 REQUEST_EXPIRED` | - | - |
 | BR-01 on approval | The API message in the approve dialog | - | Lock item types, then compare each line with the available count | `requestRuleViolation` lines check reused | `SELECT ... FROM item_types WHERE id = ANY($ids) ORDER BY id FOR UPDATE` |
 
@@ -140,9 +148,10 @@ RETURNING id
 
 ### 3.8 Concurrency (SDS 4.7)
 
-- **Lock order.** Every transaction takes its locks in this order: the Borrower's `users` row (create, edit, cancel) → the ended `APPROVED` requests in ascending ID (expiry) → the request acted on → item types in ascending ID (approval) → units in ascending ID (checkout). The same order everywhere prevents deadlocks. The request acted on can be one of the expired ones (checkout of an ended request); then it is already locked by the expiry.
+- **Lock order.** Every transaction takes its locks in this order: the Borrower's `users` row (create, edit, cancel) → the ended `APPROVED` requests in ascending ID (the expiry's `SELECT … ORDER BY id FOR UPDATE`, 3.5) → the request acted on → item types in ascending ID (approval) → units in ascending ID (checkout). The same order everywhere prevents deadlocks. The request acted on can be one of the expired ones (checkout of an ended request); then it is already locked by the expiry.
 - **Expired once (AC-129).** Two calls that find the same ended request run the same conditional update. Under READ COMMITTED the second waits for the first's row lock, then re-checks `status = 'APPROVED'`, gets no row and writes no entry.
 - **Two approvals of the last units (AC-130).** Both lock the item type rows, so the second computes the count after the first commits and sees its reservation.
+- **The available count is one statement (F10-D10).** Checkout does not take the item type lock, so a checkout of another request R′ can commit while an approval runs. If the count were two statements under READ COMMITTED (`AVAILABLE` units, then `APPROVED` quantities), the first could still count R′'s units as `AVAILABLE` and the second no longer see R′ as `APPROVED`, so R′'s units would look free and the approval could over-reserve. One statement reads one snapshot, which sees R′ either before its checkout (units `AVAILABLE` and reserved) or after it (units `ON_LOAN`, not reserved); both give the same free count. The same holds for create and edit, as for F-11's held count (PR #117).
 - **Create does not lock item types (F10-D6).** A create reserves nothing; BR-01 at create is a check at that moment (SRS), and approval is the step that must not over-reserve.
 - **Checkout and reservations.** A checkout gives each line exactly its quantity (F-07) from `AVAILABLE` units, and its own request's reservation ends at the same moment, so the available count of other requests does not change. Approval never reserves more than `AVAILABLE` units (5.), so the units of every `APPROVED` request are there at checkout, unless a Custodian moved a unit out of `AVAILABLE` meanwhile (F10-D2).
 
@@ -159,6 +168,7 @@ RETURNING id
 | F10-D7 | Expiry runs inside the transaction of the call, as D-23 says, and is rolled back with a rejected action; the next call writes the same result | Keeps one transaction per call; `occurredAt` is the window end, not the time of the check, so a later expiry gives the same history |
 | F10-D8 | 48 hours is a constant in the domain module, not a setting | BR-13 fixes the number (as F11-D6) |
 | F10-D9 | Expiry reads every `APPROVED` request, not only the caller's | The available counts of every Borrower depend on every reservation; the number of `APPROVED` requests at a time is small (a few per Custodian per day) |
+| F10-D10 | The available count with reservations is computed in one SQL statement (subqueries for `AVAILABLE` units and `APPROVED` quantities per item type), with a code comment saying why, so it is never split into two Prisma calls | Two statements see two snapshots and can miss a checkout that commits between them (3.8) |
 
 ## 4. UI specification
 

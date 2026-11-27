@@ -431,7 +431,7 @@ F-08 runs (raw output in `docs/sprints/sprint-2/evidence/F-08/`): RED `73a54a3` 
 
 Copied from the Sprint 3 engineering contracts when each is merged into `staging`, before any of its code. AC-n is verified by TEST-n (section 1). Blocks claimed in the Sprint 3 Issues: F-10 122 to 131 (#107), F-11 132 to 141 (#108), F-12 142 to 149 (#109), F-13 150 to 157 (#110), F-14 158 to 163 (#111), SR-03 164 to 171 (#112). Every status is **Planned** until the feature's implementation PR records its RED and GREEN runs and the tested commit here. A contract revised after this copy wins; its revision row names the change.
 
-### 6.1 F-10 Reservation and expiry of approved requests (contract `docs/sprints/sprint-3/F-10-reservation-expiry.md` v1.0, #107)
+### 6.1 F-10 Reservation and expiry of approved requests (contract `docs/sprints/sprint-3/F-10-reservation-expiry.md` v1.1, #107)
 
 | AC | Expected outcome | Requirements | Tests | Status |
 | --- | --- | --- | --- | --- |
@@ -498,14 +498,14 @@ Copied from the Sprint 3 engineering contracts when each is merged into `staging
 | AC-162 | A Borrower gets `403 FORBIDDEN`, a call without a session `401 UNAUTHENTICATED`, any query field `400 VALIDATION_FAILED`; nothing is written by any call | NFR-01, NFR-02, NFR-08, F14-D5 | TEST-162 | **Implemented**: failed on `bdeffcd`, pass on `e111146` |
 | AC-163 | The Reports page shows the table with the totals row and "Generated …", reloads with **Refresh**, has loading, empty and error states, and is reachable only by a Custodian (a Borrower sees the Forbidden page and no Reports link) | FR-29, NFR-12 | TEST-163 | **Implemented**: failed on `bdeffcd`, pass on `e111146` |
 
-### 6.6 SR-03 Hardening (contract `docs/sprints/sprint-3/SR-03-hardening.md` v1.0, #112)
+### 6.6 SR-03 Hardening (contract `docs/sprints/sprint-3/SR-03-hardening.md` v1.1, #112)
 
 TEST-164 and TEST-165 are measurements recorded as evidence files, and TEST-171 is the release checklist (contract 8.1).
 
 | AC | Expected outcome | Requirements | Tests | Status |
 | --- | --- | --- | --- | --- |
 | AC-164 | With the performance data set (3.2) and the release's Docker image, every endpoint of 3.4 answers `200` with a 95th percentile of 30 calls at most 2,000 ms; the table and JSON are recorded with the image digest and the commit | NFR-11, D-24 | TEST-164 | Planned |
-| AC-165 | On the deployed service, the same endpoints, called read-only, answer `200` with a 95th percentile at most 2,000 ms; the result is recorded with the Cloud Run revision; nothing in the deployed database changes except the measurement's own sessions | NFR-11, D-24, SR03-D3 | TEST-165 | Planned |
+| AC-165 | On the deployed service, the same endpoints, called with `GET` only, answer `200` with a 95th percentile at most 2,000 ms; the result is recorded with the Cloud Run revision; nothing in the deployed database changes except the measurement's own sessions and the D-23 expiry of requests whose window has ended (`APPROVED` → `EXPIRED`, one System entry each) | NFR-11, D-24, SR03-D3 | TEST-165 | Planned |
 | AC-166 | Every protected API route, without a session, answers `401 UNAUTHENTICATED` and no record data; the guard test fails if a registered route is missing from the route list | NFR-01, SR03-D4 | TEST-166 | Planned |
 | AC-167 | Every route restricted to one role answers `403 FORBIDDEN` to the other role, and nothing changes in the database | NFR-02, BR-17 | TEST-167 | Planned |
 | AC-168 | Every route that returns or acts on a Borrower-owned record answers `404 NOT_FOUND` to another Borrower (detail, edit, cancel), or leaves the record out of the list (requests, loans, overdue, history), with none of its fields | NFR-02, BR-05, DD-06 | TEST-168 | Planned |

@@ -6,7 +6,7 @@
 | --- | --- |
 | System responsibility | SR-03 Hardening: performance measurement, permission and error regression suite, UAT and maintenance defects |
 | Sprint | 3 (due 2026-12-13); planned 7 to 12 Dec, after F-10 to F-14 (`plan.md` 6.3) |
-| Version | 1.0 |
+| Version | 1.1 |
 | Status | Proposed (PR for #112); implementation starts only after this contract is reviewed and merged |
 | Date | 2026-11-27 |
 | Authors | Teerakarn Noiruksa (67070501062); reviewer Methipat Mansap (67070501071) |
@@ -20,6 +20,7 @@
 | Version | Date | Author | Change |
 | --- | --- | --- | --- |
 | 1.0 | 2026-11-27 | Teerakarn Noiruksa | First contract: Q-03 settled as D-24; AC-164 to AC-171, TEST-164 to TEST-171, decisions SR03-D1 to SR03-D8 |
+| 1.1 | 2026-11-27 | Teerakarn Noiruksa | Review of PR #119: once F-10 is in, the measured `GET` calls apply D-23 expiry, so the deployed measurement means "no write except D-23 expiry" (3.3, SR03-D3, AC-165, TEST-165) |
 
 Changes after approval get a new version row with the reason. AC and TEST IDs are never reused for a different meaning.
 
@@ -64,7 +65,7 @@ Q-03 asked whether the team can measure NFR-11 with 500 units on the deployed se
 | B. Remove NFR-11 | No work | Loses the only performance requirement; F-12 and F-14 add list queries that should be checked |
 | **C. (chosen)** Measure the release image with 500 units, and the deployed service with its own data | Same image and code as production; repeatable; the deployed check still covers Cloud Run and Cloud SQL latency | The 500-unit part runs on a developer machine, not Cloud Run |
 
-**D-24 (SRS v1.7):** NFR-11 is kept and measured on the release candidate in two parts. (1) The release's Docker image, started with `docker compose` against a PostgreSQL database loaded with the performance data set (3.2): each measured endpoint answers within 2 seconds at the 95th percentile of 30 calls. (2) The deployed service with its own data: the same endpoints, read-only, same target. The 500 units are never loaded into the deployed database.
+**D-24 (SRS v1.7):** NFR-11 is kept and measured on the release candidate in two parts. (1) The release's Docker image, started with `docker compose` against a PostgreSQL database loaded with the performance data set (3.2): each measured endpoint answers within 2 seconds at the 95th percentile of 30 calls. (2) The deployed service with its own data: the same endpoints, `GET` calls only (no write except D-23 expiry, SR03-D3), same target. The 500 units are never loaded into the deployed database.
 
 ### 3.2 Performance data set (`server/scripts/perf-seed.ts`)
 
@@ -84,7 +85,7 @@ The script refuses to run unless the database name in `DATABASE_URL` ends with `
 - Signs in once per role through `POST /api/auth/login` with `PERF_USERNAME_*` and `PERF_PASSWORD` from the environment, then for each endpoint of 3.4: 5 warm-up calls, then 30 timed calls one after another, each from request start to the end of the body.
 - Reports per endpoint: status, body size, min, median, 95th percentile (the 29th of the 30 sorted times, nearest rank) and max in milliseconds, as a Markdown table and as JSON in `docs/sprints/sprint-3/evidence/SR-03/`.
 - Exits with code 1 if any call is not `200` or any 95th percentile is above 2,000 ms.
-- Sends only `GET` requests after the sign-in, so it can run against the deployed service without changing data (SR03-D3).
+- Sends only `GET` requests after the sign-in, so it writes no data of its own on the deployed service. The one write it can cause is D-23 expiry: from F-10 on, reads of requests and availability expire `APPROVED` requests whose window has ended, with one System entry each, as any user's read would (SR03-D3).
 
 ### 3.4 Endpoints measured
 
@@ -121,7 +122,7 @@ The script refuses to run unless the database name in `DATABASE_URL` ends with `
 | --- | --- | --- |
 | SR03-D1 | Q-03 is settled as D-24 (option C of 3.1); the SRS NFR-11 row, Q-03 and the decision log change in this PR (SRS v1.7) | Keeps a measurable NFR-11 without permanent test data in the deployed catalog |
 | SR03-D2 | The performance seed runs only on a database whose name ends with `_perf` | The same guard idea as the test database (`_test`, SDS 9.1): it can never run against development or production data |
-| SR03-D3 | The deployed measurement is read-only and is started by a student with their own credentials in the shell; nothing is stored in the repository | NFR-07; no password is typed by a tool or written to a file |
+| SR03-D3 | The deployed measurement sends only `GET` requests ("read-only" here means no write except D-23 expiry, which any read triggers) and is started by a student with their own credentials in the shell; nothing is stored in the repository | NFR-07; no password is typed by a tool or written to a file |
 | SR03-D4 | The regression suite lists routes by hand and a guard compares the list with the app's registered routes | A hand-written list states the expected access per route; the guard makes it complete |
 | SR03-D5 | Error shape: every error body is exactly `{ error: { code, message, details?, requestId } }`, `requestId` equals the `X-Request-Id` header, and no body contains `stack`, `prisma`, `SELECT` or a file path | NFR-08 and SDS 6.5, checked the same way for every status |
 | SR03-D6 | UAT cases are run by the student who did not build the feature | Same independence as the Lab 6 partner test, inside the team |
@@ -145,7 +146,7 @@ No schema change. The performance data set lives only in a local `_perf` databas
 | AC | Expected outcome | Requirements |
 | --- | --- | --- |
 | AC-164 | With the performance data set (3.2) and the release's Docker image, every endpoint of 3.4 answers `200` with a 95th percentile of 30 calls at most 2,000 ms; the table and JSON are recorded with the image digest and the commit | NFR-11, D-24 |
-| AC-165 | On the deployed service, the same endpoints, called read-only, answer `200` with a 95th percentile at most 2,000 ms; the result is recorded with the Cloud Run revision; nothing in the deployed database changes except the measurement's own sessions | NFR-11, D-24, SR03-D3 |
+| AC-165 | On the deployed service, the same endpoints, called with `GET` only, answer `200` with a 95th percentile at most 2,000 ms; the result is recorded with the Cloud Run revision; nothing in the deployed database changes except the measurement's own sessions and the D-23 expiry of requests whose window has ended (`APPROVED` → `EXPIRED`, one System entry each) | NFR-11, D-24, SR03-D3 |
 | AC-166 | Every protected API route, without a session, answers `401 UNAUTHENTICATED` and no record data; the guard test fails if a registered route is missing from the route list | NFR-01, SR03-D4 |
 | AC-167 | Every route restricted to one role answers `403 FORBIDDEN` to the other role, and nothing changes in the database | NFR-02, BR-17 |
 | AC-168 | Every route that returns or acts on a Borrower-owned record answers `404 NOT_FOUND` to another Borrower (detail, edit, cancel), or leaves the record out of the list (requests, loans, overdue, history), with none of its fields | NFR-02, BR-05, DD-06 |
@@ -166,7 +167,7 @@ No schema change. The performance data set lives only in a local `_perf` databas
 | Test | AC | Level | Preconditions and input | Action | Expected result | Planned file |
 | --- | --- | --- | --- | --- | --- | --- |
 | TEST-164 | AC-164 | Measurement | `docker compose` with the release image and a `kithub_perf` database; `perf-seed.ts` run once | `perf-measure.ts` against `http://localhost:<port>` | Every row `200`, p95 ≤ 2,000 ms; Markdown and JSON in `docs/sprints/sprint-3/evidence/SR-03/` with image digest and commit | `server/scripts/perf-seed.ts`, `server/scripts/perf-measure.ts` |
-| TEST-165 | AC-165 | Measurement | The deployed release revision; credentials of one account per role typed by a student into their shell | `perf-measure.ts` against the service URL | Every row `200`, p95 ≤ 2,000 ms; the revision recorded; a count of requests, loans, units and history entries before and after is equal | `server/scripts/perf-measure.ts` |
+| TEST-165 | AC-165 | Measurement | The deployed release revision; credentials of one account per role typed by a student into their shell | `perf-measure.ts` against the service URL | Every row `200`, p95 ≤ 2,000 ms; the revision recorded; counts of requests per state, loans, units and history entries before and after are equal, except requests moved `APPROVED` → `EXPIRED` during the run and their one System entry each, which are listed | `server/scripts/perf-measure.ts` |
 | TEST-166 | AC-166 | API | One record of each kind (request, loan, unit, item type, category, Borrower) | For every row of `routes.ts` except public ones, call without a cookie; then the guard test | Each `401 UNAUTHENTICATED`, body has only `error`; the guard finds no registered route missing from the list | `server/tests/api/regression/access.test.ts` |
 | TEST-167 | AC-167 | API | As TEST-166; snapshot of every table before and after | Every Custodian-only route as a Borrower; every Borrower-only route (create, edit, cancel) as a Custodian | Each `403 FORBIDDEN`; snapshot unchanged | `server/tests/api/regression/access.test.ts` |
 | TEST-168 | AC-168 | API | B1's request, loan and history; B2 signed in | B2 calls `GET /api/requests/:id`, `PATCH` and `cancel` on B1's request; B2 lists requests, loans, `?overdue=true` and history | `404 NOT_FOUND` with no field of B1's request; B1's records absent from every list; nothing changed | `server/tests/api/regression/access.test.ts` |
