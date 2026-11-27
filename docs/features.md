@@ -458,3 +458,14 @@ Copied from the Sprint 3 engineering contracts when each is merged into `staging
 | AC-147 | Each returned item has exactly the F04-D6 fields, with no unit IDs or asset tags | FR-06, F12-D7 | TEST-147 | Planned |
 | AC-148 | On the Catalog page, typing a name, choosing a category or ticking "Available only" shows only the matching item types grouped by category, keeps the filters in the URL across a reload, and a Borrower can still request a filtered item type | FR-06, F12-D6 | TEST-148 | Planned |
 | AC-149 | The page shows "Loading…", the error with "Try again", and "No item types match these filters." with **Clear filters**, which resets every control and the URL; the three controls have labels and stack below 768 px; invalid filter values in the URL are handled as F12-D8 | FR-06, NFR-12, SR-04 | TEST-149 | Planned |
+
+### 6.5 F-14 Inventory summary report (contract `docs/sprints/sprint-3/F-14-inventory-report.md` v1.1, #111)
+
+| AC | Expected outcome | Requirements | Tests | Status |
+| --- | --- | --- | --- | --- |
+| AC-158 | For each item type, `available`, `onLoan`, `maintenance` and `retired` equal the counts of its units in those states and `totalUnits` is their sum; an item type with no unit is listed with zeros; rows are ordered by category name and item type name | FR-29, F14-D2 | TEST-158 | Planned |
+| AC-159 | `activeLoans` counts the item type's `ACTIVE` loans; `overdueRequests` counts the distinct overdue requests (F11-D1) with an overdue `ACTIVE` loan of that item type, so a loan due later or exactly now is not counted | FR-29, FR-22, F11-D1 | TEST-159 | Planned |
+| AC-160 | The totals row sums every column, except that `overdueRequests` counts each overdue request once; `generatedAt` is the server time of the report | FR-29, F14-D1, F14-D3 | TEST-160 | Planned |
+| AC-161 | After a checkout, an early return marked damaged, a repair and a retire, the report changes exactly as the unit states and loans change | FR-29, BR-11, BR-12 | TEST-161 | Planned |
+| AC-162 | A Borrower gets `403 FORBIDDEN`, a call without a session `401 UNAUTHENTICATED`, any query field `400 VALIDATION_FAILED`; nothing is written by any call | NFR-01, NFR-02, NFR-08, F14-D5 | TEST-162 | Planned |
+| AC-163 | The Reports page shows the table with the totals row and "Generated …", reloads with **Refresh**, has loading, empty and error states, and is reachable only by a Custodian (a Borrower sees the Forbidden page and no Reports link) | FR-29, NFR-12 | TEST-163 | Planned |

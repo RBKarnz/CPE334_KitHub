@@ -54,7 +54,7 @@ Sprint 1 rows link to planned AC and tests from `docs/features.md`. Sprint 2 and
 | FR-26 | Retire a unit | F-09 | 2 | AC-118, AC-121 | TEST-118, TEST-121 | Implemented (F-09: RED `567c530`, GREEN `4aec247`); Verified after the Sprint 2 release |
 | FR-27 | History per unit | F-13 | 3 | Contract F-13 | - | Planned |
 | FR-28 | History per Borrower | F-13 | 3 | Contract F-13 | - | Planned |
-| FR-29 | Inventory summary report | F-14 | 3 | Contract F-14 | - | Planned |
+| FR-29 | Inventory summary report | F-14 | 3 | AC-158 to AC-163 | TEST-158 to TEST-163 | Specified (contract #111); tests Planned |
 | FR-30 | Custodian lists and filters all requests by state | F-06 | 2 | AC-80 to AC-81, AC-88 | TEST-80 to TEST-81, TEST-88 | Implemented (F-06: RED `cb800c9`, GREEN `be5e11c`); Verified after the Sprint 2 release |
 
 ## 3. Business rules
@@ -140,5 +140,7 @@ None. Notes on three rows:
 | 2026-11-26 | Review of #100: after the merge of #99's per-AC BR status, the F-05 AC in BR-01, BR-04 to BR-08, BR-16 and BR-17 are Implemented (RED `711750f`, GREEN `7bc8b5e`); BR-06, BR-07 and BR-08 are then fully Implemented. No AC or test cell says "Sprint 2 (planned):" any more | Status per AC | #75 |
 | 2026-11-27 | F-11 contract v1.0 (#108): AC-132 to AC-141 and TEST-132 to TEST-141 copied to `features.md` 6.2; FR-22, BR-14 and BR-15 move from Planned to Specified. Sprint 3 AC/TEST blocks claimed: F-10 122 to 131, F-11 132 to 141, F-12 142 to 149, F-13 150 to 157, F-14 158 to 163, SR-03 164 to 171 | Sprint 3 contract before code (D2 3.3) | #108 |
 | 2026-11-27 | F-12 contract v1.0 (#109): AC-142 to AC-149 and TEST-142 to TEST-149 copied to `features.md` 6.3; FR-06 moves from Planned to Specified. SDS v1.14 drops `?page=` (F12-D5) | Sprint 3 contract before code (D2 3.3) | #109 |
+| 2026-11-27 | F-14 contract v1.0 (#111): AC-158 to AC-163 and TEST-158 to TEST-163 copied to `features.md` 6.5; FR-29 moves from Planned to Specified | Sprint 3 contract before code (D2 3.3) | #111 |
 | 2026-11-27 | Review of PR #114: F-11 contract v1.1 (days overdue on the due day, two more D-20 cases in 3.4 and TEST-136, no AC change). Headers of `features.md` and this file name SRS v1.6 and `features.md` v1.12 | Review | #108 |
 | 2026-11-27 | Review of PR #115: F-12 contract v1.1 (TEST-145 with a non-empty combined filter, invalid URL filters F12-D8, narrow layout under SDS 5.3 / SR-04, AC-142 and AC-149 wording); SDS v1.14 row names section 6.1 | Review | #109 |
+| 2026-11-27 | Review of PR #116: F-14 contract v1.1 (TEST-159 data with exact times, TEST-161 expected rows, narrow layout under SDS 5.3 / SR-04, visible "Available (unit state)" header, F14-D6 no expiry); no AC changed | Review | #111 |
