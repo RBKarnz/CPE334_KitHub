@@ -24,14 +24,14 @@
 | 1.6 | 2026-11-25 | Teerakarn Noiruksa | Change request #71 (Lab 7, review of PR #72): the Sprint 1 due-date row in section 4 follows SRS v1.4 D-21 (17:00 ICT on a business day, 16:00 cutoff). No feature, requirement or sprint moves |
 | 1.7 | 2026-11-27 | Methipat Mansap | Issue #106: Q-07 and Q-09 are settled as D-22 and D-23 (two days after the 25 Nov target in 6.3), so the F-10 contract is no longer blocked and no GCP component is added. Sprint 3 Issues: #107 F-10, #108 F-11, #109 F-12, #110 F-13, #111 F-14, #112 SR-03. Review of PR #113: the header baseline, stale since v1.6, now names SRS v1.6 and SDS v1.13 |
 | 1.8 | 2026-11-27 | Teerakarn Noiruksa | Issue #112: Q-03 settled as D-24, so the NFR-11 row of section 7 names the release-image and deployed measurements. Baseline SRS v1.7, SDS v1.15. No feature, sprint or order changed |
-| 1.9 | 2026-11-27 | Methipat Mansap | Review of release PR #120: `v0.3.0-rc1` is the Deliverable 2 candidate (section 2, 6.5). F-14 was built early and ships in it. 6.3 records what is done by 29 Nov and the remaining work to 13 Dec with an owner and a target date for each. No feature, requirement or sprint scope changed |
+| 1.9 | 2026-11-27 | Methipat Mansap | Review of release PR #120: `v0.3.0-rc1` is the Deliverable 2 candidate (section 2, 6.5; the Sprint 2 row says D2 is shown on it). Review of PR #121: F-10 targets 3 Dec, before F-13; SR-03 UAT runs both ways. F-14 was built early and ships in it. 6.3 records what is done by 29 Nov and the remaining work to 13 Dec with an owner and a target date for each. No feature, requirement or sprint scope changed |
 
 ## 2. Overview
 
 | Sprint | Dates | Checkpoint | Goal | Features | Release |
 | --- | --- | --- | --- | --- | --- |
 | 1 | 2026-11-03 to 2026-11-08 | Deliverable 1, 8 Nov | A small working borrowing slice with authentication, server-side permissions and persistence | F-01, F-02, F-03, SR-04 | `v0.1.0` |
-| 2 | 2026-11-09 to 2026-11-29 | Deliverable 2, 29 Nov | The complete borrowing cycle (request, approve, check out, return) and catalog management, under contracts | F-04 to F-09 | `v0.2.0` |
+| 2 | 2026-11-09 to 2026-11-29 | Deliverable 2, 29 Nov | The complete borrowing cycle (request, approve, check out, return) and catalog management, under contracts | F-04 to F-09 | `v0.2.0` (Deliverable 2 is shown on `v0.3.0-rc1`, which contains `v0.2.0`) |
 | 3 | 2026-11-23 to 2026-12-13 (contracts and F-11 overlap the last week of Sprint 2) | Progress at 29 Nov; final product 13 Dec | Remaining features, integration and hardening | F-10 to F-14, SR-03 | `v0.3.0-rc1` (Deliverable 2 candidate, 29 Nov: Sprint 3 contracts, F-11, F-14); `v1.0.0` (13 Dec) |
 
 Course events that use the same weeks (from the group work specification):
@@ -241,10 +241,10 @@ Status on 27 Nov (release PR #120, `v0.3.0-rc1`):
 | Item | What is left | Owner | Target date | Depends on |
 | --- | --- | --- | --- | --- |
 | F-11 AC-140 | Overdue marker on request lists and detail; Custodian `/overdue` page (TEST-140) | Methipat Mansap | 6 Dec | F-11 API (done) |
-| F-10 | Reservations and expiry, AC-122 to AC-131 | Teerakarn Noiruksa | 6 Dec | F-10 contract (done) |
+| F-10 | Reservations and expiry, AC-122 to AC-131 | Teerakarn Noiruksa | 3 Dec (before F-13, which needs it) | F-10 contract (done) |
 | F-13 | History per unit and per Borrower, AC-150 to AC-157 | Teerakarn Noiruksa | 6 Dec | F-10 for the expiry entries (F13-D5) |
 | F-12 | Search and filter, AC-142 to AC-149 | Teerakarn Noiruksa | 10 Dec | F-10 for the available count (F-10 2.2) |
-| SR-03 | Measurement, regression suites, Sprint 3 E2E and UAT, release checklist, AC-164 to AC-171 | Teerakarn Noiruksa (UAT of his features by Methipat Mansap, SR03-D6) | 12 Dec | F-10 to F-14 on `staging` |
+| SR-03 | Measurement, regression suites, Sprint 3 E2E and UAT, release checklist, AC-164 to AC-171 | Teerakarn Noiruksa; UAT of F-10, F-12, F-13 by Methipat Mansap, of F-11, F-14 by Teerakarn Noiruksa (SR03-D6) | 12 Dec | F-10 to F-14 on `staging` |
 | `v1.0.0` | Release PR, deploy, post-deploy checks, tag; final report and video | Both | 13 Dec | Every row above |
 
 F-11 goes first because it is a real business rule, depends only on Sprint 2 features, and its one decision is already made (D-20). F-10 is the largest Sprint 3 change (it alters availability for every request), so it waits until its two questions are settled and Sprint 2 is stable.
