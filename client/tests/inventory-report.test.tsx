@@ -48,7 +48,7 @@ describe("TEST-163 (AC-163): Reports page", () => {
     open(custodian, { status: 200, body: report });
 
     expect(await screen.findByRole("heading", { name: "Inventory report" })).toBeInTheDocument();
-    expect(screen.getByText("Generated 27 Nov 2026, 14:05")).toBeInTheDocument();
+    expect(await screen.findByText("Generated 27 Nov 2026, 14:05")).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Available (unit state)" })).toBeInTheDocument();
     const arduino = screen.getByText("Arduino Uno R3").closest("tr")!;
     expect(cells(arduino)).toEqual(["Boards", "Arduino Uno R3", "2", "1", "1", "1", "5", "1", "1"]);
