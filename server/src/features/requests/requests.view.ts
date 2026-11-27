@@ -1,6 +1,7 @@
 // The request representation shared by every endpoint that returns a request (contract F-02
 // 4.5). Fields are selected explicitly, so no raw column or password hash can leak (SDS 6.3).
 import { Role, type Prisma } from "@prisma/client";
+import { isOverdue } from "../../domain/request-rules.js";
 
 const userSummary = { select: { id: true, username: true, displayName: true } } as const;
 
@@ -45,7 +46,7 @@ export type RequestRow = Prisma.BorrowRequestGetPayload<{ select: typeof request
  * Shapes a request for the caller. A Borrower does not see which Custodian checked a loan out
  * (F03-D7) or decided the request (F06-D4); both roles see the decision time and the reason.
  */
-export function toRequestView(row: RequestRow, viewerRole: Role) {
+export function toRequestView(row: RequestRow, viewerRole: Role, now: Date = new Date()) {
   const lines = row.lines.map((line) => ({
     id: line.id,
     itemType: line.itemType,
@@ -65,6 +66,8 @@ export function toRequestView(row: RequestRow, viewerRole: Role) {
     ...(viewerRole === Role.CUSTODIAN ? { decidedBy: row.decidedBy } : {}),
     rejectionReason: row.rejectionReason,
     dueAt,
+    // F-11 (FR-22): derived on read, never stored (F11-D1, DD-08).
+    overdue: isOverdue(row, now),
     borrower: row.borrower,
     lines,
   };

@@ -22,6 +22,8 @@ const LINKS: Record<Role, { to: string; label: string }[]> = {
     { to: "/catalog", label: "Catalog" },
     // F-09 (contract F-09 4.1): categories, item types and units.
     { to: "/manage", label: "Manage catalog" },
+    // F-14 (contract F-14 4.2): the inventory report.
+    { to: "/reports/inventory", label: "Reports" },
   ],
 };
 

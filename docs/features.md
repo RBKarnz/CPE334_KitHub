@@ -2,9 +2,9 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.11 |
-| Date | 2026-11-25 |
-| Source requirements | `docs/srs.md` v1.5 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
+| Version | 1.15 |
+| Date | 2026-11-27 |
+| Source requirements | `docs/srs.md` v1.7 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
 | Traceability | `docs/traceability.md` |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 
@@ -426,3 +426,89 @@ F-08 runs (raw output in `docs/sprints/sprint-2/evidence/F-08/`): RED `73a54a3` 
 | AC-119 | A retire racing a checkout of the same unit, two adds of the same asset tag, and two creates of the same category name, also in another letter case, each end with exactly one success and one `409`, with history only for the success | BR-12, NFR-05, A-07 | TEST-119 | **Implemented**: failed on `567c530`, pass on `4aec247` |
 | AC-120 | Each of the seven catalog management endpoints answers a Borrower with `403 FORBIDDEN` and a call without a session with `401 UNAUTHENTICATED`, with only the `error` object, and nothing changes | NFR-01, NFR-02 | TEST-120 | **Implemented**: failed on `567c530`, pass on `4aec247` |
 | AC-121 | The Manage catalog page lists categories with their defaults and item types with their limits and available counts, with loading, empty and error states; the forms create and edit categories and item types and show `NAME_TAKEN` under the name; the units page lists units with their state, adds a unit, offers Mark repaired only on `MAINTENANCE` and Retire only on `AVAILABLE` and `MAINTENANCE` with a confirmation; a Borrower sees the Forbidden page at `/manage` | FR-23 to FR-26, NFR-12 | TEST-121 | **Implemented**: failed on `567c530`, pass on `4aec247` |
+
+## 6. Sprint 3 acceptance criteria and planned tests
+
+Copied from the Sprint 3 engineering contracts when each is merged into `staging`, before any of its code. AC-n is verified by TEST-n (section 1). Blocks claimed in the Sprint 3 Issues: F-10 122 to 131 (#107), F-11 132 to 141 (#108), F-12 142 to 149 (#109), F-13 150 to 157 (#110), F-14 158 to 163 (#111), SR-03 164 to 171 (#112). Every status is **Planned** until the feature's implementation PR records its RED and GREEN runs and the tested commit here. A contract revised after this copy wins; its revision row names the change.
+
+### 6.1 F-10 Reservation and expiry of approved requests (contract `docs/sprints/sprint-3/F-10-reservation-expiry.md` v1.1, #107)
+
+| AC | Expected outcome | Requirements | Tests | Status |
+| --- | --- | --- | --- | --- |
+| AC-122 | `pickupWindowEnd` gives the window end of every row of 3.4 (48 hours on Monday to Friday ICT, weekends skipped, a weekend approval counted from Monday 00:00) | FR-15, D-22 | TEST-122 | Planned |
+| AC-123 | An `APPROVED` request read 1 ms before its window end is `APPROVED` with `pickupBy` = the window end; read at the window end it is `EXPIRED`, for its Borrower and for a Custodian, in the list and the detail. Exactly one history entry is written: `STATUS_CHANGED` `APPROVED` → `EXPIRED`, System actor, `occurredAt` = the window end; a second read writes none | FR-15, BR-13, BR-16, NFR-09, D-23, F10-D3 | TEST-123 | Planned |
+| AC-124 | `availableCount` in `GET /api/categories` and `GET /api/item-types/:id` is the `AVAILABLE` units minus the quantities of `APPROVED` requests, never below 0; a `PENDING` request reserves nothing; checkout, cancel and expiry each release the reservation | BR-01, BR-13, D-15, F10-D2 | TEST-124 | Planned |
+| AC-125 | A create or edit that needs more units than the unreserved count is rejected with `409 ITEM_TYPE_UNAVAILABLE` and nothing is stored; once the reserving request has expired, the same create succeeds. An expired request no longer blocks the same item type (BR-04) and no longer counts toward the 5-unit limit (BR-14) | BR-01, BR-04, BR-14, D-20, D-23 | TEST-125 | Planned |
+| AC-126 | Approving a request whose line needs more units than are available after the other `APPROVED` requests' reservations is rejected with `409 ITEM_TYPE_UNAVAILABLE` naming the first short line, with one `details` entry per short line; the request stays `PENDING` and nothing is written | BR-01, BR-13, F10-D5 | TEST-126 | Planned |
+| AC-127 | Checkout of a request whose window has ended is rejected with `409 REQUEST_EXPIRED`; no loan is created and no unit changes; the request then reads as `EXPIRED` with one System entry. Checkout 1 ms before the window end succeeds | BR-13, FR-17, F10-D4 | TEST-127 | Planned |
+| AC-128 | After the window end, cancel and reject of the request give `409 INVALID_STATE` naming `EXPIRED`, and nothing else changes | BR-10, SRS 8.2 | TEST-128 | Planned |
+| AC-129 | Two simultaneous reads of an ended `APPROVED` request leave it `EXPIRED` with exactly one history entry | NFR-05, NFR-09, D-23 | TEST-129 | Planned |
+| AC-130 | Two simultaneous approvals of two requests that each fit the unreserved units but not together give one `200` and one `409 ITEM_TYPE_UNAVAILABLE`; the reserved quantity never exceeds the `AVAILABLE` units | BR-01, BR-13, NFR-05, F10-D6 | TEST-130 | Planned |
+| AC-131 | The UI shows "Pick up by …" for `APPROVED` requests and "Not picked up by …" with the Expired badge for `EXPIRED` ones on My requests, request detail and All requests; the Custodian history shows the System entry; `REQUEST_EXPIRED` in the checkout dialog and `ITEM_TYPE_UNAVAILABLE` in the approve dialog are shown as the dialog's alert | FR-15, BR-13, NFR-12 | TEST-131 | Planned |
+
+### 6.2 F-11 Overdue status and borrowing limits (contract `docs/sprints/sprint-3/F-11-overdue-limits.md` v1.2, #108)
+
+| AC | Expected outcome | Requirements | Tests | Status |
+| --- | --- | --- | --- | --- |
+| AC-132 | A request is reported `overdue: true` exactly when it is `CHECKED_OUT` and has an `ACTIVE` loan with `dueAt` before now; at `dueAt` exactly, after every unit is returned, and for every other state it is `false`. Both roles see the same value for the requests they may read | FR-22, F11-D1, F11-D2 | TEST-132 | **Implemented**: failed on `a5419ab`, pass on `4763dcc` |
+| AC-133 | `GET /api/requests?overdue=true` returns every overdue request for a Custodian and only the caller's own for a Borrower, earliest due first; a request that is not overdue is never listed; `overdue=false`, `overdue=yes` and `overdue=true&status=CHECKED_OUT` give `400`; no session gives `401` | FR-22, BR-05, NFR-01, F11-D7, F11-D8 | TEST-133 | **Implemented**: failed on `a5419ab`, pass on `4763dcc` |
+| AC-134 | A Borrower with an overdue request cannot create a request: `409 OVERDUE_BLOCK` naming the oldest overdue request, and nothing is stored. After every unit of it is returned (early returns or return all), the same create succeeds. A loan that is due later, or due now exactly, does not block | BR-15, D-14, F11-D3, F11-D4 | TEST-134 | **Implemented**: failed on `a5419ab`, pass on `4763dcc` |
+| AC-135 | The overdue block also applies to editing the Borrower's own `PENDING` request; nothing changes | BR-15, BR-10 | TEST-135 | **Implemented**: failed on `a5419ab`, pass on `4763dcc` |
+| AC-136 | A create is rejected with `409 BORROW_LIMIT` when the Borrower's `ACTIVE` loans plus the line quantities of their `PENDING` and `APPROVED` requests plus the new quantities exceed 5; a total of exactly 5 is allowed; `CANCELLED`, `REJECTED` and `RETURNED` requests and `RETURNED` loans do not count; a kit counts as one unit | BR-14, D-20, F11-D5 | TEST-136 | **Implemented**: failed on `a5419ab`, pass on `4763dcc` |
+| AC-137 | On edit the edited request's own current lines are not counted, so an edit that keeps the total at or below 5 succeeds and one that goes above it is rejected with `409 BORROW_LIMIT`; nothing changes on rejection | BR-14, BR-10 | TEST-137 | **Implemented**: failed on `a5419ab`, pass on `4763dcc` |
+| AC-138 | The checks run in the order of 3.5: an unknown item type gives `404` before BR-15; an overdue Borrower over the limit gets `OVERDUE_BLOCK`; a Borrower with a duplicate open request and over the limit gets `DUPLICATE_OPEN_REQUEST`; a request over the limit with too few available units gets `BORROW_LIMIT` | BR-14, BR-15, F04-D3 | TEST-138 | **Implemented**: failed on `a5419ab`, pass on `4763dcc` |
+| AC-139 | Two simultaneous creates by one Borrower that are each within the limit but exceed it together produce exactly one request; the other is rejected with `BORROW_LIMIT` | BR-14, NFR-05, DD-05 | TEST-139 | **Implemented**: failed on `a5419ab`, pass on `4763dcc` |
+| AC-140 | The UI marks overdue requests "Overdue" on My requests, request detail and All requests, and the Custodian Overdue page lists them with the units not returned, the due date and the days overdue, with loading, empty and error states; a Borrower opening `/overdue` sees the Forbidden page and has no Overdue link | FR-22, NFR-12 | TEST-140 | Planned |
+| AC-141 | In the request form, `OVERDUE_BLOCK` and `BORROW_LIMIT` are shown as an alert with the API message and the entered lines and loan length are kept | BR-14, BR-15 | TEST-141 | **Implemented**: passes on `a5419ab` before the change and on `4763dcc` (the form already shows any 409 message; no client change) |
+
+### 6.3 F-12 Search and filter the catalog (contract `docs/sprints/sprint-3/F-12-search-filter.md` v1.1, #109)
+
+| AC | Expected outcome | Requirements | Tests | Status |
+| --- | --- | --- | --- | --- |
+| AC-142 | `search` returns exactly the item types whose name contains the trimmed text ignoring case; `%` and `_` are matched literally | FR-06, F12-D1 | TEST-142 | Planned |
+| AC-143 | `categoryId` returns only that category's item types; an unknown category gives `404 NOT_FOUND` | FR-06, F12-D2 | TEST-143 | Planned |
+| AC-144 | `available=true` returns only item types with at least one available unit, with the same `availableCount` as `GET /api/categories`; an item type whose units are all `ON_LOAN`, `MAINTENANCE` or `RETIRED` is left out | FR-06, BR-01, F12-D3 | TEST-144 | Planned |
+| AC-145 | Filters combine with AND; no match gives `200` with an empty `items`; with no filter every item type is returned; the order is category name, item type name, `id` | FR-06, F12-D4 | TEST-145 | Planned |
+| AC-146 | A blank or over-100-character `search`, a non-numeric or zero `categoryId`, `available` other than `true`, or an unknown query field gives `400 VALIDATION_FAILED` naming the field; no session gives `401`; both roles get the same `200` result | FR-06, NFR-01, NFR-08 | TEST-146 | Planned |
+| AC-147 | Each returned item has exactly the F04-D6 fields, with no unit IDs or asset tags | FR-06, F12-D7 | TEST-147 | Planned |
+| AC-148 | On the Catalog page, typing a name, choosing a category or ticking "Available only" shows only the matching item types grouped by category, keeps the filters in the URL across a reload, and a Borrower can still request a filtered item type | FR-06, F12-D6 | TEST-148 | Planned |
+| AC-149 | The page shows "Loading…", the error with "Try again", and "No item types match these filters." with **Clear filters**, which resets every control and the URL; the three controls have labels and stack below 768 px; invalid filter values in the URL are handled as F12-D8 | FR-06, NFR-12, SR-04 | TEST-149 | Planned |
+
+### 6.4 F-13 History per unit and per Borrower (contract `docs/sprints/sprint-3/F-13-history-views.md` v1.0, #110)
+
+| AC | Expected outcome | Requirements | Tests | Status |
+| --- | --- | --- | --- | --- |
+| AC-150 | A Custodian's `GET /api/units/:id/history` returns the unit with its item type and state, every loan of the unit with its request, Borrower and Custodians, and every history entry that names the unit (its creation, each state change and each entry of its loans), newest first, with actor and time; no entry or loan of another unit | FR-27, BR-16, F13-D1, F13-D8 | TEST-150 | Planned |
+| AC-151 | Unit history: a Borrower gets `403 FORBIDDEN`, no session `401`, an unknown unit `404`, `id` `abc` and any query field `400`; no call writes anything | NFR-01, NFR-02, NFR-08 | TEST-151 | Planned |
+| AC-152 | A Borrower's `GET /api/history` returns exactly the `REQUEST` and `LOAN` entries of their own requests, newest first; never a `UNIT` entry and never an entry of another Borrower's request. Their own actions carry their user, Custodian actions `actor: null` with `actorRole: "CUSTODIAN"`, and System entries `actorType: "SYSTEM"` | FR-28, BR-05, NFR-02, F13-D2 | TEST-152 | Planned |
+| AC-153 | A Custodian's `GET /api/history?borrowerId=B` returns the same entries as B sees, with every actor's user; without `borrowerId` it is `400` naming `borrowerId`; a `borrowerId` of an unknown user or of a Custodian is `404` | FR-28, F13-D3 | TEST-153 | Planned |
+| AC-154 | A Borrower who sends `borrowerId` (another Borrower's or their own) gets `400 VALIDATION_FAILED` naming `borrowerId` and no data; no session gets `401`; no call writes anything | BR-05, NFR-01, NFR-02, F13-D3 | TEST-154 | Planned |
+| AC-155 | After one full flow through the real endpoints (unit added, request created, edited, approved, checked out, returned damaged, unit repaired), the unit history and the Borrower history hold exactly the entries of 8.2 TEST-155, in that order | FR-27, FR-28, BR-16, NFR-09 | TEST-155 | Planned |
+| AC-156 | The Borrower History page shows the table of 4.2 with the sentences of 4.4 and "You", "A Custodian" or "System", links each request, and has loading, empty and error states; both roles have a **History** link | FR-28, NFR-12 | TEST-156 | Planned |
+| AC-157 | The Custodian unit history page shows the header, the Loans table and the History table of 4.3; the Borrower history page for `?borrowerId=` shows the Borrower's name; `/history` without it shows the F13-D7 message; a Borrower opening `/units/:id/history` sees the Forbidden page | FR-27, FR-28, NFR-02, NFR-12 | TEST-157 | Planned |
+
+### 6.5 F-14 Inventory summary report (contract `docs/sprints/sprint-3/F-14-inventory-report.md` v1.1, #111)
+
+| AC | Expected outcome | Requirements | Tests | Status |
+| --- | --- | --- | --- | --- |
+| AC-158 | For each item type, `available`, `onLoan`, `maintenance` and `retired` equal the counts of its units in those states and `totalUnits` is their sum; an item type with no unit is listed with zeros; rows are ordered by category name and item type name | FR-29, F14-D2 | TEST-158 | **Implemented**: failed on `bdeffcd`, pass on `e111146` |
+| AC-159 | `activeLoans` counts the item type's `ACTIVE` loans; `overdueRequests` counts the distinct overdue requests (F11-D1) with an overdue `ACTIVE` loan of that item type, so a loan due later or exactly now is not counted | FR-29, FR-22, F11-D1 | TEST-159 | **Implemented**: failed on `bdeffcd`, pass on `e111146` |
+| AC-160 | The totals row sums every column, except that `overdueRequests` counts each overdue request once; `generatedAt` is the server time of the report | FR-29, F14-D1, F14-D3 | TEST-160 | **Implemented**: failed on `bdeffcd`, pass on `e111146` |
+| AC-161 | After a checkout, an early return marked damaged, a repair and a retire, the report changes exactly as the unit states and loans change | FR-29, BR-11, BR-12 | TEST-161 | **Implemented**: failed on `bdeffcd`, pass on `e111146` |
+| AC-162 | A Borrower gets `403 FORBIDDEN`, a call without a session `401 UNAUTHENTICATED`, any query field `400 VALIDATION_FAILED`; nothing is written by any call | NFR-01, NFR-02, NFR-08, F14-D5 | TEST-162 | **Implemented**: failed on `bdeffcd`, pass on `e111146` |
+| AC-163 | The Reports page shows the table with the totals row and "Generated …", reloads with **Refresh**, has loading, empty and error states, and is reachable only by a Custodian (a Borrower sees the Forbidden page and no Reports link) | FR-29, NFR-12 | TEST-163 | **Implemented**: failed on `bdeffcd`, pass on `e111146` |
+
+### 6.6 SR-03 Hardening (contract `docs/sprints/sprint-3/SR-03-hardening.md` v1.1, #112)
+
+TEST-164 and TEST-165 are measurements recorded as evidence files, and TEST-171 is the release checklist (contract 8.1).
+
+| AC | Expected outcome | Requirements | Tests | Status |
+| --- | --- | --- | --- | --- |
+| AC-164 | With the performance data set (3.2) and the release's Docker image, every endpoint of 3.4 answers `200` with a 95th percentile of 30 calls at most 2,000 ms; the table and JSON are recorded with the image digest and the commit | NFR-11, D-24 | TEST-164 | Planned |
+| AC-165 | On the deployed service, the same endpoints, called with `GET` only, answer `200` with a 95th percentile at most 2,000 ms; the result is recorded with the Cloud Run revision; nothing in the deployed database changes except the measurement's own sessions and the D-23 expiry of requests whose window has ended (`APPROVED` → `EXPIRED`, one System entry each) | NFR-11, D-24, SR03-D3 | TEST-165 | Planned |
+| AC-166 | Every protected API route, without a session, answers `401 UNAUTHENTICATED` and no record data; the guard test fails if a registered route is missing from the route list | NFR-01, SR03-D4 | TEST-166 | Planned |
+| AC-167 | Every route restricted to one role answers `403 FORBIDDEN` to the other role, and nothing changes in the database | NFR-02, BR-17 | TEST-167 | Planned |
+| AC-168 | Every route that returns or acts on a Borrower-owned record answers `404 NOT_FOUND` to another Borrower (detail, edit, cancel), or leaves the record out of the list (requests, loans, overdue, history), with none of its fields | NFR-02, BR-05, DD-06 | TEST-168 | Planned |
+| AC-169 | Every error status the API produces (`400`, `401`, `403`, `404`, `409`, `415`, `500`, and `404` for an unknown `/api` path) has the SR03-D5 shape, the `requestId` of the `X-Request-Id` header, and no internal detail | NFR-08 | TEST-169 | Planned |
+| AC-170 | In a real browser on the built app: a Borrower searches the catalog and sends a request; a Custodian approves it and sees "Pick up by …", checks it out, opens Overdue (a prepared overdue request is listed), the inventory report and the unit history; the Borrower opens History and sees the steps. The Sprint 3 pages have no page-level horizontal scroll at 320, 768 and 1440 px | FR-06, FR-15, FR-22, FR-27 to FR-29, SDS 5.3 | TEST-170 | Planned |
+| AC-171 | On the final release candidate: the Sprint 3 UAT cases are run (3.7), every High and Medium finding is fixed with a regression test, the whole server, client and E2E suites pass, CI is green, and the post-deploy check (health, ready, sign in as each role, one request from creation to return) passes on the deployed revision; all recorded in the release checklist | NFR-01 to NFR-12 (regression), SR03-D6 to SR03-D8 | TEST-171 | Planned |

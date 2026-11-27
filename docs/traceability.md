@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.13 |
-| Date | 2026-11-25 |
-| Source requirements | `docs/srs.md` v1.5 |
-| Features and AC/TEST definitions | `docs/features.md` v1.11 |
+| Version | 1.17 |
+| Date | 2026-11-27 |
+| Source requirements | `docs/srs.md` v1.7 |
+| Features and AC/TEST definitions | `docs/features.md` v1.15 |
 | Feature and SR IDs | Same as `docs/sprints/plan.md` section 3 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 
@@ -31,7 +31,7 @@ Sprint 1 rows link to planned AC and tests from `docs/features.md`. Sprint 2 and
 | FR-03 | Show current user and role | F-01 | 1 | AC-01 | TEST-01 | Verified (`7828473`) |
 | FR-04 | Browse categories and item types with availability | F-02 | 1 | AC-08 | TEST-08 | Verified (`dd36f2e`) |
 | FR-05 | Item type details | F-04 | 2 | AC-62 to AC-63 | TEST-62 to TEST-63 | Implemented (F-04: RED `f67788e`, GREEN `7ba81fb`); Verified after the Sprint 2 release |
-| FR-06 | Search and filter item types | F-12 | 3 | Contract F-12 | - | Planned |
+| FR-06 | Search and filter item types | F-12 | 3 | AC-142 to AC-149 | TEST-142 to TEST-149 | Specified (contract #109); tests Planned |
 | FR-07 | Borrower requests one unit of one item type | F-02 | 1 | AC-09, AC-34, AC-35, AC-40 | TEST-09, TEST-30, TEST-34, TEST-35, TEST-40 | Verified (TEST-09, TEST-34, TEST-35, TEST-40 on `dd36f2e`, TEST-30 on `16fdb7f`) |
 | FR-08 | Borrower lists and opens own requests | F-02 | 1 | AC-13, AC-26, AC-39 | TEST-13, TEST-26, TEST-30, TEST-39 | Verified (TEST-13, TEST-39 on `dd36f2e`, TEST-26 on `1891aa0`, TEST-30 on `16fdb7f`) |
 | FR-09 | Custodian lists pending requests | F-03 | 1 | AC-18 | TEST-18 | Verified (`1891aa0`) |
@@ -40,21 +40,21 @@ Sprint 1 rows link to planned AC and tests from `docs/features.md`. Sprint 2 and
 | FR-12 | Borrower cancels a pending or approved request | F-05 | 2 | AC-75 to AC-76, AC-79 | TEST-75 to TEST-76, TEST-79 | Implemented (F-05: RED `711750f`, GREEN `7bc8b5e`); Verified after the Sprint 2 release |
 | FR-13 | Custodian approves a whole request | F-06 | 2 | AC-82, AC-84 to AC-86, AC-89 | TEST-82, TEST-84 to TEST-86, TEST-89 | Implemented (F-06: RED `cb800c9`, GREEN `be5e11c`); Verified after the Sprint 2 release |
 | FR-14 | Custodian rejects a request with a reason | F-06 | 2 | AC-83 to AC-86, AC-89 | TEST-83 to TEST-86, TEST-89 | Implemented (F-06: RED `cb800c9`, GREEN `be5e11c`); Verified after the Sprint 2 release |
-| FR-15 | Approved request expires after 48 hours | F-10 | 3 | Contract F-10 | - | Planned |
+| FR-15 | Approved request expires after 48 hours | F-10 | 3 | AC-122, AC-123, AC-131 | TEST-122, TEST-123, TEST-131 | Specified (contract #107); tests Planned |
 | FR-16 | Sprint 1 checkout of a pending request; rejected if no unit is available (D-17); due date by D-21 since #71 | F-03 | 1 | AC-19, AC-20, AC-26, AC-42 to AC-49, AC-54 to AC-60 | TEST-19, TEST-20, TEST-26, TEST-30, TEST-42 to TEST-51, TEST-54 to TEST-60 | Verified for the v1.2 rule (TEST-19, TEST-20, TEST-26, TEST-42 to TEST-51 on `1891aa0`, TEST-30 on `16fdb7f`); change #71: AC-54 to AC-60 and the revised TEST-19, TEST-49, TEST-50 Verified (RED `e08dbb2`, GREEN `b1898d5`, PR #88; post-deploy checks on `kithub-00010-slp`, `main` `6ada56d`, PR #89) |
 | FR-17 | Checkout of an approved request, one unit per quantity | F-07 | 2 | AC-90 to AC-94, AC-101 | TEST-90 to TEST-94, TEST-101 | Implemented (F-07: RED `29d8600`, GREEN `e7387f9`); Verified after the Sprint 2 release |
 | FR-18 | Borrower sees own active loans | F-07 | 2 | AC-98, AC-101 | TEST-98, TEST-101 | Implemented (F-07: RED `29d8600`, GREEN `e7387f9`); Verified after the Sprint 2 release |
 | FR-19 | Custodian sees all active loans | F-07 | 2 | AC-99, AC-101 | TEST-99, TEST-101 | Implemented (F-07: RED `29d8600`, GREEN `e7387f9`); Verified after the Sprint 2 release |
 | FR-20 | Return all units with condition per unit | F-08 | 2 | AC-102 to AC-104, AC-106 to AC-107 | TEST-102 to TEST-104, TEST-106 to TEST-107 | Implemented (F-08: RED `73a54a3`, GREEN `a31432f`); Verified after the Sprint 2 release |
 | FR-21 | Early return of a single unit | F-08 | 2 | AC-103, AC-105, AC-107 | TEST-103, TEST-105, TEST-107 | Implemented (F-08: RED `73a54a3`, GREEN `a31432f`); Verified after the Sprint 2 release |
-| FR-22 | Overdue status and overdue list | F-11 | 3 | Contract F-11 | - | Planned |
+| FR-22 | Overdue status and overdue list | F-11 | 3 | AC-132, AC-133, AC-140 | TEST-132, TEST-133, TEST-140 | Partly implemented (F-11: RED `a5419ab`, GREEN `4763dcc`: AC-132, AC-133 API); AC-140 UI Planned |
 | FR-23 | Manage categories and item types with limits | F-09 | 2 | AC-110 to AC-114, AC-121 | TEST-110 to TEST-114, TEST-121 | Implemented (F-09: RED `567c530`, GREEN `4aec247`); Verified after the Sprint 2 release |
 | FR-24 | Add a unit with a unique asset tag | F-09 | 2 | AC-115 to AC-116, AC-121 | TEST-115 to TEST-116, TEST-121 | Implemented (F-09: RED `567c530`, GREEN `4aec247`); Verified after the Sprint 2 release |
 | FR-25 | Set a repaired unit back to available | F-09 | 2 | AC-117, AC-121 | TEST-117, TEST-121 | Implemented (F-09: RED `567c530`, GREEN `4aec247`); Verified after the Sprint 2 release |
 | FR-26 | Retire a unit | F-09 | 2 | AC-118, AC-121 | TEST-118, TEST-121 | Implemented (F-09: RED `567c530`, GREEN `4aec247`); Verified after the Sprint 2 release |
-| FR-27 | History per unit | F-13 | 3 | Contract F-13 | - | Planned |
-| FR-28 | History per Borrower | F-13 | 3 | Contract F-13 | - | Planned |
-| FR-29 | Inventory summary report | F-14 | 3 | Contract F-14 | - | Planned |
+| FR-27 | History per unit | F-13 | 3 | AC-150, AC-151, AC-155, AC-157 | TEST-150, TEST-151, TEST-155, TEST-157 | Specified (contract #110); tests Planned |
+| FR-28 | History per Borrower | F-13 | 3 | AC-152 to AC-157 | TEST-152 to TEST-157 | Specified (contract #110); tests Planned |
+| FR-29 | Inventory summary report | F-14 | 3 | AC-158 to AC-163 | TEST-158 to TEST-163 | Implemented (F-14: RED `bdeffcd`, GREEN `e111146`); Verified after the Sprint 3 release |
 | FR-30 | Custodian lists and filters all requests by state | F-06 | 2 | AC-80 to AC-81, AC-88 | TEST-80 to TEST-81, TEST-88 | Implemented (F-06: RED `cb800c9`, GREEN `be5e11c`); Verified after the Sprint 2 release |
 
 ## 3. Business rules
@@ -75,9 +75,9 @@ A rule enforced by several features is listed once, with the sprint that first e
 | BR-10 | Edit only own pending; cancel only own pending or approved | F-05 | 2 | AC-72 to AC-76, AC-78 | TEST-72 to TEST-76, TEST-78 | Implemented (F-05: RED `711750f`, GREEN `7bc8b5e`); Verified after the Sprint 2 release |
 | BR-11 | Return together; damaged units go to maintenance | F-08; kept by F-07, F-09 | 2 | AC-102 to AC-103, AC-117 | TEST-102 to TEST-103, TEST-117 | Implemented (F-08: RED `73a54a3`, GREEN `a31432f`; F-09: RED `567c530`, GREEN `4aec247`); Verified after the Sprint 2 release |
 | BR-12 | No retiring a unit on loan; no checkout of a retired unit | F-09; kept by F-07 | 2 | AC-95, AC-118 to AC-119 | TEST-95, TEST-118 to TEST-119 | Implemented (F-07: RED `29d8600`, GREEN `e7387f9`; F-09: RED `567c530`, GREEN `4aec247`); Verified after the Sprint 2 release |
-| BR-13 | Approved requests reserve units and expire after 48 hours | F-10 | 3 | Contract F-10 | - | Planned |
-| BR-14 | 5-unit borrowing limit per Borrower | F-11 | 3 | Contract F-11 | - | Planned |
-| BR-15 | Overdue Borrowers cannot create requests | F-11 | 3 | Contract F-11 | - | Planned |
+| BR-13 | Approved requests reserve units and expire after 48 hours | F-10 | 3 | AC-123 to AC-127, AC-130, AC-131 | TEST-123 to TEST-127, TEST-130, TEST-131 | Specified (contract #107); tests Planned |
+| BR-14 | 5-unit borrowing limit per Borrower | F-11 | 3 | AC-136 to AC-139, AC-141 | TEST-136 to TEST-139, TEST-141 | Implemented (F-11: RED `a5419ab`, GREEN `4763dcc`); Verified after the Sprint 3 release |
+| BR-15 | Overdue Borrowers cannot create requests | F-11 | 3 | AC-134, AC-135, AC-138, AC-141 | TEST-134, TEST-135, TEST-138, TEST-141 | Implemented (F-11: RED `a5419ab`, GREEN `4763dcc`); Verified after the Sprint 3 release |
 | BR-16 | Append-only history with actor and time | F-02, F-03 (cross-cutting rule, `docs/features.md` 3.2); kept by F-05, F-06, F-08, F-09, F-10, F-13 | 1 | AC-16, AC-23, AC-24; Sprint 2: AC-64, AC-72, AC-74 to AC-75, AC-78, AC-82 to AC-83, AC-97, AC-108, AC-115, AC-117 to AC-118 | TEST-16, TEST-23, TEST-24; Sprint 2: TEST-64, TEST-72, TEST-74 to TEST-75, TEST-78, TEST-82 to TEST-83, TEST-97, TEST-108, TEST-115, TEST-117 to TEST-118 | Verified (TEST-16 on `dd36f2e`, TEST-23 and TEST-24 on `1891aa0`); Sprint 2 AC implemented for F-04 (AC-64: RED `f67788e`, GREEN `7ba81fb`), F-05 (AC-72, AC-74, AC-75, AC-78: RED `711750f`, GREEN `7bc8b5e`), F-06 (AC-82, AC-83: RED `cb800c9`, GREEN `be5e11c`), F-07 (AC-97: RED `29d8600`, GREEN `e7387f9`), F-08 (AC-108: RED `73a54a3`, GREEN `a31432f`), F-09 (AC-115, AC-117, AC-118: RED `567c530`, GREEN `4aec247`) |
 | BR-17 | Only Borrowers create, edit or cancel requests | F-01, F-02; kept by F-04, F-05 (Sprint 2) | 1 | AC-15, AC-40; Sprint 2: AC-70, AC-77, AC-87, AC-100, AC-109 | TEST-15, TEST-40; Sprint 2: TEST-70, TEST-77, TEST-87, TEST-100, TEST-109 | Verified (`dd36f2e`); Sprint 2 AC implemented for F-04 (AC-70: RED `f67788e`, GREEN `7ba81fb`), F-05 (AC-77: RED `711750f`, GREEN `7bc8b5e`), F-06 (AC-87: RED `cb800c9`, GREEN `be5e11c`), F-07 (AC-100: RED `29d8600`, GREEN `e7387f9`), F-08 (AC-109: RED `73a54a3`, GREEN `a31432f`) |
 
@@ -95,7 +95,7 @@ A rule enforced by several features is listed once, with the sprint that first e
 | NFR-08 | Consistent JSON errors, no stack trace | SR-01; re-verified by SR-03 | 1 | - | TEST-29 | Verified (`ef7cd71`, PR #29) |
 | NFR-09 | History entry for every state change and request edit | F-02, F-03 (cross-cutting rule); kept by F-05, F-06, F-08, F-10 | 1 | AC-16, AC-23 | TEST-16, TEST-23 | Verified (TEST-16 on `dd36f2e`, TEST-23 on `1891aa0`) |
 | NFR-10 | Request within 3 clicks from the catalog (D-19) | F-04 | 2 | AC-71 | TEST-71 (g) | Implemented (F-04: RED `f67788e`, GREEN `7ba81fb`; 2 clicks from the catalog, F04-D5); Verified after the Sprint 2 release |
-| NFR-11 | Lists within 2 seconds with 500 units (Proposed) | SR-03; applies to F-12, F-14 | 3 | - | Measured in Sprint 3 if Q-03 confirms | Planned |
+| NFR-11 | Lists within 2 seconds with 500 units (D-24) | SR-03; applies to F-12, F-14 | 3 | AC-164, AC-165 | TEST-164, TEST-165 | Specified (contract #112); measurements Planned |
 | NFR-12 | Loading, empty and error states in every list | F-02, F-03 (cross-cutting rule) | 1 | AC-17, AC-25 | TEST-17, TEST-25 | Verified (TEST-17 on `dd36f2e`, TEST-25 on `1891aa0`) |
 
 ## 5. Uncovered requirements and approved changes
@@ -105,7 +105,7 @@ A rule enforced by several features is listed once, with the sprint that first e
 None. Notes on three rows:
 
 - NFR-04 expiry target and NFR-10 follow decisions D-18 and D-19 (Q-01 and Q-02 resolved). If the team changes the targets, the rows stay and their AC change.
-- NFR-11 is kept only if Q-03 confirms the team can measure it; if not, it is removed through an SRS revision and recorded below.
+- NFR-11 is kept: Q-03 is resolved as D-24 (SRS v1.7), measured on the release image with 500 units and on the deployed service with its own data (SR-03 contract, #112).
 
 ### 5.2 Approved changes
 
@@ -138,3 +138,15 @@ None. Notes on three rows:
 | 2026-11-26 | Review of #99: BR-01 to BR-08, BR-16 and BR-17 now give their Sprint 2 status per AC, read from `docs/features.md` 5: the AC of F-04, F-06, F-07, F-08 and F-09 are Implemented (each with its RED and GREEN commit) and the AC of F-05 are Planned. Earlier rows said "Specified, tests Planned" for AC that #93, #94, #96, #98 and this PR had already implemented. The AC and test cells say "Sprint 2:" instead of "Sprint 2 (planned):". Sprint 1 Verified statuses are unchanged | Status per AC | #74 |
 | 2026-11-26 | F-05 implemented (#75): RED `711750f`, GREEN `7bc8b5e` (server 375, client 104, E2E 5 passed; server runs in CI, see the evidence README). FR-11, FR-12 and BR-10 move to Implemented. With F-04 to F-09 all implemented, the Sprint 2 AC of BR-01, BR-04, BR-06, BR-07, BR-08, BR-16 and BR-17 move to Implemented; the Sprint 1 Verified status of those rows is unchanged. The first implementation commit `dc96c01` deadlocked in TEST-78 (b) (edit and cancel at once); `7bc8b5e` makes the cancel lock the Borrower row first, as create and edit do. Raw output in `docs/sprints/sprint-2/evidence/F-05/` | TDD record | #75 |
 | 2026-11-26 | Review of #100: after the merge of #99's per-AC BR status, the F-05 AC in BR-01, BR-04 to BR-08, BR-16 and BR-17 are Implemented (RED `711750f`, GREEN `7bc8b5e`); BR-06, BR-07 and BR-08 are then fully Implemented. No AC or test cell says "Sprint 2 (planned):" any more | Status per AC | #75 |
+| 2026-11-27 | F-11 contract v1.0 (#108): AC-132 to AC-141 and TEST-132 to TEST-141 copied to `features.md` 6.2; FR-22, BR-14 and BR-15 move from Planned to Specified. Sprint 3 AC/TEST blocks claimed: F-10 122 to 131, F-11 132 to 141, F-12 142 to 149, F-13 150 to 157, F-14 158 to 163, SR-03 164 to 171 | Sprint 3 contract before code (D2 3.3) | #108 |
+| 2026-11-27 | F-12 contract v1.0 (#109): AC-142 to AC-149 and TEST-142 to TEST-149 copied to `features.md` 6.3; FR-06 moves from Planned to Specified. SDS v1.14 drops `?page=` (F12-D5) | Sprint 3 contract before code (D2 3.3) | #109 |
+| 2026-11-27 | F-14 contract v1.0 (#111): AC-158 to AC-163 and TEST-158 to TEST-163 copied to `features.md` 6.5; FR-29 moves from Planned to Specified | Sprint 3 contract before code (D2 3.3) | #111 |
+| 2026-11-27 | Review of PR #114: F-11 contract v1.1 (days overdue on the due day, two more D-20 cases in 3.4 and TEST-136, no AC change). Headers of `features.md` and this file name SRS v1.6 and `features.md` v1.12 | Review | #108 |
+| 2026-11-27 | Review of PR #115: F-12 contract v1.1 (TEST-145 with a non-empty combined filter, invalid URL filters F12-D8, narrow layout under SDS 5.3 / SR-04, AC-142 and AC-149 wording); SDS v1.14 row names section 6.1 | Review | #109 |
+| 2026-11-27 | Review of PR #116: F-14 contract v1.1 (TEST-159 data with exact times, TEST-161 expected rows, narrow layout under SDS 5.3 / SR-04, visible "Available (unit state)" header, F14-D6 no expiry); no AC changed | Review | #111 |
+| 2026-11-27 | F-11 server rules and API (#108): AC-132 to AC-139 fail on the tests-only commit `a5419ab` (CI: 27 failed / 379 passed, all assertions) and pass on `4763dcc` (code `a524ed2`; CI: 406 passed); AC-141 passes before and after (no client change). BR-14 and BR-15 move to Implemented, FR-22 to partly implemented; AC-140 (Overdue marker and `/overdue` page) stays Planned. Evidence in `docs/sprints/sprint-3/evidence/F-11/` | Sprint 3 feature for the Deliverable 2 candidate | #108 |
+| 2026-11-27 | F-14 inventory report (#111): TEST-158 to TEST-163 fail on the tests-only commit `bdeffcd` (server 5 failed / 375 passed, all `404` from the missing route; client 5 failed / 105 passed) and pass on `e111146` (server 380 passed in CI, client 110 passed). FR-29 moves to Implemented. Evidence in `docs/sprints/sprint-3/evidence/F-14/` | Sprint 3 feature for the Deliverable 2 candidate | #111 |
+| 2026-11-27 | F-10 contract v1.0 (#107): AC-122 to AC-131 and TEST-122 to TEST-131 copied to `features.md` 6.1; FR-15 and BR-13 move from Planned to Specified. SDS v1.15: only approval locks item type rows (F10-D6) | Sprint 3 contract before code (D2 3.3) | #107 |
+| 2026-11-27 | F-13 contract v1.0 (#110): AC-150 to AC-157 and TEST-150 to TEST-157 copied to `features.md` 6.4; FR-27 and FR-28 move from Planned to Specified | Sprint 3 contract before code (D2 3.3) | #110 |
+| 2026-11-27 | SR-03 contract v1.0 (#112): AC-164 to AC-171 and TEST-164 to TEST-171 copied to `features.md` 6.6. Q-03 resolved as D-24 (SRS v1.7, SDS v1.15, plan v1.8): NFR-11 is kept, measured on the release image with 500 units and on the deployed service; NFR-11 moves from Planned to Specified. The SR-03 re-checks of NFR-01, NFR-02 and NFR-08 are AC-166 to AC-169 | Sprint 3 contract before code (D2 3.3); Q-03 settled before the measurement | #112 |
+| 2026-11-27 | Review of PR #119: F-10 contract v1.1 (expiry locks with `FOR UPDATE` in ID order before the update; one-statement available count, F10-D10; `GET /api/history` in 3.3), SR-03 contract v1.1 (the deployed measurement allows D-23 expiry writes), SDS v1.15 4.5 matches F-10 3.5; no AC number or requirement link changed | Review | #107, #112 |

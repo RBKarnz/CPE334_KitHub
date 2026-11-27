@@ -6,10 +6,10 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part C |
-| Version | 1.12 |
-| Date | 2026-11-26 |
+| Version | 1.15 |
+| Date | 2026-11-27 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
-| Baseline | [SRS v1.5](srs.md) |
+| Baseline | [SRS v1.7](srs.md) |
 | Related | [Three-sprint plan](sprints/plan.md), feature contracts in `docs/sprints/sprint-N/` |
 
 ### Revision history
@@ -29,6 +29,9 @@
 | 1.10 | 2026-11-25 | Teerakarn Noiruksa | #73: Sprint 2 columns of 4.2 and CHECKs of 4.3 are now in migration `20261125104833_sprint2_columns`; 4.8 and 9.1 describe `SEED_DEMO_REQUESTS` and the Sprint 2 demo requests. No behaviour change for Sprint 1 |
 | 1.11 | 2026-11-25 | Teerakarn Noiruksa | Review of PR #87: 6.2 adds the Sprint 2 create example with several lines and `loanDays` (F-04 5.2). Baseline SRS v1.5. No behaviour change |
 | 1.12 | 2026-11-26 | Methipat Mansap | F-09 (#79, F09-D11): 4.3 adds the unique indexes on `lower(name)` for `categories` and `item_types` (migration `20261126110000_catalog_names_ci`), so names are unique without regard to case. No other behaviour change |
+| 1.13 | 2026-11-27 | Methipat Mansap | Issue #106, baseline SRS v1.6: 4.5 describes the expiry time (D-22) and when expiry is applied (D-23, option A of section 13); 6.6 and 13 no longer leave the trigger open. Review of PR #113: 4.5 says the window end is computed from `decidedAt` and recorded as the history entry's `occurredAt`, the boundary `now >= windowEnd`, and the conditional update that expires a request once. No table, column, endpoint or migration change |
+| 1.14 | 2026-11-27 | Methipat Mansap | F-12 contract (#109, F12-D5): 6.1 lists `?search=`, `?categoryId=` and `?available=` for `GET /api/item-types` and no `?page=`; paging is not needed at the product's size and NFR-11 is measured by SR-03. No other change |
+| 1.15 | 2026-11-27 | Teerakarn Noiruksa | Baseline SRS v1.7. F-10 contract (#107, F10-D6): 4.7 "Reservations" says only approval locks the item type rows, not request creation, and gives the lock order of every transaction; 4.5 gives the expiry statements with the `FOR UPDATE` lock in ID order and `"updatedAt" = $now`, and the one-statement available count (review of PR #119); section 11 says NFR-11 is measured as D-24 (SR-03, #112). No table, column, endpoint or migration change |
 
 ## 2. Introduction
 
@@ -412,6 +415,8 @@ These values are calculated by queries when they are needed and are never stored
 
 Due dates follow D-21 (since #71): counting starts on the checkout date if the checkout is on a business day (Monday to Friday) before 16:00 ICT, otherwise on the next business day; the loan length is added in calendar days, a Saturday or Sunday result moves to the following Monday, and the time is 17:00 ICT (`T10:00:00.000Z`). The rule works on ICT calendar dates, so it does not depend on the server time zone. Before #71 due dates added whole days as 24-hour periods at the checkout's clock time; stored values are not recalculated.
 
+Expiry of approved requests (Sprint 3, F-10): the pickup window ends 48 hours after `decidedAt`, counting only Monday to Friday ICT (D-22); the end is computed from `decidedAt` by the application (no stored column, no migration), and a request is expired when `now >= windowEnd`, with `now` taken from the application clock so tests can fix it, as for D-21. Expiry is applied on use (D-23): before any read or action that depends on request states or availability, the service locks the requests whose window has ended in ascending ID (`SELECT id FROM borrow_requests WHERE id = ANY($ids) AND status = 'APPROVED' ORDER BY id FOR UPDATE`) and runs one conditional update for them, `UPDATE borrow_requests SET status = 'EXPIRED', "updatedAt" = $now WHERE id = ANY($ids) AND status = 'APPROVED' RETURNING id`, and writes one `STATUS_CHANGED` history entry (System actor, `APPROVED` → `EXPIRED`) **only for the IDs that update returned**, with `occurredAt` set explicitly to that request's window end instead of the database default. Two calls that find the same request at once therefore expire it once: the second update returns no row and writes no entry. The request's `updatedAt` is set to the time of the check in the statement itself, because Prisma's `@updatedAt` is not applied to raw SQL. Available counts with reservations are computed in one SQL statement, so a checkout that commits meanwhile is seen either before or after it (F-10 contract, F10-D10). There is no scheduled job.
+
 ### 4.6 History (BR-16, NFR-09)
 
 - The service that changes a state writes the history entry in the same transaction, so the change and its entry are saved together or not at all.
@@ -489,7 +494,7 @@ BR-01 is checked at the moment of the request (SRS). Before Sprint 3 a request r
 
 #### Reservations (Sprint 3)
 
-From Sprint 3, approval reserves units (BR-13). Approval and request creation then lock the affected item type rows (`SELECT ... FROM item_types WHERE id = ANY($ids) ORDER BY id FOR UPDATE`) before computing availability, so two approvals cannot reserve the same last unit. The Sprint 3 contract for F-10 confirms this.
+From Sprint 3, approval reserves units (BR-13). Approval locks the affected item type rows (`SELECT ... FROM item_types WHERE id = ANY($ids) ORDER BY id FOR UPDATE`) before computing availability, so two approvals cannot reserve the same last unit. Request creation and edit do not take this lock: they reserve nothing, and BR-01 is checked at the moment of the request (F-10 contract, F10-D6). Every transaction takes its locks in one order: the Borrower's row, the expired requests in ascending ID, the request acted on, item types in ascending ID, units in ascending ID (F-10 contract 3.8).
 
 ### 4.8 Database setup, migrations and seed data
 
@@ -614,7 +619,7 @@ Feature contracts define each endpoint's exact body and errors. This section set
 - `GET` reads and never changes data. `POST` on a collection creates a record. `PATCH` changes fields of a record (from Sprint 2, for example a request edit).
 - A state transition is a `POST` to an action under the record, named as a verb: `/api/requests/:id/checkout`, `/approve`, `/reject`, `/cancel`, `/return`; `/api/loans/:id/return`; `/api/units/:id/repair`, `/retire`. There are no `DELETE` endpoints, because records are never deleted.
 - A list that both roles use is one endpoint whose scope depends on the caller's role, for example `GET /api/requests`: own requests for a Borrower, all requests for a Custodian. The client never chooses the owner.
-- Filters are query parameters: `?status=PENDING`, `?overdue=true`; from Sprint 3, `?search=` and `?page=` (FR-06).
+- Filters are query parameters: `?status=PENDING`, `?overdue=true`; from Sprint 3, `?search=`, `?categoryId=` and `?available=true` on `GET /api/item-types` (FR-06). No list is paged (F12-D5).
 
 ### 6.2 Requests
 
@@ -719,7 +724,7 @@ The contracts give the bodies. "Signed in" means either role.
 | 3 | `GET /api/units/:id/history` | Custodian | FR-27 |
 | 3 | `GET /api/history` | Borrower (own), Custodian (`?borrowerId=` required) | FR-28 |
 | 3 | `GET /api/reports/inventory` | Custodian | FR-29 |
-| 3 | Expiry of approved requests | System actor | FR-15; trigger decided by Q-09 (section 13) |
+| 3 | Expiry of approved requests | System actor | FR-15; applied on use by the services that read requests or availability (D-23); no endpoint |
 
 ### 6.7 Health and readiness
 
@@ -1004,7 +1009,7 @@ Commands (exact scripts in #13): `npm test` in `server/` and in `client/`; `npm 
 | NFR-08 Error handling | 6.5 single error shape and handler |
 | NFR-09 Auditability | 4.6 history in the same transaction; append-only trigger |
 | NFR-10 Usability | 5.1 Catalog and request form; measured on the Sprint 2 request flow |
-| NFR-11 Performance | Indexes in 4.2; availability computed by grouped queries; measured on Cloud Run in Sprint 3 |
+| NFR-11 Performance | Indexes in 4.2; availability computed by grouped queries; measured on the release image with 500 units and on Cloud Run with its own data (D-24, SR-03) |
 | NFR-12 List states | 5.3 shared `AsyncState` component |
 
 ## 12. Design decisions
@@ -1032,6 +1037,6 @@ Commands (exact scripts in #13): `npm test` in `server/` and in `client/`; `npm 
 | --- | --- | --- |
 | Q-01 session lifetime | None: `SESSION_TTL_HOURS` is configuration | Resolved by D-18: 8 hours, the default stays 8 |
 | D-15: no reservation before Sprint 3 | A Sprint 2 checkout of an approved request can be rejected if no unit is left (accepted) | Sprint 3 (section 4.7, Reservations) |
-| Q-07 and Q-09: how expiry is triggered | Two options. A: check and expire on every read or action that touches approved requests, needing no extra GCP component. B: a scheduled Cloud Run job or Cloud Scheduler call. Either records the System actor | Before the Sprint 3 contract for F-10 |
+| Q-07 and Q-09: how expiry is triggered | Settled on 27 Nov (#106): option A, expiry on every read or action that touches approved requests (D-23), with business-day counting (D-22). No extra GCP component. Option B (a scheduled job) is not used | Done (SRS v1.6) |
 | Q-08: which requests count toward the 5-unit limit | Changes only the BR-14 query in 4.5 | Resolved by D-20: only `ACTIVE` loans and open requests count, as 4.5 already assumed |
 | No limit on repeated sign-in attempts | Not required by the SRS | Candidate Sprint 3 hardening item; would need an SRS change first |
