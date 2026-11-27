@@ -6,10 +6,10 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part C |
-| Version | 1.14 |
+| Version | 1.15 |
 | Date | 2026-11-27 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
-| Baseline | [SRS v1.6](srs.md) |
+| Baseline | [SRS v1.7](srs.md) |
 | Related | [Three-sprint plan](sprints/plan.md), feature contracts in `docs/sprints/sprint-N/` |
 
 ### Revision history
@@ -31,6 +31,7 @@
 | 1.12 | 2026-11-26 | Methipat Mansap | F-09 (#79, F09-D11): 4.3 adds the unique indexes on `lower(name)` for `categories` and `item_types` (migration `20261126110000_catalog_names_ci`), so names are unique without regard to case. No other behaviour change |
 | 1.13 | 2026-11-27 | Methipat Mansap | Issue #106, baseline SRS v1.6: 4.5 describes the expiry time (D-22) and when expiry is applied (D-23, option A of section 13); 6.6 and 13 no longer leave the trigger open. Review of PR #113: 4.5 says the window end is computed from `decidedAt` and recorded as the history entry's `occurredAt`, the boundary `now >= windowEnd`, and the conditional update that expires a request once. No table, column, endpoint or migration change |
 | 1.14 | 2026-11-27 | Methipat Mansap | F-12 contract (#109, F12-D5): 6.1 lists `?search=`, `?categoryId=` and `?available=` for `GET /api/item-types` and no `?page=`; paging is not needed at the product's size and NFR-11 is measured by SR-03. No other change |
+| 1.15 | 2026-11-27 | Teerakarn Noiruksa | Baseline SRS v1.7. F-10 contract (#107, F10-D6): 4.7 "Reservations" says only approval locks the item type rows, not request creation, and gives the lock order of every transaction; section 11 says NFR-11 is measured as D-24 (SR-03, #112). No table, column, endpoint or migration change |
 
 ## 2. Introduction
 
@@ -493,7 +494,7 @@ BR-01 is checked at the moment of the request (SRS). Before Sprint 3 a request r
 
 #### Reservations (Sprint 3)
 
-From Sprint 3, approval reserves units (BR-13). Approval and request creation then lock the affected item type rows (`SELECT ... FROM item_types WHERE id = ANY($ids) ORDER BY id FOR UPDATE`) before computing availability, so two approvals cannot reserve the same last unit. The Sprint 3 contract for F-10 confirms this.
+From Sprint 3, approval reserves units (BR-13). Approval locks the affected item type rows (`SELECT ... FROM item_types WHERE id = ANY($ids) ORDER BY id FOR UPDATE`) before computing availability, so two approvals cannot reserve the same last unit. Request creation and edit do not take this lock: they reserve nothing, and BR-01 is checked at the moment of the request (F-10 contract, F10-D6). Every transaction takes its locks in one order: the Borrower's row, the expired requests in ascending ID, the request acted on, item types in ascending ID, units in ascending ID (F-10 contract 3.8).
 
 ### 4.8 Database setup, migrations and seed data
 
@@ -1008,7 +1009,7 @@ Commands (exact scripts in #13): `npm test` in `server/` and in `client/`; `npm 
 | NFR-08 Error handling | 6.5 single error shape and handler |
 | NFR-09 Auditability | 4.6 history in the same transaction; append-only trigger |
 | NFR-10 Usability | 5.1 Catalog and request form; measured on the Sprint 2 request flow |
-| NFR-11 Performance | Indexes in 4.2; availability computed by grouped queries; measured on Cloud Run in Sprint 3 |
+| NFR-11 Performance | Indexes in 4.2; availability computed by grouped queries; measured on the release image with 500 units and on Cloud Run with its own data (D-24, SR-03) |
 | NFR-12 List states | 5.3 shared `AsyncState` component |
 
 ## 12. Design decisions
