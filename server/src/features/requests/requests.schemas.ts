@@ -37,9 +37,13 @@ export const createRequestBody = z.object({
   loanDays: z.number({ error: LOAN_DAYS }).int({ error: LOAN_DAYS }).min(1, { error: LOAN_DAYS }).max(365, { error: LOAN_DAYS }),
 });
 
-export const listRequestsQuery = z.object({
-  status: z.enum(RequestStatus).optional(),
-});
+export const listRequestsQuery = z
+  .object({
+    status: z.enum(RequestStatus).optional(),
+    // F-11 5.2 (F11-D7): only `true`, and not together with `status`.
+    overdue: z.literal("true", { error: "Only true is allowed" }).optional(),
+  })
+  .refine((q) => !(q.overdue && q.status), { error: "Cannot be combined with status", path: ["overdue"] });
 
 export const requestIdParams = z.object({
   id: z

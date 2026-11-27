@@ -4,6 +4,7 @@
 import {
   ActorType,
   HistoryEntity,
+  LoanStatus,
   RequestStatus,
   Role,
   UnitStatus,
@@ -12,7 +13,7 @@ import {
 } from "@prisma/client";
 import type { AuthUser } from "../../core/middleware/authenticate.js";
 import { ConflictError, NotFoundError } from "../../core/errors.js";
-import { requestRuleViolation } from "../../domain/request-rules.js";
+import { BORROW_LIMIT_UNITS, earliestActiveDue, requestRuleViolation } from "../../domain/request-rules.js";
 import { assertTransition } from "../../domain/transitions.js";
 import type { CreateRequestBody, ListRequestsQuery } from "./requests.schemas.js";
 import { historySelect, requestSelect, toHistoryView, toRequestView, type RequestRow } from "./requests.view.js";
@@ -54,7 +55,9 @@ export async function assertRequestRules(
     ]);
   }
 
-  const [openLines, available] = await Promise.all([
+  // F-11: one application clock per call (F11-D1), so tests can fix it.
+  const now = new Date();
+  const [openLines, available, overdue, activeLoans, openQuantity] = await Promise.all([
     tx.requestLine.findMany({
       where: {
         itemTypeId: { in: ids },
@@ -69,7 +72,28 @@ export async function assertRequestRules(
     }),
     // One grouped count on units (itemTypeId, status), never stored (DD-08).
     tx.unit.groupBy({ by: ["itemTypeId"], where: { itemTypeId: { in: ids }, status: UnitStatus.AVAILABLE }, _count: { _all: true } }),
+    // BR-15: the Borrower's overdue requests (F11-D1).
+    tx.borrowRequest.findMany({
+      where: { borrowerId, status: RequestStatus.CHECKED_OUT, lines: { some: { loans: { some: { status: LoanStatus.ACTIVE, dueAt: { lt: now } } } } } },
+      select: { id: true, lines: { select: { loans: { where: { status: LoanStatus.ACTIVE }, select: { status: true, dueAt: true } } } } },
+    }),
+    // BR-14 (D-20): ACTIVE loans plus the lines of open requests, the edited request left out.
+    tx.loan.count({ where: { status: LoanStatus.ACTIVE, requestLine: { request: { borrowerId } } } }),
+    tx.requestLine.aggregate({
+      _sum: { quantity: true },
+      where: {
+        request: {
+          borrowerId,
+          status: { in: OPEN_STATUSES },
+          ...(exceptRequestId !== undefined ? { id: { not: exceptRequestId } } : {}),
+        },
+      },
+    }),
   ]);
+  const overdueIds = overdue
+    .sort((a, b) => earliestActiveDue(a) - earliestActiveDue(b) || a.id - b.id)
+    .map((r) => r.id);
+  const heldUnits = activeLoans + (openQuantity._sum.quantity ?? 0);
   const openById = new Map<number, number>();
   for (const l of openLines) if (!openById.has(l.itemTypeId)) openById.set(l.itemTypeId, l.requestId);
   const availableById = new Map(available.map((a) => [a.itemTypeId, a._count._all]));
@@ -85,8 +109,23 @@ export async function assertRequestRules(
       openRequestId: openById.get(l.itemTypeId) ?? null,
     };
   });
-  const violation = requestRuleViolation({ lines: facts, loanDays: body.loanDays });
+  const violation = requestRuleViolation({ lines: facts, loanDays: body.loanDays, overdueRequestIds: overdueIds, heldUnits });
   if (!violation) return;
+
+  if (violation.rule === "OVERDUE_BLOCK")
+    throw new ConflictError(
+      violation.rule,
+      `You cannot make a new request while Request #${overdueIds[0]} is overdue. Return every unit of it first.`,
+      overdueIds.map((id) => ({ field: "body", issue: `Request #${id} is overdue` })),
+    );
+  if (violation.rule === "BORROW_LIMIT") {
+    const asked = body.lines.reduce((sum, l) => sum + l.quantity, 0);
+    throw new ConflictError(
+      violation.rule,
+      `You can hold at most ${BORROW_LIMIT_UNITS} units. You hold ${heldUnits} and asked for ${asked}.`,
+      [{ field: "lines", issue: `${heldUnits} held + ${asked} asked > ${BORROW_LIMIT_UNITS}` }],
+    );
+  }
 
   const first = facts[violation.lines[0]];
   switch (violation.rule) {
@@ -296,13 +335,27 @@ export function requestsService(prisma: PrismaClient) {
 
     /** Borrower: own requests, newest first. Custodian: all requests, oldest first (F02-D4). */
     async list(user: AuthUser, query: ListRequestsQuery) {
+      const now = new Date();
+      if (query.overdue) {
+        // F-11 5.2: overdue requests in scope, earliest active due date first, then id (F11-D8).
+        const rows = await prisma.borrowRequest.findMany({
+          where: {
+            ...scopeFor(user),
+            status: RequestStatus.CHECKED_OUT,
+            lines: { some: { loans: { some: { status: LoanStatus.ACTIVE, dueAt: { lt: now } } } } },
+          },
+          select: requestSelect,
+        });
+        rows.sort((a, b) => earliestActiveDue(a) - earliestActiveDue(b) || a.id - b.id);
+        return rows.map((row) => toRequestView(row, user.role, now));
+      }
       const direction = user.role === Role.BORROWER ? "desc" : "asc";
       const rows = await prisma.borrowRequest.findMany({
         where: { ...scopeFor(user), ...(query.status ? { status: query.status } : {}) },
         orderBy: [{ createdAt: direction }, { id: direction }],
         select: requestSelect,
       });
-      return rows.map((row) => toRequestView(row, user.role));
+      return rows.map((row) => toRequestView(row, user.role, now));
     },
 
     /**
