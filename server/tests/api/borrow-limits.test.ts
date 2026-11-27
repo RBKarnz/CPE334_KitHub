@@ -71,7 +71,9 @@ describe("TEST-134 (AC-134): an overdue Borrower cannot create a request (BR-15)
     expect((await postRequest(app, b2, linesBody(3, [w.sensor.id, 1]))).status).toBe(201);
 
     vi.setSystemTime(new Date(LATER)); // at dueAt exactly (F11-D2)
-    expect((await postRequest(app, b2, linesBody(3, [w.cable.id, 1]))).status).toBe(201);
+    // 31 hours later the 8-hour session has expired, so sign in again.
+    const b2Later = await signIn(app, "borrower2");
+    expect((await postRequest(app, b2Later, linesBody(3, [w.cable.id, 1]))).status).toBe(201);
   });
 });
 
