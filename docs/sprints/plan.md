@@ -6,7 +6,7 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part D |
-| Version | 1.8 |
+| Version | 1.9 |
 | Date | 2026-11-27 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Baseline | [SRS v1.7](../srs.md), [System-Level SDS v1.15](../system-sds.md) |
@@ -24,14 +24,15 @@
 | 1.6 | 2026-11-25 | Teerakarn Noiruksa | Change request #71 (Lab 7, review of PR #72): the Sprint 1 due-date row in section 4 follows SRS v1.4 D-21 (17:00 ICT on a business day, 16:00 cutoff). No feature, requirement or sprint moves |
 | 1.7 | 2026-11-27 | Methipat Mansap | Issue #106: Q-07 and Q-09 are settled as D-22 and D-23 (two days after the 25 Nov target in 6.3), so the F-10 contract is no longer blocked and no GCP component is added. Sprint 3 Issues: #107 F-10, #108 F-11, #109 F-12, #110 F-13, #111 F-14, #112 SR-03. Review of PR #113: the header baseline, stale since v1.6, now names SRS v1.6 and SDS v1.13 |
 | 1.8 | 2026-11-27 | Teerakarn Noiruksa | Issue #112: Q-03 settled as D-24, so the NFR-11 row of section 7 names the release-image and deployed measurements. Baseline SRS v1.7, SDS v1.15. No feature, sprint or order changed |
+| 1.9 | 2026-11-27 | Methipat Mansap | Review of release PR #120: `v0.3.0-rc1` is the Deliverable 2 candidate (section 2, 6.5; the Sprint 2 row says D2 is shown on it). Review of PR #121: F-10 targets 3 Dec, before F-13; SR-03 UAT runs both ways. F-14 was built early and ships in it. 6.3 records what is done by 29 Nov and the remaining work to 13 Dec with an owner and a target date for each. No feature, requirement or sprint scope changed |
 
 ## 2. Overview
 
 | Sprint | Dates | Checkpoint | Goal | Features | Release |
 | --- | --- | --- | --- | --- | --- |
 | 1 | 2026-11-03 to 2026-11-08 | Deliverable 1, 8 Nov | A small working borrowing slice with authentication, server-side permissions and persistence | F-01, F-02, F-03, SR-04 | `v0.1.0` |
-| 2 | 2026-11-09 to 2026-11-29 | Deliverable 2, 29 Nov | The complete borrowing cycle (request, approve, check out, return) and catalog management, under contracts | F-04 to F-09 | `v0.2.0` |
-| 3 | 2026-11-23 to 2026-12-13 (contracts and F-11 overlap the last week of Sprint 2) | Progress at 29 Nov; final product 13 Dec | Remaining features, integration and hardening | F-10 to F-14, SR-03 | `v1.0.0` |
+| 2 | 2026-11-09 to 2026-11-29 | Deliverable 2, 29 Nov | The complete borrowing cycle (request, approve, check out, return) and catalog management, under contracts | F-04 to F-09 | `v0.2.0` (Deliverable 2 is shown on `v0.3.0-rc1`, which contains `v0.2.0`) |
+| 3 | 2026-11-23 to 2026-12-13 (contracts and F-11 overlap the last week of Sprint 2) | Progress at 29 Nov; final product 13 Dec | Remaining features, integration and hardening | F-10 to F-14, SR-03 | `v0.3.0-rc1` (Deliverable 2 candidate, 29 Nov: Sprint 3 contracts, F-11, F-14); `v1.0.0` (13 Dec) |
 
 Course events that use the same weeks (from the group work specification):
 
@@ -230,7 +231,21 @@ F-10, F-11, F-12, F-13, F-14 and SR-03 (section 3). They cover FR-06, FR-15, FR-
 | By 25 Nov | Settle the open questions that block Sprint 3 contracts: Q-07 and Q-09 (expiry, for F-10). Record each as an SRS decision. Q-08 (limit counting, for F-11) is already settled as D-20 |
 | 23 to 29 Nov | Contracts for F-10 to F-14. Implement and test F-11 (overdue and borrowing limits), so that the Deliverable 2 candidate contains a meaningful, tested Sprint 3 rule (BR-14, BR-15) |
 | 30 Nov to 6 Dec | F-10 and F-13. Kept small because of the examination period |
-| 7 to 13 Dec | F-12, F-14 and SR-03; final release `v1.0.0`; final report and demonstration video |
+| 7 to 13 Dec | F-12 and SR-03; final release `v1.0.0`; final report and demonstration video |
+
+Status on 27 Nov (release PR #120, `v0.3.0-rc1`):
+
+- **Done:** D-22 and D-23 (#106, PR #113); the contracts of F-10 to F-14 and SR-03, and D-24 (PR #114, #115, #116, #119); F-11 server rules and API (PR #117); F-14 API and Reports page (PR #118, built early because its contract was ready and it only reads data).
+- **Remaining to 13 Dec:**
+
+| Item | What is left | Owner | Target date | Depends on |
+| --- | --- | --- | --- | --- |
+| F-11 AC-140 | Overdue marker on request lists and detail; Custodian `/overdue` page (TEST-140) | Methipat Mansap | 6 Dec | F-11 API (done) |
+| F-10 | Reservations and expiry, AC-122 to AC-131 | Teerakarn Noiruksa | 3 Dec (before F-13, which needs it) | F-10 contract (done) |
+| F-13 | History per unit and per Borrower, AC-150 to AC-157 | Teerakarn Noiruksa | 6 Dec | F-10 for the expiry entries (F13-D5) |
+| F-12 | Search and filter, AC-142 to AC-149 | Teerakarn Noiruksa | 10 Dec | F-10 for the available count (F-10 2.2) |
+| SR-03 | Measurement, regression suites, Sprint 3 E2E and UAT, release checklist, AC-164 to AC-171 | Teerakarn Noiruksa; UAT of F-10, F-12, F-13 by Methipat Mansap, of F-11, F-14 by Teerakarn Noiruksa (SR03-D6) | 12 Dec | F-10 to F-14 on `staging` |
+| `v1.0.0` | Release PR, deploy, post-deploy checks, tag; final report and video | Both | 13 Dec | Every row above |
 
 F-11 goes first because it is a real business rule, depends only on Sprint 2 features, and its one decision is already made (D-20). F-10 is the largest Sprint 3 change (it alters availability for every request), so it waits until its two questions are settled and Sprint 2 is stable.
 
@@ -245,6 +260,7 @@ F-11 goes first because it is a real business rule, depends only on Sprint 2 fea
 1. **Journey**: an approved request that is not picked up within 48 hours becomes `EXPIRED` and its units become available again, recorded with the System actor. An overdue request appears on the Custodian's overdue list and blocks its Borrower's new requests until every unit is returned.
 2. **Coverage**: every FR, BR and NFR in the SRS is implemented and linked to passing tests or a recorded measurement in `docs/traceability.md`, or is listed there as a disclosed gap.
 3. **Release**: `v1.0.0` is tagged on `main` and deployed; the regression suite passes; known limitations are listed.
+4. **Deliverable 2 candidate (29 Nov)**: `v0.3.0-rc1` is tagged on `main` and deployed. It integrates Sprint 1, Sprint 2, every Sprint 3 contract, F-11 (BR-14, BR-15, overdue status and list) and F-14.
 
 ## 7. Coverage check
 
