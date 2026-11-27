@@ -86,7 +86,8 @@ describe("TEST-133 (AC-133): GET /api/requests?overdue=true", () => {
       const res = await getAs(app, cookie, `/api/requests?${query}`);
       expect(res.status, query).toBe(400);
       expect(res.body.error.code).toBe("VALIDATION_FAILED");
-      expect(detailFields(res)).toContain("overdue");
+      // Query fields are named "overdue" or "query.overdue", as in TEST-99 (c).
+      expect(detailFields(res).some((f) => f === "overdue" || f.endsWith(".overdue")), query).toBe(true);
     }
     const none = await getAs(app, undefined, "/api/requests?overdue=true");
     expect(none.status).toBe(401);
