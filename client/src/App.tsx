@@ -16,6 +16,7 @@ import { AllRequestsPage } from "./pages/requests/AllRequestsPage";
 import { EditRequestPage } from "./pages/requests/EditRequestPage";
 import { NewRequestPage } from "./pages/requests/NewRequestPage";
 import { RequestDetailPage } from "./pages/RequestDetailPage";
+import { InventoryReportPage } from "./pages/reports/InventoryReportPage";
 
 function SignedInLayout() {
   return (
@@ -95,6 +96,15 @@ function AppRoutes() {
           element={
             <RequireRole role="CUSTODIAN">
               <ManageUnitsPage />
+            </RequireRole>
+          }
+        />
+        {/* Inventory report, Custodian only (contract F-14 4.2). */}
+        <Route
+          path="/reports/inventory"
+          element={
+            <RequireRole role="CUSTODIAN">
+              <InventoryReportPage />
             </RequireRole>
           }
         />
