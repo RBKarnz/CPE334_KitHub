@@ -1,0 +1,865 @@
+# RED, server: typecheck and whole suite on the pre-change code (CI)
+Source: GitHub Actions ci-docker.yml, job test-and-docker, step "Install & Test Backend (Typecheck + Prisma Migrate + Seed + Vitest)"
+Run: a5419abc779a19e420269e47473e0d4a6757a351 | run https://github.com/RBKarnz/CPE334_KitHub/actions/runs/45932516855 | conclusion failure | started 2026-11-27T03:09:34Z
+Commit: a5419abc779a19e420269e47473e0d4a6757a351 test(#108): RED for F-11 overdue status, BR-14 and BR-15 (TEST-132 to TEST-139, TEST-141)
+Log: gh run view 45932516855 --log; step lines only, the runner's timestamp prefix and ANSI colours removed
+----
+##[group]Run npm ci
+npm ci
+npm run typecheck
+npx prisma migrate deploy
+SEED_CUSTODIAN_PASSWORD="$(openssl rand -base64 24)"
+SEED_BORROWER_PASSWORD="$(openssl rand -base64 24)"
+echo "::add-mask::$SEED_CUSTODIAN_PASSWORD"
+echo "::add-mask::$SEED_BORROWER_PASSWORD"
+export SEED_CUSTODIAN_PASSWORD SEED_BORROWER_PASSWORD
+npm run prisma:seed
+npm test
+shell: /usr/bin/bash -e {0}
+env:
+  DATABASE_URL: ***localhost:5432/kithub?schema=public
+  TEST_DATABASE_URL: ***localhost:5432/kithub_test?schema=public
+  pythonLocation: /opt/hostedtoolcache/Python/3.14.10/x64
+  PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.14.10/x64/lib/pkgconfig
+  Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.10/x64
+  Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.10/x64
+  Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.10/x64
+  LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.14.10/x64/lib
+  SEED_DEMO_DATA: true
+##[endgroup]
+
+added 166 packages, and audited 167 packages in 3s
+
+36 packages are looking for funding
+  run `npm fund` for details
+
+6 vulnerabilities (3 moderate, 1 high, 2 critical)
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+npm warn install-scripts 5 packages have install scripts not yet covered by allowScripts:
+npm warn install-scripts   @prisma/client@5.22.0 (postinstall: node scripts/postinstall.js)
+npm warn install-scripts   @prisma/engines@5.22.0 (postinstall: node scripts/postinstall.js)
+npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+npm warn install-scripts   prisma@5.22.0 (preinstall: node scripts/preinstall-entry.js)
+npm warn install-scripts   esbuild@0.21.5 (postinstall: node install.js)
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+
+> kithub-server@0.1.0 typecheck
+> tsc --noEmit
+
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "kithub", schema "public" at "localhost:5432"
+
+3 migrations found in prisma/migrations
+
+Applying migration `20261106075705_sprint1_init`
+Applying migration `20261125104833_sprint2_columns`
+Applying migration `20261126110000_catalog_names_ci`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261106075705_sprint1_init/
+    └─ migration.sql
+  └─ 20261125104833_sprint2_columns/
+    └─ migration.sql
+  └─ 20261126110000_catalog_names_ci/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+
+> kithub-server@0.1.0 prisma:seed
+> tsx prisma/seed.ts
+
+Seed complete. Created 6 categories, 9 item types, 38 units and 4 accounts; existing records were left unchanged. Demo Borrower accounts: included. Sprint 2 demo requests: skipped (SEED_DEMO_REQUESTS is not true).
+
+> kithub-server@0.1.0 test
+> vitest run
+
+
+ RUN  v2.1.9 /home/runner/work/CPE334_KitHub/CPE334_KitHub/server
+
+ ✓ tests/api/checkout.test.ts (26 tests) 1857ms
+ ✓ tests/api/requests-multi.test.ts (32 tests) 2615ms
+ ✓ tests/api/requests-decide.test.ts (19 tests) 1306ms
+ ✓ tests/api/checkout-multi.test.ts (22 tests) 1884ms
+ ✓ tests/api/returns.test.ts (8 tests) 873ms
+ ❯ tests/api/borrow-limits.test.ts (11 tests | 7 failed) 1458ms
+   × TEST-134 (AC-134): an overdue Borrower cannot create a request (BR-15) > TEST-134 (a) to (c): blocked until every unit of the overdue request is returned 155ms
+     → expected 201 to be 409 // Object.is equality
+   × TEST-134 (AC-134): an overdue Borrower cannot create a request (BR-15) > TEST-134 (d), (e): a loan due later, or due exactly now, does not block 109ms
+     → expected 401 to be 201 // Object.is equality
+   × TEST-135 (AC-135): the overdue block also applies to an edit > TEST-135: editing an own PENDING request is refused; nothing changes 111ms
+     → expected 200 to be 409 // Object.is equality
+   ✓ TEST-136 (AC-136): the 5-unit limit on create (BR-14, D-20) > TEST-136 (e): holding 0, a request of 5 units in 2 lines is allowed 440ms
+   × TEST-136 (AC-136): the 5-unit limit on create (BR-14, D-20) > TEST-136 (f), (g): holding 3 (2 ACTIVE loans + a PENDING line of 1), 2 more is allowed and 3 more is not 102ms
+     → expected 201 to be 409 // Object.is equality
+   × TEST-136 (AC-136): the 5-unit limit on create (BR-14, D-20) > TEST-136 (j): an APPROVED request counts by its line quantities 73ms
+     → expected 201 to be 409 // Object.is equality
+   × TEST-137 (AC-137): the limit on edit leaves out the edited request > TEST-137 (a), (b): 3 + 3 is refused, 3 + 2 is allowed 94ms
+     → expected 200 to be 409 // Object.is equality
+   × TEST-138 (AC-138): check order 404 → BR-15 → BR-04 → … → BR-14 → BR-01 > TEST-138 (a) to (d) 100ms
+     → expected undefined to be 'OVERDUE_BLOCK' // Object.is equality
+ ✓ tests/api/catalog-manage.test.ts (14 tests) 923ms
+ ✓ tests/api/units-manage.test.ts (10 tests) 774ms
+ ✓ tests/api/requests-edit.test.ts (12 tests) 925ms
+ ✓ tests/api/requests-create.test.ts (19 tests) 1207ms
+ ✓ tests/api/seed.test.ts (8 tests) 902ms
+ ✓ tests/api/auth.test.ts (14 tests) 666ms
+ ✓ tests/api/requests-access.test.ts (10 tests) 630ms
+ ✓ tests/api/schema.test.ts (6 tests) 97ms
+ ✓ tests/api/checkout-concurrency.test.ts (3 tests) 911ms
+   ✓ TEST-22 (AC-22): two checkouts of the same unit > TEST-22 (a): two simultaneous checkouts of one unit for two requests create one loan, 5 rounds 448ms
+   ✓ TEST-47 (AC-47): two checkouts of the same request > TEST-47: two simultaneous checkouts of one request with two units create one loan, 5 rounds 415ms
+ ✓ tests/api/requests-edit-concurrency.test.ts (5 tests) 1609ms
+   ✓ TEST-78 (AC-78): concurrent edit, cancel and decision > TEST-78 (a): two cancels: one 200, one 409; one cancel entry, 5 rounds 373ms
+   ✓ TEST-78 (AC-78): concurrent edit, cancel and decision > TEST-78 (b): an edit and a cancel: CANCELLED; either both succeed with loanDays 7, or the edit gets 409, 5 rounds 352ms
+   ✓ TEST-78 (AC-78): concurrent edit, cancel and decision > TEST-78 (c): an edit and an approval: APPROVED; either both succeed (loanDays 7) or the edit gets 409, 5 rounds 316ms
+ ✓ tests/unit/error-handler.test.ts (7 tests) 37ms
+ ✓ tests/api/checkout-history.test.ts (5 tests) 390ms
+ ✓ tests/api/requests-cancel.test.ts (7 tests) 511ms
+ ✓ tests/api/loans.test.ts (4 tests) 296ms
+ ✓ tests/unit/config.test.ts (10 tests) 6ms
+ ✓ tests/api/due-date-preview.test.ts (5 tests) 488ms
+ ❯ tests/api/overdue.test.ts (3 tests | 3 failed) 510ms
+   × TEST-132 (AC-132): overdue status through the API > TEST-132 (f), (g): false at dueAt, true 1 ms later for both roles, false after the return 382ms
+     → expected undefined to be false // Object.is equality
+   × TEST-133 (AC-133): GET /api/requests?overdue=true > TEST-133 (a), (b): a Custodian gets every overdue request, a Borrower their own, earliest due first 59ms
+     → expected 400 to be 200 // Object.is equality
+   × TEST-133 (AC-133): GET /api/requests?overdue=true > TEST-133 (c) to (f): only overdue=true is accepted, not with status; no session gives 401 68ms
+     → expected [ 'query.overdue' ] to include 'overdue'
+ ✓ tests/api/units-manage-concurrency.test.ts (4 tests) 1296ms
+   ✓ TEST-119 (AC-119): concurrent catalog management > TEST-119 (a): a retire and a checkout of the same AVAILABLE unit: exactly one wins, 5 rounds 397ms
+   ✓ TEST-119 (AC-119): concurrent catalog management > TEST-119 (c) two creates named Robotics: one 201, one 409 NAME_TAKEN, 5 rounds 348ms
+ ✓ tests/api/requests-read.test.ts (6 tests) 494ms
+ ✓ tests/unit/request-rules.test.ts (8 tests) 3ms
+ ✓ tests/api/checkout-access.test.ts (8 tests) 546ms
+ ✓ tests/api/returns-concurrency.test.ts (3 tests) 1314ms
+   ✓ TEST-108 (AC-108): concurrent returns > TEST-108 (a): two return-all calls give one 200 and one 409; each loan returned once, 5 rounds 543ms
+   ✓ TEST-108 (AC-108): concurrent returns > TEST-108 (b): early returns of L1 and L2 at once both succeed; exactly one ends the request, 5 rounds 409ms
+   ✓ TEST-108 (AC-108): concurrent returns > TEST-108 (c): a return-all and an early return of L1 at once: one 200, one 409 (never 400), 5 rounds 361ms
+ ✓ tests/api/errors.test.ts (9 tests) 50ms
+ ✓ tests/api/units.test.ts (6 tests) 377ms
+ ✓ tests/unit/due-date.test.ts (18 tests) 3ms
+ ✓ tests/api/item-types.test.ts (5 tests) 335ms
+ ✓ tests/api/catalog.test.ts (2 tests) 447ms
+   ✓ TEST-08 (AC-08): GET /api/categories > TEST-08: both roles get categories and item types by name with AVAILABLE counts and no unit data 404ms
+ ✓ tests/api/catalog-manage-access.test.ts (2 tests) 197ms
+ ✓ tests/api/requests-decide-concurrency.test.ts (2 tests) 645ms
+   ✓ TEST-86 (AC-86): simultaneous decisions > TEST-86 (a): approve and approve give one 200 and one 409, 5 rounds 363ms
+ ✓ tests/api/requests-concurrency.test.ts (2 tests) 1508ms
+   ✓ TEST-37 (AC-37): concurrent duplicate creates > TEST-37: two parallel creates store one request, 20 runs 1205ms
+   ✓ TEST-69 (d) (AC-69): concurrent multi-line creates that share an item type > TEST-69 (d): Arduino + HC-SR04 and HC-SR04 + ESP32 at once: one 201, one 409; one request and one entry, 5 rounds 302ms
+ ✓ tests/unit/transitions.test.ts (32 tests) 4ms
+ ✓ tests/api/pending-requests.test.ts (1 test) 115ms
+ ✓ tests/api/persistence.test.ts (1 test) 130ms
+ ✓ tests/api/checkout-multi-concurrency.test.ts (1 test) 435ms
+   ✓ TEST-96 (AC-96): two checkouts that share units > TEST-96: one 201 and one 409 UNIT_NOT_AVAILABLE; the loser stays APPROVED with no loan; 5 rounds 434ms
+ ❯ tests/unit/overdue.test.ts (16 tests | 16 failed) 9ms
+   × TEST-132 (AC-132): isOverdue > TEST-132: isOverdue exists 4ms
+     → expected 'undefined' to be 'function' // Object.is equality
+   × TEST-132 (AC-132): isOverdue > TEST-132 (a) 1 ms before dueAt 1ms
+     → expected undefined to be false // Object.is equality
+   × TEST-132 (AC-132): isOverdue > TEST-132 (b) at dueAt exactly (F11-D2) 0ms
+     → expected undefined to be false // Object.is equality
+   × TEST-132 (AC-132): isOverdue > TEST-132 (c) 1 ms after dueAt 0ms
+     → expected undefined to be true // Object.is equality
+   × TEST-132 (AC-132): isOverdue > TEST-132 (d): a returned loan is never overdue 0ms
+     → expected undefined to be true // Object.is equality
+   × TEST-132 (AC-132): isOverdue > TEST-132 (e): a RETURNED request is not overdue 0ms
+     → expected undefined to be false // Object.is equality
+   × TEST-132 (AC-132): isOverdue > TEST-132 (e): a PENDING request is not overdue 0ms
+     → expected undefined to be false // Object.is equality
+   × TEST-132 (AC-132): isOverdue > TEST-132 (e): a APPROVED request is not overdue 0ms
+     → expected undefined to be false // Object.is equality
+   × TEST-132 (AC-132): isOverdue > TEST-132 (e): a REJECTED request is not overdue 0ms
+     → expected undefined to be false // Object.is equality
+   × TEST-132 (AC-132): isOverdue > TEST-132 (e): a CANCELLED request is not overdue 0ms
+     → expected undefined to be false // Object.is equality
+   × TEST-132 (AC-132): isOverdue > TEST-132 (e): a EXPIRED request is not overdue 0ms
+     → expected undefined to be false // Object.is equality
+   × TEST-136 (AC-136): borrowLimitViolation (BR-14, limit 5) > TEST-136: the limit is 5 units 0ms
+     → expected undefined to be 5 // Object.is equality
+   × TEST-136 (AC-136): borrowLimitViolation (BR-14, limit 5) > TEST-136 (a) held 0, asked 5 0ms
+     → expected 'undefined' to be 'function' // Object.is equality
+   × TEST-136 (AC-136): borrowLimitViolation (BR-14, limit 5) > TEST-136 (b) held 3, asked 2 0ms
+     → expected 'undefined' to be 'function' // Object.is equality
+   × TEST-136 (AC-136): borrowLimitViolation (BR-14, limit 5) > TEST-136 (c) held 3, asked 3 0ms
+     → expected 'undefined' to be 'function' // Object.is equality
+   × TEST-136 (AC-136): borrowLimitViolation (BR-14, limit 5) > TEST-136 (d) held 5, asked 1 0ms
+     → expected 'undefined' to be 'function' // Object.is equality
+ ❯ tests/api/borrow-limits-concurrency.test.ts (1 test | 1 failed) 152ms
+   × TEST-139 (AC-139): the limit holds under concurrency > TEST-139: 3 held + 2 + 2 at once → one 201 and one 409 BORROW_LIMIT, 5 rounds 152ms
+     → round 0: expected [ 201, 201 ] to deeply equal [ 201, 409 ]
+ ✓ tests/api/requests-decide-access.test.ts (4 tests) 259ms
+stderr | tests/api/health.test.ts > GET /api/ready (SDS 6.7) > returns 503 NOT_READY when the database cannot be reached
+{"time":"2026-11-27T03:10:45.895Z","level":"error","requestId":"58adaf0b-cd3e-45fc-ac47-5a5dc9b71a74","path":"/api/ready","error":"PrismaClientInitializationError","message":"\nInvalid `prisma.$queryRaw()` invocation:\n\n\nCan't reach database server at `127.0.0.1:1`\n\nPlease make sure your database server is running at `127.0.0.1:1`."}
+
+ ✓ tests/api/health.test.ts (4 tests) 51ms
+ ✓ tests/api/returns-access.test.ts (1 test) 124ms
+ ✓ tests/api/requests-history.test.ts (1 test) 117ms
+ ✓ tests/unit/checkout-errors.test.ts (3 tests) 2ms
+ ✓ tests/unit/test-db-guard.test.ts (4 tests) 2ms
+ ✓ tests/unit/password.test.ts (2 tests) 847ms
+   ✓ TEST-07 (AC-07): salted adaptive password hashes > TEST-07 (a): cost 12 hashes differ from the plain text and from each other 845ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 27 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/api/borrow-limits-concurrency.test.ts > TEST-139 (AC-139): the limit holds under concurrency > TEST-139: 3 held + 2 + 2 at once → one 201 and one 409 BORROW_LIMIT, 5 rounds
+AssertionError: round 0: expected [ 201, 201 ] to deeply equal [ 201, 409 ]
+
+- Expected
++ Received
+
+  Array [
+    201,
+-   409,
++   201,
+  ]
+
+ ❯ tests/api/borrow-limits-concurrency.test.ts:38:42
+     36|       ]);
+     37|       const statuses = results.map((r) => r.status).sort();
+     38|       expect(statuses, `round ${round}`).toEqual([201, 409]);
+       |                                          ^
+     39|       expect(results.find((r) => r.status === 409)!.body.error.code).t…
+     40| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/27]⎯
+
+ FAIL  tests/api/borrow-limits.test.ts > TEST-134 (AC-134): an overdue Borrower cannot create a request (BR-15) > TEST-134 (a) to (c): blocked until every unit of the overdue request is returned
+AssertionError: expected 201 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 201
+
+ ❯ tests/api/borrow-limits.test.ts:51:28
+     49|     const before = await snapshotRequestState(prisma);
+     50|     const blocked = await postRequest(app, b1, linesBody(3, [w.sensor.…
+     51|     expect(blocked.status).toBe(409);
+       |                            ^
+     52|     expect(blocked.body.error.code).toBe("OVERDUE_BLOCK");
+     53|     expect(blocked.body.error.message).toBe(overdueMessage(r1.request.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/27]⎯
+
+ FAIL  tests/api/borrow-limits.test.ts > TEST-134 (AC-134): an overdue Borrower cannot create a request (BR-15) > TEST-134 (d), (e): a loan due later, or due exactly now, does not block
+AssertionError: expected 401 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 401
+
+ ❯ tests/api/borrow-limits.test.ts:74:80
+     72| 
+     73|     vi.setSystemTime(new Date(LATER)); // at dueAt exactly (F11-D2)
+     74|     expect((await postRequest(app, b2, linesBody(3, [w.cable.id, 1])))…
+       |                                                                                ^
+     75|   });
+     76| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/27]⎯
+
+ FAIL  tests/api/borrow-limits.test.ts > TEST-135 (AC-135): the overdue block also applies to an edit > TEST-135: editing an own PENDING request is refused; nothing changes
+AssertionError: expected 200 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 200
+
+ ❯ tests/api/borrow-limits.test.ts:87:24
+     85| 
+     86|     const res = await patchRequest(app, await signIn(app, "borrower1")…
+     87|     expect(res.status).toBe(409);
+       |                        ^
+     88|     expect(res.body.error.code).toBe("OVERDUE_BLOCK");
+     89|     expect(res.body.error.message).toBe(overdueMessage(r1.request.id));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/27]⎯
+
+ FAIL  tests/api/borrow-limits.test.ts > TEST-136 (AC-136): the 5-unit limit on create (BR-14, D-20) > TEST-136 (f), (g): holding 3 (2 ACTIVE loans + a PENDING line of 1), 2 more is allowed and 3 more is not
+AssertionError: expected 201 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 201
+
+ ❯ tests/api/borrow-limits.test.ts:110:25
+    108|     const before = await snapshotRequestState(prisma);
+    109|     const over = await postRequest(app, b1, linesBody(3, [w.sensor.id,…
+    110|     expect(over.status).toBe(409);
+       |                         ^
+    111|     expect(over.body.error.code).toBe("BORROW_LIMIT");
+    112|     expect(over.body.error.message).toBe("You can hold at most 5 units…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/27]⎯
+
+ FAIL  tests/api/borrow-limits.test.ts > TEST-136 (AC-136): the 5-unit limit on create (BR-14, D-20) > TEST-136 (j): an APPROVED request counts by its line quantities
+AssertionError: expected 201 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 201
+
+ ❯ tests/api/borrow-limits.test.ts:160:24
+    158|     fixClock(NOW);
+    159|     const res = await postRequest(app, await signIn(app, "borrower1"),…
+    160|     expect(res.status).toBe(409);
+       |                        ^
+    161|     expect(res.body.error.code).toBe("BORROW_LIMIT");
+    162|     expect(res.body.error.message).toBe("You can hold at most 5 units.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/27]⎯
+
+ FAIL  tests/api/borrow-limits.test.ts > TEST-137 (AC-137): the limit on edit leaves out the edited request > TEST-137 (a), (b): 3 + 3 is refused, 3 + 2 is allowed
+AssertionError: expected 200 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 200
+
+ ❯ tests/api/borrow-limits.test.ts:185:25
+    183|     const before = await snapshotRequestState(prisma);
+    184|     const over = await patchRequest(app, b1, r.id, linesBody(3, [w.cab…
+    185|     expect(over.status).toBe(409);
+       |                         ^
+    186|     expect(over.body.error.code).toBe("BORROW_LIMIT");
+    187|     expect(over.body.error.message).toBe("You can hold at most 5 units…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/27]⎯
+
+ FAIL  tests/api/borrow-limits.test.ts > TEST-138 (AC-138): check order 404 → BR-15 → BR-04 → … → BR-14 → BR-01 > TEST-138 (a) to (d)
+AssertionError: expected undefined to be 'OVERDUE_BLOCK' // Object.is equality
+
+- Expected: 
+"OVERDUE_BLOCK"
+
++ Received: 
+undefined
+
+ ❯ tests/api/borrow-limits.test.ts:211:38
+    209|     expect((await postRequest(app, b1, linesBody(3, [999999, 1]))).sta…
+    210|     const overdue = await postRequest(app, b1, linesBody(3, [w.sensor.…
+    211|     expect(overdue.body.error?.code).toBe("OVERDUE_BLOCK");
+       |                                      ^
+    212| 
+    213|     const duplicate = await postRequest(app, await signIn(app, "borrow…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/27]⎯
+
+ FAIL  tests/api/overdue.test.ts > TEST-132 (AC-132): overdue status through the API > TEST-132 (f), (g): false at dueAt, true 1 ms later for both roles, false after the return
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected: 
+false
+
++ Received: 
+undefined
+
+ ❯ tests/api/overdue.test.ts:36:32
+     34|       const res = await getAs(app, cookie, `/api/requests/${r.request.…
+     35|       expect(res.status).toBe(200);
+     36|       expect(res.body.overdue).toBe(false);
+       |                                ^
+     37|     }
+     38| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/27]⎯
+
+ FAIL  tests/api/overdue.test.ts > TEST-133 (AC-133): GET /api/requests?overdue=true > TEST-133 (a), (b): a Custodian gets every overdue request, a Borrower their own, earliest due first
+AssertionError: expected 400 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 400
+
+ ❯ tests/api/overdue.test.ts:72:24
+     70| 
+     71|     const all = await getAs(app, await signIn(app, "custodian1"), "/ap…
+     72|     expect(all.status).toBe(200);
+       |                        ^
+     73|     expect(all.body.items.map((i: { id: number }) => i.id)).toEqual([r…
+     74|     expect(all.body.items.every((i: { overdue: boolean }) => i.overdue…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/27]⎯
+
+ FAIL  tests/api/overdue.test.ts > TEST-133 (AC-133): GET /api/requests?overdue=true > TEST-133 (c) to (f): only overdue=true is accepted, not with status; no session gives 401
+AssertionError: expected [ 'query.overdue' ] to include 'overdue'
+ ❯ tests/api/overdue.test.ts:89:33
+     87|       expect(res.status, query).toBe(400);
+     88|       expect(res.body.error.code).toBe("VALIDATION_FAILED");
+     89|       expect(detailFields(res)).toContain("overdue");
+       |                                 ^
+     90|     }
+     91|     const none = await getAs(app, undefined, "/api/requests?overdue=tr…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/27]⎯
+
+ FAIL  tests/unit/overdue.test.ts > TEST-132 (AC-132): isOverdue > TEST-132: isOverdue exists
+AssertionError: expected 'undefined' to be 'function' // Object.is equality
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ tests/unit/overdue.test.ts:22:35
+     20| describe("TEST-132 (AC-132): isOverdue", () => {
+     21|   it("TEST-132: isOverdue exists", () => {
+     22|     expect(typeof view.isOverdue).toBe("function");
+       |                                   ^
+     23|   });
+     24| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/27]⎯
+
+ FAIL  tests/unit/overdue.test.ts > TEST-132 (AC-132): isOverdue > TEST-132 (a) 1 ms before dueAt
+ FAIL  tests/unit/overdue.test.ts > TEST-132 (AC-132): isOverdue > TEST-132 (b) at dueAt exactly (F11-D2)
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected: 
+false
+
++ Received: 
+undefined
+
+ ❯ tests/unit/overdue.test.ts:30:68
+     28|     ["(c) 1 ms after dueAt", 1, true],
+     29|   ])("TEST-132 %s", (_case, ms, expected) => {
+     30|     expect(view.isOverdue?.(req("CHECKED_OUT", [active]), at(ms))).toB…
+       |                                                                    ^
+     31|   });
+     32| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/27]⎯
+
+ FAIL  tests/unit/overdue.test.ts > TEST-132 (AC-132): isOverdue > TEST-132 (c) 1 ms after dueAt
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected: 
+true
+
++ Received: 
+undefined
+
+ ❯ tests/unit/overdue.test.ts:30:68
+     28|     ["(c) 1 ms after dueAt", 1, true],
+     29|   ])("TEST-132 %s", (_case, ms, expected) => {
+     30|     expect(view.isOverdue?.(req("CHECKED_OUT", [active]), at(ms))).toB…
+       |                                                                    ^
+     31|   });
+     32| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/27]⎯
+
+ FAIL  tests/unit/overdue.test.ts > TEST-132 (AC-132): isOverdue > TEST-132 (d): a returned loan is never overdue
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected: 
+true
+
++ Received: 
+undefined
+
+ ❯ tests/unit/overdue.test.ts:34:113
+     32| 
+     33|   it("TEST-132 (d): a returned loan is never overdue", () => {
+     34|     expect(view.isOverdue?.(req("CHECKED_OUT", [{ status: "RETURNED", …
+       |                                                                                                                 ^
+     35|     expect(view.isOverdue?.(req("CHECKED_OUT", [{ status: "RETURNED", …
+     36|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/27]⎯
+
+ FAIL  tests/unit/overdue.test.ts > TEST-132 (AC-132): isOverdue > TEST-132 (e): a RETURNED request is not overdue
+ FAIL  tests/unit/overdue.test.ts > TEST-132 (AC-132): isOverdue > TEST-132 (e): a PENDING request is not overdue
+ FAIL  tests/unit/overdue.test.ts > TEST-132 (AC-132): isOverdue > TEST-132 (e): a APPROVED request is not overdue
+ FAIL  tests/unit/overdue.test.ts > TEST-132 (AC-132): isOverdue > TEST-132 (e): a REJECTED request is not overdue
+ FAIL  tests/unit/overdue.test.ts > TEST-132 (AC-132): isOverdue > TEST-132 (e): a CANCELLED request is not overdue
+ FAIL  tests/unit/overdue.test.ts > TEST-132 (AC-132): isOverdue > TEST-132 (e): a EXPIRED request is not overdue
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected: 
+false
+
++ Received: 
+undefined
+
+ ❯ tests/unit/overdue.test.ts:41:62
+     39|     "TEST-132 (e): a %s request is not overdue",
+     40|     (status) => {
+     41|       expect(view.isOverdue?.(req(status, [active]), at(1))).toBe(fals…
+       |                                                              ^
+     42|     },
+     43|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/27]⎯
+
+ FAIL  tests/unit/overdue.test.ts > TEST-136 (AC-136): borrowLimitViolation (BR-14, limit 5) > TEST-136: the limit is 5 units
+AssertionError: expected undefined to be 5 // Object.is equality
+
+- Expected: 
+5
+
++ Received: 
+undefined
+
+ ❯ tests/unit/overdue.test.ts:48:37
+     46| describe("TEST-136 (AC-136): borrowLimitViolation (BR-14, limit 5)", (…
+     47|   it("TEST-136: the limit is 5 units", () => {
+     48|     expect(view.BORROW_LIMIT_UNITS).toBe(5);
+       |                                     ^
+     49|   });
+     50| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/27]⎯
+
+ FAIL  tests/unit/overdue.test.ts > TEST-136 (AC-136): borrowLimitViolation (BR-14, limit 5) > TEST-136 (a) held 0, asked 5
+ FAIL  tests/unit/overdue.test.ts > TEST-136 (AC-136): borrowLimitViolation (BR-14, limit 5) > TEST-136 (b) held 3, asked 2
+ FAIL  tests/unit/overdue.test.ts > TEST-136 (AC-136): borrowLimitViolation (BR-14, limit 5) > TEST-136 (c) held 3, asked 3
+ FAIL  tests/unit/overdue.test.ts > TEST-136 (AC-136): borrowLimitViolation (BR-14, limit 5) > TEST-136 (d) held 5, asked 1
+AssertionError: expected 'undefined' to be 'function' // Object.is equality
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ tests/unit/overdue.test.ts:57:46
+     55|     ["(d) held 5, asked 1", 5, 1, { held: 5, asked: 1 }],
+     56|   ])("TEST-136 %s", (_case, held, asked, expected) => {
+     57|     expect(typeof view.borrowLimitViolation).toBe("function");
+       |                                              ^
+     58|     expect(view.borrowLimitViolation?.(held, asked)).toEqual(expected);
+     59|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/27]⎯
+
+ Test Files  4 failed | 45 passed (49)
+      Tests  27 failed | 379 passed (406)
+   Start at  03:10:04
+   Duration  43.42s (transform 510ms, setup 1.71s, collect 4.56s, tests 30.34s, environment 5ms, prepare 1.60s)
+
+(node:3250) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 unhandledRejection listeners added to [process]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+##[error]AssertionError: round 0: expected [ 201, 201 ] to deeply equal [ 201, 409 ]
+
+- Expected
++ Received
+
+  Array [
+    201,
+-   409,
++   201,
+  ]
+
+ ❯ tests/api/borrow-limits-concurrency.test.ts:38:42
+
+
+
+##[error]AssertionError: expected 201 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 201
+
+ ❯ tests/api/borrow-limits.test.ts:51:28
+
+
+
+##[error]AssertionError: expected 401 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 401
+
+ ❯ tests/api/borrow-limits.test.ts:74:80
+
+
+
+##[error]AssertionError: expected 200 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 200
+
+ ❯ tests/api/borrow-limits.test.ts:87:24
+
+
+
+##[error]AssertionError: expected 201 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 201
+
+ ❯ tests/api/borrow-limits.test.ts:110:25
+
+
+
+##[error]AssertionError: expected 201 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 201
+
+ ❯ tests/api/borrow-limits.test.ts:160:24
+
+
+
+##[error]AssertionError: expected 200 to be 409 // Object.is equality
+
+- Expected
++ Received
+
+- 409
++ 200
+
+ ❯ tests/api/borrow-limits.test.ts:185:25
+
+
+
+##[error]AssertionError: expected undefined to be 'OVERDUE_BLOCK' // Object.is equality
+
+- Expected: 
+"OVERDUE_BLOCK"
+
++ Received: 
+undefined
+
+ ❯ tests/api/borrow-limits.test.ts:211:38
+
+
+
+##[error]AssertionError: expected undefined to be false // Object.is equality
+
+- Expected: 
+false
+
++ Received: 
+undefined
+
+ ❯ tests/api/overdue.test.ts:36:32
+
+
+
+##[error]AssertionError: expected 400 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 400
+
+ ❯ tests/api/overdue.test.ts:72:24
+
+
+
+##[error]AssertionError: expected [ 'query.overdue' ] to include 'overdue'
+ ❯ tests/api/overdue.test.ts:89:33
+
+
+
+##[error]AssertionError: expected 'undefined' to be 'function' // Object.is equality
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ tests/unit/overdue.test.ts:22:35
+
+
+
+##[error]AssertionError: expected undefined to be false // Object.is equality
+
+- Expected: 
+false
+
++ Received: 
+undefined
+
+ ❯ tests/unit/overdue.test.ts:30:68
+
+
+
+##[error]AssertionError: expected undefined to be false // Object.is equality
+
+- Expected: 
+false
+
++ Received: 
+undefined
+
+ ❯ tests/unit/overdue.test.ts:30:68
+
+
+
+##[error]AssertionError: expected undefined to be true // Object.is equality
+
+- Expected: 
+true
+
++ Received: 
+undefined
+
+ ❯ tests/unit/overdue.test.ts:30:68
+
+
+
+##[error]AssertionError: expected undefined to be true // Object.is equality
+
+- Expected: 
+true
+
++ Received: 
+undefined
+
+ ❯ tests/unit/overdue.test.ts:34:113
+
+
+
+##[error]AssertionError: expected undefined to be false // Object.is equality
+
+- Expected: 
+false
+
++ Received: 
+undefined
+
+ ❯ tests/unit/overdue.test.ts:41:62
+
+
+
+##[error]AssertionError: expected undefined to be false // Object.is equality
+
+- Expected: 
+false
+
++ Received: 
+undefined
+
+ ❯ tests/unit/overdue.test.ts:41:62
+
+
+
+##[error]AssertionError: expected undefined to be false // Object.is equality
+
+- Expected: 
+false
+
++ Received: 
+undefined
+
+ ❯ tests/unit/overdue.test.ts:41:62
+
+
+
+##[error]AssertionError: expected undefined to be false // Object.is equality
+
+- Expected: 
+false
+
++ Received: 
+undefined
+
+ ❯ tests/unit/overdue.test.ts:41:62
+
+
+
+##[error]AssertionError: expected undefined to be false // Object.is equality
+
+- Expected: 
+false
+
++ Received: 
+undefined
+
+ ❯ tests/unit/overdue.test.ts:41:62
+
+
+
+##[error]AssertionError: expected undefined to be false // Object.is equality
+
+- Expected: 
+false
+
++ Received: 
+undefined
+
+ ❯ tests/unit/overdue.test.ts:41:62
+
+
+
+##[error]AssertionError: expected undefined to be 5 // Object.is equality
+
+- Expected: 
+5
+
++ Received: 
+undefined
+
+ ❯ tests/unit/overdue.test.ts:48:37
+
+
+
+##[error]AssertionError: expected 'undefined' to be 'function' // Object.is equality
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ tests/unit/overdue.test.ts:57:46
+
+
+
+##[error]AssertionError: expected 'undefined' to be 'function' // Object.is equality
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ tests/unit/overdue.test.ts:57:46
+
+
+
+##[error]AssertionError: expected 'undefined' to be 'function' // Object.is equality
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ tests/unit/overdue.test.ts:57:46
+
+
+
+##[error]AssertionError: expected 'undefined' to be 'function' // Object.is equality
+
+Expected: "function"
+Received: "undefined"
+
+ ❯ tests/unit/overdue.test.ts:57:46
+
+
+##[error]Process completed with exit code 1.

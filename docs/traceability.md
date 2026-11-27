@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.14 |
+| Version | 1.15 |
 | Date | 2026-11-27 |
 | Source requirements | `docs/srs.md` v1.6 |
-| Features and AC/TEST definitions | `docs/features.md` v1.12 |
+| Features and AC/TEST definitions | `docs/features.md` v1.13 |
 | Feature and SR IDs | Same as `docs/sprints/plan.md` section 3 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 
@@ -47,7 +47,7 @@ Sprint 1 rows link to planned AC and tests from `docs/features.md`. Sprint 2 and
 | FR-19 | Custodian sees all active loans | F-07 | 2 | AC-99, AC-101 | TEST-99, TEST-101 | Implemented (F-07: RED `29d8600`, GREEN `e7387f9`); Verified after the Sprint 2 release |
 | FR-20 | Return all units with condition per unit | F-08 | 2 | AC-102 to AC-104, AC-106 to AC-107 | TEST-102 to TEST-104, TEST-106 to TEST-107 | Implemented (F-08: RED `73a54a3`, GREEN `a31432f`); Verified after the Sprint 2 release |
 | FR-21 | Early return of a single unit | F-08 | 2 | AC-103, AC-105, AC-107 | TEST-103, TEST-105, TEST-107 | Implemented (F-08: RED `73a54a3`, GREEN `a31432f`); Verified after the Sprint 2 release |
-| FR-22 | Overdue status and overdue list | F-11 | 3 | AC-132, AC-133, AC-140 | TEST-132, TEST-133, TEST-140 | Specified (contract #108); tests Planned |
+| FR-22 | Overdue status and overdue list | F-11 | 3 | AC-132, AC-133, AC-140 | TEST-132, TEST-133, TEST-140 | Partly implemented (F-11: RED `a5419ab`, GREEN `4763dcc`: AC-132, AC-133 API); AC-140 UI Planned |
 | FR-23 | Manage categories and item types with limits | F-09 | 2 | AC-110 to AC-114, AC-121 | TEST-110 to TEST-114, TEST-121 | Implemented (F-09: RED `567c530`, GREEN `4aec247`); Verified after the Sprint 2 release |
 | FR-24 | Add a unit with a unique asset tag | F-09 | 2 | AC-115 to AC-116, AC-121 | TEST-115 to TEST-116, TEST-121 | Implemented (F-09: RED `567c530`, GREEN `4aec247`); Verified after the Sprint 2 release |
 | FR-25 | Set a repaired unit back to available | F-09 | 2 | AC-117, AC-121 | TEST-117, TEST-121 | Implemented (F-09: RED `567c530`, GREEN `4aec247`); Verified after the Sprint 2 release |
@@ -76,8 +76,8 @@ A rule enforced by several features is listed once, with the sprint that first e
 | BR-11 | Return together; damaged units go to maintenance | F-08; kept by F-07, F-09 | 2 | AC-102 to AC-103, AC-117 | TEST-102 to TEST-103, TEST-117 | Implemented (F-08: RED `73a54a3`, GREEN `a31432f`; F-09: RED `567c530`, GREEN `4aec247`); Verified after the Sprint 2 release |
 | BR-12 | No retiring a unit on loan; no checkout of a retired unit | F-09; kept by F-07 | 2 | AC-95, AC-118 to AC-119 | TEST-95, TEST-118 to TEST-119 | Implemented (F-07: RED `29d8600`, GREEN `e7387f9`; F-09: RED `567c530`, GREEN `4aec247`); Verified after the Sprint 2 release |
 | BR-13 | Approved requests reserve units and expire after 48 hours | F-10 | 3 | Contract F-10 | - | Planned |
-| BR-14 | 5-unit borrowing limit per Borrower | F-11 | 3 | AC-136 to AC-139, AC-141 | TEST-136 to TEST-139, TEST-141 | Specified (contract #108); tests Planned |
-| BR-15 | Overdue Borrowers cannot create requests | F-11 | 3 | AC-134, AC-135, AC-138, AC-141 | TEST-134, TEST-135, TEST-138, TEST-141 | Specified (contract #108); tests Planned |
+| BR-14 | 5-unit borrowing limit per Borrower | F-11 | 3 | AC-136 to AC-139, AC-141 | TEST-136 to TEST-139, TEST-141 | Implemented (F-11: RED `a5419ab`, GREEN `4763dcc`); Verified after the Sprint 3 release |
+| BR-15 | Overdue Borrowers cannot create requests | F-11 | 3 | AC-134, AC-135, AC-138, AC-141 | TEST-134, TEST-135, TEST-138, TEST-141 | Implemented (F-11: RED `a5419ab`, GREEN `4763dcc`); Verified after the Sprint 3 release |
 | BR-16 | Append-only history with actor and time | F-02, F-03 (cross-cutting rule, `docs/features.md` 3.2); kept by F-05, F-06, F-08, F-09, F-10, F-13 | 1 | AC-16, AC-23, AC-24; Sprint 2: AC-64, AC-72, AC-74 to AC-75, AC-78, AC-82 to AC-83, AC-97, AC-108, AC-115, AC-117 to AC-118 | TEST-16, TEST-23, TEST-24; Sprint 2: TEST-64, TEST-72, TEST-74 to TEST-75, TEST-78, TEST-82 to TEST-83, TEST-97, TEST-108, TEST-115, TEST-117 to TEST-118 | Verified (TEST-16 on `dd36f2e`, TEST-23 and TEST-24 on `1891aa0`); Sprint 2 AC implemented for F-04 (AC-64: RED `f67788e`, GREEN `7ba81fb`), F-05 (AC-72, AC-74, AC-75, AC-78: RED `711750f`, GREEN `7bc8b5e`), F-06 (AC-82, AC-83: RED `cb800c9`, GREEN `be5e11c`), F-07 (AC-97: RED `29d8600`, GREEN `e7387f9`), F-08 (AC-108: RED `73a54a3`, GREEN `a31432f`), F-09 (AC-115, AC-117, AC-118: RED `567c530`, GREEN `4aec247`) |
 | BR-17 | Only Borrowers create, edit or cancel requests | F-01, F-02; kept by F-04, F-05 (Sprint 2) | 1 | AC-15, AC-40; Sprint 2: AC-70, AC-77, AC-87, AC-100, AC-109 | TEST-15, TEST-40; Sprint 2: TEST-70, TEST-77, TEST-87, TEST-100, TEST-109 | Verified (`dd36f2e`); Sprint 2 AC implemented for F-04 (AC-70: RED `f67788e`, GREEN `7ba81fb`), F-05 (AC-77: RED `711750f`, GREEN `7bc8b5e`), F-06 (AC-87: RED `cb800c9`, GREEN `be5e11c`), F-07 (AC-100: RED `29d8600`, GREEN `e7387f9`), F-08 (AC-109: RED `73a54a3`, GREEN `a31432f`) |
 
@@ -144,3 +144,4 @@ None. Notes on three rows:
 | 2026-11-27 | Review of PR #114: F-11 contract v1.1 (days overdue on the due day, two more D-20 cases in 3.4 and TEST-136, no AC change). Headers of `features.md` and this file name SRS v1.6 and `features.md` v1.12 | Review | #108 |
 | 2026-11-27 | Review of PR #115: F-12 contract v1.1 (TEST-145 with a non-empty combined filter, invalid URL filters F12-D8, narrow layout under SDS 5.3 / SR-04, AC-142 and AC-149 wording); SDS v1.14 row names section 6.1 | Review | #109 |
 | 2026-11-27 | Review of PR #116: F-14 contract v1.1 (TEST-159 data with exact times, TEST-161 expected rows, narrow layout under SDS 5.3 / SR-04, visible "Available (unit state)" header, F14-D6 no expiry); no AC changed | Review | #111 |
+| 2026-11-27 | F-11 server rules and API (#108): AC-132 to AC-139 fail on the tests-only commit `a5419ab` (CI: 27 failed / 379 passed, all assertions) and pass on `4763dcc` (code `a524ed2`; CI: 406 passed); AC-141 passes before and after (no client change). BR-14 and BR-15 move to Implemented, FR-22 to partly implemented; AC-140 (Overdue marker and `/overdue` page) stays Planned. Evidence in `docs/sprints/sprint-3/evidence/F-11/` | Sprint 3 feature for the Deliverable 2 candidate | #108 |

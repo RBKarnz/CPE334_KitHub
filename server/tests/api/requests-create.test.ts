@@ -49,6 +49,8 @@ describe("TEST-09 (AC-09): a Borrower requests one available unit", () => {
       decidedAt: null,
       rejectionReason: null,
       dueAt: null,
+      // F-11 (contract 5.1): every request reports overdue; a PENDING request is never overdue.
+      overdue: false,
       borrower: { id: b1.id, username: "borrower1", displayName: expect.any(String) },
       lines: [{ id: expect.any(Number), itemType: { id: arduino.id, name: "Arduino Uno R3" }, quantity: 1, loans: [] }],
     });
