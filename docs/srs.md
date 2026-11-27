@@ -6,8 +6,8 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part A |
-| Version | 1.5 |
-| Date | 2026-11-25 |
+| Version | 1.6 |
+| Date | 2026-11-27 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Theme | 2. Inventory and Borrowing System |
 
@@ -21,6 +21,7 @@
 | 1.3 | 2026-11-07 | Teerakarn Noiruksa, Methipat Mansap | Resolved Q-01, Q-02 and Q-08 as D-18, D-19 and D-20; NFR-04, NFR-10 and BR-14 now point to them; Q-03 status reads "Open; settle before the Sprint 3 measurement (SR-03)" |
 | 1.4 | 2026-11-25 | Teerakarn Noiruksa | Change request #71 (Lab 7): new decision D-21, the due date is 17:00 ICT on a business day (Monday to Friday) with a 16:00 checkout cutoff. Glossary "Due date", FR-16, BR-08, A-05 and D-16 point to it. The loan length rules (D-08, D-16, BR-08) do not change |
 | 1.5 | 2026-11-25 | Teerakarn Noiruksa | Review of PR #87: 8.1 gains the row (new) → `AVAILABLE` for a unit added by a Custodian (FR-24), which F-09 2.1 needs. No requirement changes |
+| 1.6 | 2026-11-27 | Methipat Mansap | Issue #106: resolved Q-07 and Q-09 as D-22 (the 48-hour pickup window counts only business-day time) and D-23 (expiry is evaluated on use, no scheduled job), so the F-10 contract can be written. FR-15 and BR-13 point to them. Review of PR #113: D-22 states the boundary (`now >= windowEnd`) and that night hours count; D-23 says the expiry time is the history entry's time and that a request expires once. No other requirement changes |
 
 ## 2. Introduction
 
@@ -145,7 +146,7 @@ FRs are grouped by feature area. "Related BR" lists the rules the FR must enforc
 | FR-12 | A Borrower can cancel their own `PENDING` or `APPROVED` request. The request becomes `CANCELLED` | Borrower | 2 | BR-10, BR-17 |
 | FR-13 | A Custodian can approve a `PENDING` request as a whole. The request becomes `APPROVED` | Custodian | 2 | BR-09 |
 | FR-14 | A Custodian can reject a `PENDING` request with a non-empty reason. The request becomes `REJECTED` and its Borrower can see the reason | Custodian | 2 | BR-09 |
-| FR-15 | An `APPROVED` request that is not checked out within 48 hours of approval becomes `EXPIRED`, and its reserved quantities become available again. The change is recorded with the System actor | System actor | 3 | BR-13, BR-16 |
+| FR-15 | An `APPROVED` request that is not checked out within 48 hours of approval (counted on business days, D-22) becomes `EXPIRED`, and its reserved quantities become available again. The change is recorded with the System actor when the request or availability is next used (D-23) | System actor | 3 | BR-13, BR-16 |
 
 ### 5.4 Loans
 
@@ -192,7 +193,7 @@ FRs are grouped by feature area. "Related BR" lists the rules the FR must enforc
 | BR-10 | A Borrower can cancel only their own request, and only while it is `PENDING` or `APPROVED`. A Borrower can edit only their own request, and only while it is `PENDING`. An edit is checked against the same rules as a new request | A Borrower edits an `APPROVED` request, or cancels a `CHECKED_OUT` request. The action is rejected | 2 |
 | BR-11 | Units are normally returned together with a condition per unit that defaults to good. A single unit may be returned early as an exception. A unit returned damaged goes to `MAINTENANCE` and cannot be checked out until it is set back to `AVAILABLE` | A Custodian records a unit's return as damaged but asks to set the unit to `AVAILABLE`. The return is rejected; a damaged unit can only go to `MAINTENANCE` | 2 |
 | BR-12 | A unit on loan cannot be retired, and a retired unit cannot be checked out | A Custodian retires a unit that is `ON_LOAN`. The action is rejected and the unit stays `ON_LOAN` | 2 |
-| BR-13 | An approved request reserves its quantities. If it is not checked out within 48 hours of approval, it becomes `EXPIRED` and the reservation is released | A Custodian checks out a request that expired. The checkout is rejected | 3 |
+| BR-13 | An approved request reserves its quantities. If it is not checked out within 48 hours of approval, counted on business days (D-22), it becomes `EXPIRED` and the reservation is released | A Custodian checks out a request that expired. The checkout is rejected | 3 |
 | BR-14 | A Borrower may hold at most 5 units in total across active loans and open requests. A kit counts as one unit. A Borrower under the limit may request at any time without returning earlier loans. Units of `CANCELLED`, `REJECTED`, `EXPIRED` and `RETURNED` requests do not count (D-20) | A Borrower with 4 units on loan creates a request for 2 more units. The request is rejected | 3 |
 | BR-15 | A Borrower with an overdue request cannot create a new request until every unit of that request is returned | A Borrower with one unit overdue creates a new request. The request is rejected | 3 |
 | BR-16 | Every state change of a request, unit or loan, and every edit of a request, is recorded with its actor and the time. The actor is the signed-in user who acted, or the System actor for automatic changes such as expiry. History entries are never edited or deleted | No operation exists to edit or delete a history entry, and the data layer rejects any update or delete of one | 1 |
@@ -300,6 +301,8 @@ Invalid examples: `ON_LOAN` → `RETIRED`, `RETIRED` → any state, `MAINTENANCE
 | D-19 | Usability target: a Borrower can submit a request within 3 clicks from the catalog. Measured when NFR-10 is verified in Sprint 2 | Sprint 1 already meets it with one "Request" button per item type; Sprint 2 adds several lines per request, so the target is checked there | 2026-11-07 |
 | D-20 | Only `ACTIVE` loans and units on lines of open requests (`PENDING` or `APPROVED`) count toward the 5-unit limit. `CANCELLED`, `REJECTED`, `EXPIRED` and `RETURNED` requests and returned loans do not count | A finished request holds no device; matches SDS 4.5 | 2026-11-07 |
 | D-21 | A loan is due at 17:00 ICT on a business day (Monday to Friday). Counting starts on the checkout date if the checkout is on a business day before 16:00 ICT, otherwise on the next business day; start day + loan length days, moved to the following Monday if it falls on a Saturday or Sunday. Loans created before the change keep their due date. No holiday calendar | The hardware room counter is open on business days until 17:00, so a loan due at night or on a weekend cannot be returned on time, and the Sprint 3 overdue rule would blame the Borrower. Change request #71 (Lab 7), team decision | 2026-11-25 |
+| D-22 | The 48-hour pickup window of BR-13 counts only time on business days (Monday to Friday, ICT): Saturday and Sunday do not count. An approval at Friday 15:00 ICT expires at Tuesday 15:00 ICT; an approval on Saturday or Sunday counts from Monday 00:00 ICT. Night hours count; only whole Saturdays and Sundays are skipped, so a window can end at night (approved Monday 23:00 → Wednesday 23:00). A request is expired from the window end itself (`now >= windowEnd`). No holiday calendar, as in D-21 | The hardware room is closed at weekends (D-21), so a weekend must not use up the Borrower's time to pick up. Resolves Q-07; issue #106, team decision | 2026-11-27 |
+| D-23 | Expiry is evaluated on use, with no scheduled job. Every read or action that depends on a request's state or on availability (request lists and detail, request create and edit, approval, checkout, availability counts) first sets every `APPROVED` request whose pickup window has ended to `EXPIRED`, in the same transaction, with one history entry each recorded with the System actor. The history entry's time is the window end, not the time of the check. A request is expired once only, even when two calls find it at the same moment (SDS 4.5) | No new GCP component or credential; the result is the same as a scheduled job for every observer, and tests can control it with a fixed clock as for D-21. Resolves Q-09; issue #106, team decision | 2026-11-27 |
 
 ## 11. Open questions
 
@@ -311,6 +314,6 @@ Invalid examples: `ON_LOAN` → `RETIRED`, `RETIRED` → any state, `MAINTENANCE
 | Q-04 | Should approved requests reserve units from Sprint 2, when approval is introduced, instead of from Sprint 3? | Without a reservation, an approved request may find no unit at checkout | Resolved: D-15 (keep Sprint 3, accepted limitation) |
 | Q-05 | In Sprint 1, is the due date checkout time + the item type's maximum loan length (A-05)? | Sprint 1 requests have no loan length, but loans need a due date for later overdue rules | Resolved: D-16 (yes) |
 | Q-06 | In Sprint 1 there is no `REJECTED` state. What happens to a `PENDING` request when no unit is available at checkout? | Without an answer, the request stays pending with no way to close it until Sprint 2 | Resolved: D-17 (checkout rejected, request stays `PENDING`) |
-| Q-07 | Does the 48-hour pickup window count hours when the hardware room is closed, such as weekends? | Affects BR-13 and its tests | Open; settle before the Sprint 3 contract |
+| Q-07 | Does the 48-hour pickup window count hours when the hardware room is closed, such as weekends? | Affects BR-13 and its tests | Resolved: D-22 |
 | Q-08 | Do units in `CANCELLED`, `REJECTED` or `EXPIRED` requests count toward the 5-unit limit? (Assumed: no, only active loans and open requests count) | Affects BR-14 and its tests | Resolved: D-20 |
-| Q-09 | How is expiry triggered: checked whenever a request is read or acted on, or by a scheduled job? | Decides when FR-15 happens, how it is tested, and how the System actor is recorded | Open; settle before the Sprint 3 contract |
+| Q-09 | How is expiry triggered: checked whenever a request is read or acted on, or by a scheduled job? | Decides when FR-15 happens, how it is tested, and how the System actor is recorded | Resolved: D-23 |
