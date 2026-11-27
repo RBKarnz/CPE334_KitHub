@@ -24,3 +24,4 @@ Notes:
 - TEST-163 (a) first checked "Generated …" with `getByText` right after the heading appeared. The heading renders before the report loads, so the check ran too early. `0f0d3d4` changes it to `findByText`; on the pre-change code the test still fails on the missing heading.
 - TEST-159 and TEST-161 make their loans with the real approve and checkout endpoints (F-06, F-07), and TEST-161 uses the real early return, repair and retire endpoints (F-08, F-09), as contract 8.3 asks.
 - The item type in TEST-158 to TEST-161 is named "Arduino Nano", not "Arduino Uno R3" as in contract 8.2, because item type names are unique and the shared test world already has an "Arduino Uno R3".
+- Review of PR #118 (not blocking): AC-163 names a loading state, but no TEST-163 case checked it. TEST-163 (f) is added: with the report reply held back, the page shows "Loading…" under its heading, and the table once the reply arrives. Client suite after it: 111 passed, 0 failed (local).

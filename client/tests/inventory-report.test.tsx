@@ -1,11 +1,12 @@
 // TEST-163 (AC-163): the Custodian Reports page /reports/inventory (contract F-14 4.2). The app is
 // rendered with fetch stubbed, so this file imports no page or API module that F-14 adds and its
 // RED run fails on assertions.
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "../src/App";
 import { errorBody, stubFetch, type FetchStub, type Reply } from "./fetch-stub";
+import { deferred } from "./render";
 
 const borrower = { id: 3, username: "borrower1", displayName: "Borrower One", role: "BORROWER" };
 const custodian = { id: 1, username: "custodian1", displayName: "Custodian One", role: "CUSTODIAN" };
@@ -74,6 +75,18 @@ describe("TEST-163 (AC-163): Reports page", () => {
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
     expect(await screen.findByText("Arduino Uno R3")).toBeInTheDocument();
     expect(reportCalls()).toBe(2);
+  });
+
+  it("TEST-163 (f): shows Loading… until the report arrives (review of PR #118)", async () => {
+    const slow = deferred<{ status: number; body?: unknown }>();
+    open(custodian, slow.promise);
+
+    // The app shows its own Loading… while it checks the session; wait for the page first.
+    await screen.findByRole("heading", { name: "Inventory report" });
+    expect(screen.getByText("Loading…")).toBeInTheDocument();
+    await act(async () => slow.resolve({ status: 200, body: report }));
+    expect(await screen.findByText("Arduino Uno R3")).toBeInTheDocument();
+    expect(screen.queryByText("Loading…")).not.toBeInTheDocument();
   });
 
   it("TEST-163 (d): no item type shows the empty message", async () => {
