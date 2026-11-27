@@ -213,3 +213,23 @@ describe("TEST-71 (AC-71): new request form", () => {
     expect(await screen.findByText("You do not have permission to do this.")).toBeInTheDocument();
   });
 });
+
+describe("TEST-141 (AC-141): the F-11 rules in the request form", () => {
+  it.each([
+    ["OVERDUE_BLOCK", "You cannot make a new request while Request #12 is overdue. Return every unit of it first."],
+    ["BORROW_LIMIT", "You can hold at most 5 units. You hold 4 and asked for 2."],
+  ])("TEST-141: a 409 %s is shown as an alert with the API message; the lines and loan length stay", async (code, message) => {
+    renderAt("/requests/new?itemTypeId=3");
+    await formReady();
+    fireEvent.click(screen.getByRole("button", { name: "Add line" }));
+    fireEvent.change(itemTypeSelect(2), { target: { value: "9" } });
+    fireEvent.change(loanLength(), { target: { value: "3" } });
+    stub.routes["POST /api/requests"] = [{ status: 409, body: errorBody(code, message) }];
+    fireEvent.click(submit());
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(message);
+    expect(itemTypeSelect(1)).toHaveValue("3");
+    expect(itemTypeSelect(2)).toHaveValue("9");
+    expect(loanLength()).toHaveValue(3);
+  });
+});
