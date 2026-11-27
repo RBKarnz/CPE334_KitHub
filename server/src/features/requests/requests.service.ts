@@ -57,7 +57,7 @@ export async function assertRequestRules(
 
   // F-11: one application clock per call (F11-D1), so tests can fix it.
   const now = new Date();
-  const [openLines, available, overdue, activeLoans, openQuantity] = await Promise.all([
+  const [openLines, available, overdue, held] = await Promise.all([
     tx.requestLine.findMany({
       where: {
         itemTypeId: { in: ids },
@@ -78,22 +78,25 @@ export async function assertRequestRules(
       select: { id: true, lines: { select: { loans: { where: { status: LoanStatus.ACTIVE }, select: { status: true, dueAt: true } } } } },
     }),
     // BR-14 (D-20): ACTIVE loans plus the lines of open requests, the edited request left out.
-    tx.loan.count({ where: { status: LoanStatus.ACTIVE, requestLine: { request: { borrowerId } } } }),
-    tx.requestLine.aggregate({
-      _sum: { quantity: true },
-      where: {
-        request: {
-          borrowerId,
-          status: { in: OPEN_STATUSES },
-          ...(exceptRequestId !== undefined ? { id: { not: exceptRequestId } } : {}),
-        },
-      },
-    }),
+    // Keep this ONE statement: it reads one snapshot. As two queries, a checkout committing
+    // between them (APPROVED lines become ACTIVE loans) is missed by both, and held is undercounted.
+    tx.$queryRaw<{ held: number }[]>`
+      SELECT (
+        (SELECT count(*) FROM loans l
+           JOIN request_lines rl ON rl.id = l."requestLineId"
+           JOIN borrow_requests r ON r.id = rl."requestId"
+         WHERE l.status = 'ACTIVE' AND r."borrowerId" = ${borrowerId})
+        +
+        (SELECT coalesce(sum(rl.quantity), 0) FROM request_lines rl
+           JOIN borrow_requests r ON r.id = rl."requestId"
+         WHERE r."borrowerId" = ${borrowerId} AND r.status IN ('PENDING', 'APPROVED')
+           AND r.id <> ${exceptRequestId ?? 0})
+      )::int AS held`,
   ]);
   const overdueIds = overdue
     .sort((a, b) => earliestActiveDue(a) - earliestActiveDue(b) || a.id - b.id)
     .map((r) => r.id);
-  const heldUnits = activeLoans + (openQuantity._sum.quantity ?? 0);
+  const heldUnits = held[0].held;
   const openById = new Map<number, number>();
   for (const l of openLines) if (!openById.has(l.itemTypeId)) openById.set(l.itemTypeId, l.requestId);
   const availableById = new Map(available.map((a) => [a.itemTypeId, a._count._all]));
