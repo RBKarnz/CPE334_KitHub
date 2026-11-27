@@ -2,10 +2,10 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.14 |
+| Version | 1.16 |
 | Date | 2026-11-27 |
 | Source requirements | `docs/srs.md` v1.6 |
-| Features and AC/TEST definitions | `docs/features.md` v1.12 |
+| Features and AC/TEST definitions | `docs/features.md` v1.14 |
 | Feature and SR IDs | Same as `docs/sprints/plan.md` section 3 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 
@@ -54,7 +54,7 @@ Sprint 1 rows link to planned AC and tests from `docs/features.md`. Sprint 2 and
 | FR-26 | Retire a unit | F-09 | 2 | AC-118, AC-121 | TEST-118, TEST-121 | Implemented (F-09: RED `567c530`, GREEN `4aec247`); Verified after the Sprint 2 release |
 | FR-27 | History per unit | F-13 | 3 | Contract F-13 | - | Planned |
 | FR-28 | History per Borrower | F-13 | 3 | Contract F-13 | - | Planned |
-| FR-29 | Inventory summary report | F-14 | 3 | AC-158 to AC-163 | TEST-158 to TEST-163 | Specified (contract #111); tests Planned |
+| FR-29 | Inventory summary report | F-14 | 3 | AC-158 to AC-163 | TEST-158 to TEST-163 | Implemented (F-14: RED `bdeffcd`, GREEN `e111146`); Verified after the Sprint 3 release |
 | FR-30 | Custodian lists and filters all requests by state | F-06 | 2 | AC-80 to AC-81, AC-88 | TEST-80 to TEST-81, TEST-88 | Implemented (F-06: RED `cb800c9`, GREEN `be5e11c`); Verified after the Sprint 2 release |
 
 ## 3. Business rules
@@ -144,3 +144,4 @@ None. Notes on three rows:
 | 2026-11-27 | Review of PR #114: F-11 contract v1.1 (days overdue on the due day, two more D-20 cases in 3.4 and TEST-136, no AC change). Headers of `features.md` and this file name SRS v1.6 and `features.md` v1.12 | Review | #108 |
 | 2026-11-27 | Review of PR #115: F-12 contract v1.1 (TEST-145 with a non-empty combined filter, invalid URL filters F12-D8, narrow layout under SDS 5.3 / SR-04, AC-142 and AC-149 wording); SDS v1.14 row names section 6.1 | Review | #109 |
 | 2026-11-27 | Review of PR #116: F-14 contract v1.1 (TEST-159 data with exact times, TEST-161 expected rows, narrow layout under SDS 5.3 / SR-04, visible "Available (unit state)" header, F14-D6 no expiry); no AC changed | Review | #111 |
+| 2026-11-27 | F-14 inventory report (#111): TEST-158 to TEST-163 fail on the tests-only commit `bdeffcd` (server 5 failed / 375 passed, all `404` from the missing route; client 5 failed / 105 passed) and pass on `e111146` (server 380 passed in CI, client 110 passed). FR-29 moves to Implemented. Evidence in `docs/sprints/sprint-3/evidence/F-14/` | Sprint 3 feature for the Deliverable 2 candidate | #111 |
