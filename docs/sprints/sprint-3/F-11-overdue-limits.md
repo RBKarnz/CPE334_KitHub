@@ -6,7 +6,7 @@
 | --- | --- |
 | Feature | F-11 Overdue status and borrowing limits |
 | Sprint | 3 (due 2026-12-13); implemented first, for the Deliverable 2 candidate (`plan.md` 6.3) |
-| Version | 1.1 |
+| Version | 1.2 |
 | Status | Proposed (PR for #108); implementation starts only after this contract is reviewed and merged |
 | Date | 2026-11-27 |
 | Authors | Methipat Mansap (67070501071); reviewer Teerakarn Noiruksa (67070501062) |
@@ -21,6 +21,7 @@
 | --- | --- | --- | --- |
 | 1.0 | 2026-11-27 | Methipat Mansap | First contract: AC-132 to AC-141, TEST-132 to TEST-141, decisions F11-D1 to F11-D8 |
 | 1.1 | 2026-11-27 | Methipat Mansap | Review of PR #114: "days overdue" defined for the due day itself (F11-D9, 4.4, TEST-140 (c)); 3.4 adds an `APPROVED` request and a `CHECKED_OUT` request after an early return, used by TEST-136; F11-D5 says the numbers carry no noun, so the text is the same for 1; 2.3 explains how D-23 expiry and F-10 affect the count. No AC changed |
+| 1.2 | 2026-11-27 | Methipat Mansap | F11-D5: the leftover "(singular "unit" for 1)" removed; the numbers stand alone, as the decision already says. No AC or test changed |
 
 Changes after approval get a new version row with the reason. AC and TEST IDs are never reused for a different meaning.
 
@@ -120,7 +121,7 @@ Create and edit already lock the Borrower's `users` row first (DD-05), so two pa
 | F11-D2 | At `dueAt` exactly, a loan is not yet overdue (`<`, not `≤`) | A loan due at 17:00 can still be returned at 17:00; D-21 makes every `dueAt` a business-day 17:00 |
 | F11-D3 | BR-15 is checked before every other request rule | The Borrower must return units first; reporting a quantity or availability problem would send them to fix the wrong thing |
 | F11-D4 | `OVERDUE_BLOCK` message: "You cannot make a new request while Request #12 is overdue. Return every unit of it first." with `details: [ { field: "body", issue: "Request #12 is overdue" } ]`, one entry per overdue request, oldest `dueAt` first; the message names the oldest. The same text is used for an edit | Names the request to return, which the Borrower can open |
-| F11-D5 | `BORROW_LIMIT` message: "You can hold at most 5 units. You hold 4 and asked for 2." (singular "unit" for 1) with `details: [ { field: "lines", issue: "4 held + 2 asked > 5" } ]`. The two numbers stand alone, with no noun after them, so the text is the same for 1 ("You hold 1 and asked for 5.") | States the numbers the Borrower needs to change the request |
+| F11-D5 | `BORROW_LIMIT` message: "You can hold at most 5 units. You hold 4 and asked for 2." with `details: [ { field: "lines", issue: "4 held + 2 asked > 5" } ]`. The two numbers stand alone, with no noun after them, so the text is the same for 1 ("You hold 1 and asked for 5.") | States the numbers the Borrower needs to change the request |
 | F11-D6 | The limit (5) is a constant in the domain module, not a setting | BR-14 fixes the number; a setting would be configuration nobody needs |
 | F11-D7 | `overdue` in `GET /api/requests` accepts only `true`; it cannot be combined with `status` (`400 VALIDATION_FAILED` naming `overdue` for any other value or the combination) | An overdue request is always `CHECKED_OUT`, so a combination would be either redundant or empty |
 | F11-D8 | The overdue list's order: earliest active `dueAt` first, then `id` | The Custodian sees the longest-overdue request first |
