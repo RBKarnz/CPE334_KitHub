@@ -11,6 +11,7 @@ import { requireJson } from "./core/middleware/require-json.js";
 import { authRouter } from "./features/auth/auth.routes.js";
 import { catalogRouter } from "./features/catalog/catalog.routes.js";
 import { loansRouter } from "./features/loans/loans.routes.js";
+import { reportsRouter } from "./features/reports/reports.routes.js";
 import { requestsRouter } from "./features/requests/requests.routes.js";
 import { unitsRouter } from "./features/units/units.routes.js";
 
@@ -52,6 +53,7 @@ export function createApp({ config, prisma, clientDistDir = DEFAULT_CLIENT_DIST,
   api.use(requestsRouter(prisma));
   api.use(loansRouter(prisma));
   api.use(unitsRouter(prisma));
+  api.use(reportsRouter(prisma));
   mountTestRoutes?.(api);
 
   api.use(apiNotFound);

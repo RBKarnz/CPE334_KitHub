@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 1.13 |
+| Version | 1.14 |
 | Date | 2026-11-27 |
 | Source requirements | `docs/srs.md` v1.6 (FR-01 to FR-30, BR-01 to BR-17, NFR-01 to NFR-12) |
 | Traceability | `docs/traceability.md` |
@@ -463,9 +463,9 @@ Copied from the Sprint 3 engineering contracts when each is merged into `staging
 
 | AC | Expected outcome | Requirements | Tests | Status |
 | --- | --- | --- | --- | --- |
-| AC-158 | For each item type, `available`, `onLoan`, `maintenance` and `retired` equal the counts of its units in those states and `totalUnits` is their sum; an item type with no unit is listed with zeros; rows are ordered by category name and item type name | FR-29, F14-D2 | TEST-158 | Planned |
-| AC-159 | `activeLoans` counts the item type's `ACTIVE` loans; `overdueRequests` counts the distinct overdue requests (F11-D1) with an overdue `ACTIVE` loan of that item type, so a loan due later or exactly now is not counted | FR-29, FR-22, F11-D1 | TEST-159 | Planned |
-| AC-160 | The totals row sums every column, except that `overdueRequests` counts each overdue request once; `generatedAt` is the server time of the report | FR-29, F14-D1, F14-D3 | TEST-160 | Planned |
-| AC-161 | After a checkout, an early return marked damaged, a repair and a retire, the report changes exactly as the unit states and loans change | FR-29, BR-11, BR-12 | TEST-161 | Planned |
-| AC-162 | A Borrower gets `403 FORBIDDEN`, a call without a session `401 UNAUTHENTICATED`, any query field `400 VALIDATION_FAILED`; nothing is written by any call | NFR-01, NFR-02, NFR-08, F14-D5 | TEST-162 | Planned |
-| AC-163 | The Reports page shows the table with the totals row and "Generated …", reloads with **Refresh**, has loading, empty and error states, and is reachable only by a Custodian (a Borrower sees the Forbidden page and no Reports link) | FR-29, NFR-12 | TEST-163 | Planned |
+| AC-158 | For each item type, `available`, `onLoan`, `maintenance` and `retired` equal the counts of its units in those states and `totalUnits` is their sum; an item type with no unit is listed with zeros; rows are ordered by category name and item type name | FR-29, F14-D2 | TEST-158 | **Implemented**: failed on `bdeffcd`, pass on `e111146` |
+| AC-159 | `activeLoans` counts the item type's `ACTIVE` loans; `overdueRequests` counts the distinct overdue requests (F11-D1) with an overdue `ACTIVE` loan of that item type, so a loan due later or exactly now is not counted | FR-29, FR-22, F11-D1 | TEST-159 | **Implemented**: failed on `bdeffcd`, pass on `e111146` |
+| AC-160 | The totals row sums every column, except that `overdueRequests` counts each overdue request once; `generatedAt` is the server time of the report | FR-29, F14-D1, F14-D3 | TEST-160 | **Implemented**: failed on `bdeffcd`, pass on `e111146` |
+| AC-161 | After a checkout, an early return marked damaged, a repair and a retire, the report changes exactly as the unit states and loans change | FR-29, BR-11, BR-12 | TEST-161 | **Implemented**: failed on `bdeffcd`, pass on `e111146` |
+| AC-162 | A Borrower gets `403 FORBIDDEN`, a call without a session `401 UNAUTHENTICATED`, any query field `400 VALIDATION_FAILED`; nothing is written by any call | NFR-01, NFR-02, NFR-08, F14-D5 | TEST-162 | **Implemented**: failed on `bdeffcd`, pass on `e111146` |
+| AC-163 | The Reports page shows the table with the totals row and "Generated …", reloads with **Refresh**, has loading, empty and error states, and is reachable only by a Custodian (a Borrower sees the Forbidden page and no Reports link) | FR-29, NFR-12 | TEST-163 | **Implemented**: failed on `bdeffcd`, pass on `e111146` |
