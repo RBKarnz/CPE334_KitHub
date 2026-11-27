@@ -6,10 +6,10 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part D |
-| Version | 1.7 |
+| Version | 1.8 |
 | Date | 2026-11-27 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
-| Baseline | [SRS v1.6](../srs.md), [System-Level SDS v1.13](../system-sds.md) |
+| Baseline | [SRS v1.7](../srs.md), [System-Level SDS v1.15](../system-sds.md) |
 
 ### Revision history
 
@@ -23,6 +23,7 @@
 | 1.5 | 2026-11-07 | Methipat Mansap | Issue #38 (SR-04 defect fix): baseline SDS v1.4. SR-04 (3.2) covers every width from 320 to 1440 px, with the narrow layout below 768 px instead of 576 px. No feature, requirement or sprint moves |
 | 1.6 | 2026-11-25 | Teerakarn Noiruksa | Change request #71 (Lab 7, review of PR #72): the Sprint 1 due-date row in section 4 follows SRS v1.4 D-21 (17:00 ICT on a business day, 16:00 cutoff). No feature, requirement or sprint moves |
 | 1.7 | 2026-11-27 | Methipat Mansap | Issue #106: Q-07 and Q-09 are settled as D-22 and D-23 (two days after the 25 Nov target in 6.3), so the F-10 contract is no longer blocked and no GCP component is added. Sprint 3 Issues: #107 F-10, #108 F-11, #109 F-12, #110 F-13, #111 F-14, #112 SR-03. Review of PR #113: the header baseline, stale since v1.6, now names SRS v1.6 and SDS v1.13 |
+| 1.8 | 2026-11-27 | Teerakarn Noiruksa | Issue #112: Q-03 settled as D-24, so the NFR-11 row of section 7 names the release-image and deployed measurements. Baseline SRS v1.7, SDS v1.15. No feature, sprint or order changed |
 
 ## 2. Overview
 
@@ -286,7 +287,7 @@ Every NFR is established, and first verified, in a planned sprint:
 | NFR-08 | SR-01 | Sprint 1 API tests | Every feature's error cases; SR-03 |
 | NFR-09 | F-02, F-03 | Sprint 1 integration tests | Every state-changing feature |
 | NFR-10 | F-04 | Sprint 2 manual check and UI test | - |
-| NFR-11 | SR-03 | Sprint 3 measurement on the deployed service (Q-03) | - |
+| NFR-11 | SR-03 | Sprint 3 measurement on the release image with 500 units and on the deployed service (D-24) | - |
 | NFR-12 | F-02, F-03 | Sprint 1 UI tests for the catalog, my requests and pending requests | Every new list |
 
 ## 8. Risks

@@ -6,7 +6,7 @@
 | --- | --- |
 | Product | KitHub, a web-based inventory and borrowing system |
 | Course | CPE 334, Project Deliverable 1, Part A |
-| Version | 1.6 |
+| Version | 1.7 |
 | Date | 2026-11-27 |
 | Authors | Teerakarn Noiruksa (67070501062), Methipat Mansap (67070501071) |
 | Theme | 2. Inventory and Borrowing System |
@@ -22,6 +22,7 @@
 | 1.4 | 2026-11-25 | Teerakarn Noiruksa | Change request #71 (Lab 7): new decision D-21, the due date is 17:00 ICT on a business day (Monday to Friday) with a 16:00 checkout cutoff. Glossary "Due date", FR-16, BR-08, A-05 and D-16 point to it. The loan length rules (D-08, D-16, BR-08) do not change |
 | 1.5 | 2026-11-25 | Teerakarn Noiruksa | Review of PR #87: 8.1 gains the row (new) → `AVAILABLE` for a unit added by a Custodian (FR-24), which F-09 2.1 needs. No requirement changes |
 | 1.6 | 2026-11-27 | Methipat Mansap | Issue #106: resolved Q-07 and Q-09 as D-22 (the 48-hour pickup window counts only business-day time) and D-23 (expiry is evaluated on use, no scheduled job), so the F-10 contract can be written. FR-15 and BR-13 point to them. Review of PR #113: D-22 states the boundary (`now >= windowEnd`) and that night hours count; D-23 says the expiry time is the history entry's time and that a request expires once. No other requirement changes |
+| 1.7 | 2026-11-27 | Teerakarn Noiruksa | Issue #112 (SR-03 contract): resolved Q-03 as D-24. NFR-11 is kept and measured on the release image with 500 units and on the deployed service with its own data; the 500 units are never loaded into the deployed database. No other requirement changed |
 
 ## 2. Introduction
 
@@ -213,7 +214,7 @@ FRs are grouped by feature area. "Related BR" lists the rules the FR must enforc
 | NFR-08 | Error handling | Every error response uses one JSON shape with an error code and a message, and never contains a stack trace or internal details | API test | 1 |
 | NFR-09 | Auditability | Every state change listed in section 8 and every request edit creates a history entry with its actor (signed-in user or System actor) and a timestamp | Integration test | 1 |
 | NFR-10 | Usability | A Borrower can submit a request within 3 clicks from the catalog (D-19) | Manual check + UI test | 2 |
-| NFR-11 | Performance | Catalog and loan lists respond within 2 seconds with 500 units on the deployed service (Proposed, Q-03) | Measurement on the deployed service | 3 |
+| NFR-11 | Performance | Catalog and loan lists respond within 2 seconds (95th percentile of 30 calls) with 500 units, on the release's Docker image; the deployed service meets the same target with its own data (D-24) | Measurement on the release image and on the deployed service | 3 |
 | NFR-12 | List states | Every list shows a loading state, an empty state and an error state, starting with the Sprint 1 lists (catalog, my requests, pending requests) | UI test + manual check | 1 |
 
 Course constraints that also apply to the whole product:
@@ -303,6 +304,7 @@ Invalid examples: `ON_LOAN` → `RETIRED`, `RETIRED` → any state, `MAINTENANCE
 | D-21 | A loan is due at 17:00 ICT on a business day (Monday to Friday). Counting starts on the checkout date if the checkout is on a business day before 16:00 ICT, otherwise on the next business day; start day + loan length days, moved to the following Monday if it falls on a Saturday or Sunday. Loans created before the change keep their due date. No holiday calendar | The hardware room counter is open on business days until 17:00, so a loan due at night or on a weekend cannot be returned on time, and the Sprint 3 overdue rule would blame the Borrower. Change request #71 (Lab 7), team decision | 2026-11-25 |
 | D-22 | The 48-hour pickup window of BR-13 counts only time on business days (Monday to Friday, ICT): Saturday and Sunday do not count. An approval at Friday 15:00 ICT expires at Tuesday 15:00 ICT; an approval on Saturday or Sunday counts from Monday 00:00 ICT. Night hours count; only whole Saturdays and Sundays are skipped, so a window can end at night (approved Monday 23:00 → Wednesday 23:00). A request is expired from the window end itself (`now >= windowEnd`). No holiday calendar, as in D-21 | The hardware room is closed at weekends (D-21), so a weekend must not use up the Borrower's time to pick up. Resolves Q-07; issue #106, team decision | 2026-11-27 |
 | D-23 | Expiry is evaluated on use, with no scheduled job. Every read or action that depends on a request's state or on availability (request lists and detail, request create and edit, approval, checkout, availability counts) first sets every `APPROVED` request whose pickup window has ended to `EXPIRED`, in the same transaction, with one history entry each recorded with the System actor. The history entry's time is the window end, not the time of the check. A request is expired once only, even when two calls find it at the same moment (SDS 4.5) | No new GCP component or credential; the result is the same as a scheduled job for every observer, and tests can control it with a fixed clock as for D-21. Resolves Q-09; issue #106, team decision | 2026-11-27 |
+| D-24 | NFR-11 is measured on the release candidate in two parts: (1) the release's Docker image, started with `docker compose` against a PostgreSQL database loaded with a performance data set of 500 units, and (2) the deployed service with its own data, read-only. In both, each measured list answers within 2 seconds at the 95th percentile of 30 calls. The 500 units are never loaded into the deployed database | Units and history entries cannot be deleted (BR-16; units are only retired), so 500 test units would stay in the demo catalog for good; the release image runs the same code, and the deployed check still covers Cloud Run and Cloud SQL. Q-03, SR-03 contract (#112), team decision | 2026-11-27 |
 
 ## 11. Open questions
 
@@ -310,7 +312,7 @@ Invalid examples: `ON_LOAN` → `RETIRED`, `RETIRED` → any state, `MAINTENANCE
 | --- | --- | --- | --- |
 | Q-01 | Is an 8-hour session expiry acceptable? | Sets NFR-04 and its test | Resolved: D-18 |
 | Q-02 | Is "submit a request within 3 clicks from the catalog" the usability target we want? | Sets NFR-10 and its check | Resolved: D-19 |
-| Q-03 | Can the team measure response time with 500 units on the deployed service in Sprint 3? If not, should NFR-11 be removed? | The course asks not to state targets that cannot be measured | Open; settle before the Sprint 3 measurement (SR-03) |
+| Q-03 | Can the team measure response time with 500 units on the deployed service in Sprint 3? If not, should NFR-11 be removed? | The course asks not to state targets that cannot be measured | Resolved: D-24 |
 | Q-04 | Should approved requests reserve units from Sprint 2, when approval is introduced, instead of from Sprint 3? | Without a reservation, an approved request may find no unit at checkout | Resolved: D-15 (keep Sprint 3, accepted limitation) |
 | Q-05 | In Sprint 1, is the due date checkout time + the item type's maximum loan length (A-05)? | Sprint 1 requests have no loan length, but loans need a due date for later overdue rules | Resolved: D-16 (yes) |
 | Q-06 | In Sprint 1 there is no `REJECTED` state. What happens to a `PENDING` request when no unit is available at checkout? | Without an answer, the request stays pending with no way to close it until Sprint 2 | Resolved: D-17 (checkout rejected, request stays `PENDING`) |
